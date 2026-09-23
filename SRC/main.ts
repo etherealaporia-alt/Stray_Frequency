@@ -1,5 +1,7 @@
 import './style.css';
 
+const assetBase = import.meta.env.BASE_URL;
+
 type Panel = 'world' | 'inventory' | 'skills' | 'journal' | 'comms' | 'map';
 
 const panelIcons: Record<Panel, string> = {
@@ -28,7 +30,7 @@ app.innerHTML = `
   <div class="game-shell">
     <header class="masthead">
       <section class="character-card panel" aria-label="Character summary">
-        <img src="/assets/mara-vale.png" alt="Pixel portrait of Mara Vale" class="portrait" />
+        <img src="${assetBase}assets/mara-vale.png" alt="Pixel portrait of Mara Vale" class="portrait" />
         <div class="character-copy">
           <div class="eyebrow">PLAYER</div>
           <h2>Mara Vale</h2>
@@ -71,7 +73,7 @@ app.innerHTML = `
             <p>TRADE. TRAVEL. TRY TO STAY ALIVE.</p>
           </div>
           <div class="scene-wrap">
-            <img src="/assets/glassmarket.png" alt="Pixel art view of the rainy Glassmarket Transit Concourse" class="scene" />
+            <img src="${assetBase}assets/glassmarket.png" alt="Pixel art view of the rainy Glassmarket Transit Concourse" class="scene" />
             <div class="scene-tag scene-tag-left">KURO NOODLES<br><small>OPEN LATE</small></div>
             <div class="scene-tag scene-tag-right">DEPARTURES<br><small>PLATFORM 4</small></div>
           </div>
