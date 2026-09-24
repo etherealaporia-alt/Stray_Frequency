@@ -1,0 +1,14 @@
+Upload this replacement file:
+SRC/
+└── main.ts
+
+The code expects these images in your existing assets folder:
+assets/
+├── mara-vale.png
+├── glassmarket.png
+├── neon_salvage_yard_under_the_overpass.png
+├── neon_cyberpunk_scrap_pile.png
+├── cyberpunk_salvage_swing_sprite_sheet.png
+├── cyberpunk_salvage_crowbar_tool.png
+├── cyberpunk_scrap_metal_pile.png
+└── neon_cyberpunk_scrapyard_heap.png
