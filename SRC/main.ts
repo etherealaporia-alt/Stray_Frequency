@@ -483,7 +483,7 @@ function injectRuntimeStyles() {
   document.head.appendChild(style);
 }
 
-const app = document.querySelector<HTMLDivElement>('#app');
+const app = document.querySelector<HTMLDivElement>('#app')!;
 if (!app) throw new Error('App root missing');
 
 injectRuntimeStyles();
