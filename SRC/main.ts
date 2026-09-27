@@ -47,7 +47,8 @@ type ActionType =
   | 'goto-south-dock-pier'
   | 'goto-glassmarket'
   | 'start-salvaging'
-  | 'start-fishing'
+  | 'start-fishing-shrimp'
+  | 'start-fishing-sardine'
   | 'reset-node'
   | 'inspect-board';
 
@@ -78,7 +79,7 @@ const panelIcons: Record<Panel, string> = {
 };
 
 type EquipmentSlot = 'main_hand' | 'off_hand' | 'head' | 'torso' | 'legs' | 'boots';
-type ItemKey = 'salvage_bar' | 'metal_scrap' | 'composite_scrap' | 'uncooked_shrimp' | 'cooked_shrimp' | 'copper_coils' | 'portable_induction_pad' | 'fishing_rod';
+type ItemKey = 'salvage_bar' | 'metal_scrap' | 'composite_scrap' | 'uncooked_shrimp' | 'cooked_shrimp' | 'sardine' | 'copper_coils' | 'portable_induction_pad' | 'fishing_net' | 'fishing_rod';
 type ItemDefinition = { key:ItemKey; name:string; description:string; asset:string; stackable:boolean; usable?:boolean; equipmentSlot?:EquipmentSlot; defense?:number; toolType?:'salvage'; toolTier?:number };
 type InventoryEntry = { item:ItemKey; quantity:number } | null;
 
@@ -86,17 +87,20 @@ const ITEM_DEFINITIONS: Record<ItemKey, ItemDefinition> = {
   salvage_bar:{key:'salvage_bar',name:'Powered Salvage Bar',description:'A powered utility breaker for prying, splitting and stripping Tier 1 scrap.',asset:'cyberpunk_salvage_crowbar_tool.png',stackable:false,equipmentSlot:'main_hand',toolType:'salvage',toolTier:1},
   metal_scrap:{key:'metal_scrap',name:'Tier 1 Metal Scrap',description:'Bolts, plates and structural metal recovered from salvage.',asset:'cyberpunk_scrap_metal_pile.png',stackable:true},
   composite_scrap:{key:'composite_scrap',name:'Tier 1 Composite Scrap',description:'Mixed housings, casings and recoverable composite material.',asset:'neon_cyberpunk_scrapyard_heap.png',stackable:true},
-  uncooked_shrimp:{key:'uncooked_shrimp',name:'Uncooked Shrimp',description:'Placeholder catch from South Dock Pier. Cooking details coming soon.',asset:'neon_cyberpunk_scrap_pile.png',stackable:true},
+  uncooked_shrimp:{key:'uncooked_shrimp',name:'Uncooked Shrimp',description:'A small South Dock catch taken with a fishing net.',asset:'shrimp.png',stackable:true},
+  sardine:{key:'sardine',name:'Sardine',description:'A small oily fish caught from South Dock Pier with a fishing rod.',asset:'sardine.png',stackable:true},
   copper_coils:{key:'copper_coils',name:'Copper Coils',description:'Copper wiring coils recovered from a scrap node.',asset:'neon_cyberpunk_scrap_pile.png',stackable:true},
   cooked_shrimp:{key:'cooked_shrimp',name:'Cooked Shrimp',description:'A cooked meal that restores 3 HP when used.',asset:'neon_cyberpunk_scrap_pile.png',stackable:true,usable:true},
   portable_induction_pad:{key:'portable_induction_pad',name:'Portable Induction Pad',description:'Double-click to deploy. Cooks each Uncooked Shrimp over 3 ticks.',asset:'cyberpunk_salvage_crowbar_tool.png',stackable:false,usable:true},
-  fishing_rod:{key:'fishing_rod',name:'Fishing Rod',description:'Equip in Main Hand to fish at South Dock Pier.',asset:'neon_cyberpunk_scrap_pile.png',stackable:false,equipmentSlot:'main_hand'}
+  fishing_net:{key:'fishing_net',name:'Fishing Net',description:'Equip in Main Hand to net shrimp at South Dock Pier.',asset:'fishing-net.png',stackable:false,equipmentSlot:'main_hand'},
+  fishing_rod:{key:'fishing_rod',name:'Fishing Rod',description:'Equip in Main Hand to catch sardines at South Dock Pier.',asset:'fishing-rod.png',stackable:false,equipmentSlot:'main_hand'}
 };
 const EQUIPMENT_SLOTS:Array<[EquipmentSlot,string]>=[['main_hand','Main Hand'],['off_hand','Off Hand'],['head','Head'],['torso','Torso'],['legs','Legs'],['boots','Boots']];
 const inventorySlots:InventoryEntry[]=Array.from({length:36},()=>null);
 inventorySlots[0]={item:'salvage_bar',quantity:1};
 inventorySlots[1]={item:'portable_induction_pad',quantity:1};
 inventorySlots[2]={item:'fishing_rod',quantity:1};
+inventorySlots[3]={item:'fishing_net',quantity:1};
 const equipment:Record<EquipmentSlot,ItemKey|null>={main_hand:null,off_hand:null,head:null,torso:null,legs:null,boots:null};
 let mobileInventoryPage=0;
 
@@ -162,13 +166,11 @@ const rooms: Record<RoomId, Room> = {
     district: 'South Dock',
     name: 'South Dock Pier',
     slogan: 'SOUTH DOCK WATERFRONT',
-    description: 'A quiet stretch of the South Dock waterfront. More details coming soon.',
+    description: 'Rain stipples the harbour beside a working industrial pier, where small fishing spots gather between the lights and wakes.',
+    sceneImage: 'south-dock-pier.png',
     actions: [
-      {
-        label: 'Fish for Uncooked Shrimp',
-        detail: 'Cast at the pier and bring in a catch',
-        type: 'start-fishing'
-      },
+      { label: 'Net for Uncooked Shrimp', detail: 'Equip a Fishing Net in Main Hand and work the shrimp spot', type: 'start-fishing-shrimp' },
+      { label: 'Fish for Sardines', detail: 'Equip a Fishing Rod in Main Hand and work the sardine spot', type: 'start-fishing-sardine' },
       {
         label: 'Return to Glassmarket',
         detail: 'Follow the waterfront route back to the transit concourse',
@@ -190,6 +192,7 @@ const state = {
     'Tier 1 Metal Scrap': 0,
     'Tier 1 Composite Scrap': 0,
     'Uncooked Shrimp': 0,
+    'Sardine': 0,
     'Cooked Shrimp': 0,
     'Copper Coils': 0
   } as Record<string, number>,
@@ -204,6 +207,7 @@ const state = {
   },
   fishing: {
     active: false,
+    method: null as 'shrimp' | 'sardine' | null,
     intervalId: null as number | null
   },
   cooking: {
@@ -261,6 +265,7 @@ function resetCharacterProgress() {
   inventorySlots[0] = { item: 'salvage_bar', quantity: 1 };
   inventorySlots[1] = { item: 'portable_induction_pad', quantity: 1 };
   inventorySlots[2] = { item: 'fishing_rod', quantity: 1 };
+  inventorySlots[3] = { item: 'fishing_net', quantity: 1 };
   for (const [slot] of EQUIPMENT_SLOTS) equipment[slot] = null;
   currentSkills = [];
   state.cooking = { active: false, intervalId: null, ticksRemaining: 3, inventoryIndex: null };
@@ -320,6 +325,10 @@ function applyCharacterProgress(value: unknown) {
     if (!entry) continue;
     const itemName = ITEM_DEFINITIONS[entry.item].name;
     if (itemName in state.inventory) state.inventory[itemName] += entry.quantity;
+  }
+  if (!inventorySlots.some((entry)=>entry?.item==='fishing_net') && equipment.main_hand !== 'fishing_net') {
+    const netIndex=firstEmptyInventorySlot();
+    if(netIndex>=0){inventorySlots[netIndex]={item:'fishing_net',quantity:1};saveCharacterProgress();}
   }
   if (!state.cooking.active && !inventorySlots.some((entry)=>entry?.item==='portable_induction_pad')) {
     const emptyIndex=firstEmptyInventorySlot();
@@ -385,7 +394,9 @@ function asset(path: string) {
 const CORE_ASSETS = [
   'mara-vale.png', 'glassmarket.png', 'neon_salvage_yard_under_the_overpass.png',
   'neon_cyberpunk_scrap_pile.png', 'cyberpunk_salvage_swing_sprite_sheet.png',
-  'cyberpunk_salvage_crowbar_tool.png', 'neon_cyberpunk_scrapyard_heap.png'
+  'cyberpunk_salvage_crowbar_tool.png', 'neon_cyberpunk_scrapyard_heap.png',
+  'south-dock-pier.png', 'fishing-net.png', 'fishing-rod.png', 'fishing-node-shrimp.png',
+  'fishing-node-sardine.png', 'fishing-net-mara.png', 'fishing-rod-mara.png', 'shrimp.png', 'sardine.png'
 ];
 
 async function preloadCoreAssets() {
@@ -412,8 +423,8 @@ function escapeGateway(value: string) {
 function renderGame() {
 function refreshCharacterStats(){const e=document.querySelector<HTMLElement>('#derived-defense');if(e)e.textContent=String(derivedDefense())}
 function refreshCharacterHealth(){const e=document.querySelector<HTMLElement>('#character-health');if(e)e.textContent=`${currentCharacter?.health??10}/${currentCharacter?.max_health??10}`}
-function equipFromInventory(index:number){const e=inventorySlots[index];if(!e)return;const d=ITEM_DEFINITIONS[e.item];if(!d.equipmentSlot)return;const slot=d.equipmentSlot,old=equipment[slot];if(slot==='main_hand'&&old==='fishing_rod'&&e.item!=='fishing_rod')stopFishing();equipment[slot]=e.item;inventorySlots[index]=old?{item:old,quantity:1}:null;saveCharacterProgress();addLog(old?`${d.name} equipped; ${ITEM_DEFINITIONS[old].name} returned to inventory.`:`${d.name} equipped.`);renderPanel();refreshCharacterStats()}
-function unequipToInventory(slot:EquipmentSlot){const k=equipment[slot];if(!k)return;const n=firstEmptyInventorySlot();if(n<0){addLog(`Inventory full. ${ITEM_DEFINITIONS[k].name} remains equipped.`);return}if(slot==='main_hand'&&k==='fishing_rod')stopFishing();inventorySlots[n]={item:k,quantity:1};equipment[slot]=null;saveCharacterProgress();addLog(`${ITEM_DEFINITIONS[k].name} unequipped.`);renderPanel();refreshCharacterStats()}
+function equipFromInventory(index:number){const e=inventorySlots[index];if(!e)return;const d=ITEM_DEFINITIONS[e.item];if(!d.equipmentSlot)return;const slot=d.equipmentSlot,old=equipment[slot];if(slot==='main_hand'&&state.fishing.active&&old!==e.item)stopFishing();equipment[slot]=e.item;inventorySlots[index]=old?{item:old,quantity:1}:null;saveCharacterProgress();addLog(old?`${d.name} equipped; ${ITEM_DEFINITIONS[old].name} returned to inventory.`:`${d.name} equipped.`);renderPanel();refreshCharacterStats()}
+function unequipToInventory(slot:EquipmentSlot){const k=equipment[slot];if(!k)return;const n=firstEmptyInventorySlot();if(n<0){addLog(`Inventory full. ${ITEM_DEFINITIONS[k].name} remains equipped.`);return}if(slot==='main_hand'&&state.fishing.active)stopFishing();inventorySlots[n]={item:k,quantity:1};equipment[slot]=null;saveCharacterProgress();addLog(`${ITEM_DEFINITIONS[k].name} unequipped.`);renderPanel();refreshCharacterStats()}
 function inventorySlotMarkup(e:InventoryEntry,index:number){if(!e)return `<button class="inventory-tile empty" type="button" data-inventory-index="${index}" aria-label="Empty inventory slot"></button>`;const i=ITEM_DEFINITIONS[e.item];return `<button class="inventory-tile" type="button" data-inventory-index="${index}" data-use-item="${i.usable?'true':'false'}" data-double-use-item="${e.item==='portable_induction_pad'?'true':'false'}" data-tooltip="${escapeHtml(`${i.name} — ${i.description}`)}" aria-label="${escapeHtml(i.name)}"><img src="${asset(i.asset)}" alt="" />${e.quantity>1?`<span class="item-quantity">${e.quantity}</span>`:''}</button>`}
 function equipmentSlotMarkup(slot:EquipmentSlot,label:string){const k=equipment[slot];if(!k)return `<button class="equipment-slot empty" type="button" data-equipment-slot="${slot}"><span>${label}</span><small>EMPTY</small></button>`;const i=ITEM_DEFINITIONS[k];return `<button class="equipment-slot" type="button" data-equipment-slot="${slot}" data-tooltip="${escapeHtml(`${i.name} — ${i.description}`)}"><span>${label}</span><img src="${asset(i.asset)}" alt="${escapeHtml(i.name)}" /><small>${escapeHtml(i.name)}</small></button>`}
 function activateInventoryItem(index:number){const entry=inventorySlots[index];if(!entry)return;if(ITEM_DEFINITIONS[entry.item].equipmentSlot){equipFromInventory(index);return}void useInventoryItem(index)}
@@ -594,21 +605,22 @@ function renderScene() {
         <div class="scene-tag scene-tag-right">SOUTH DOCK<br><small>BREAKER YARD 12</small></div>
       </div>`;
   } else {
+    const fishingMethod = state.fishing.method;
     target.innerHTML = `
       <div class="scene-stage pier-stage">
-        <div class="pier-waterline" aria-hidden="true"></div>
-        <div class="scrap-node asset-scrap-node gather-node" id="fishing-node" data-node-action="start-fishing" role="button" tabindex="0" aria-label="Fishing spot. Double-click to fish.">
-          <div class="node-label">FISHING SPOT</div>
-          <img src="${asset('neon_cyberpunk_scrap_pile.png')}" alt="Placeholder fishing spot" />
-          <div class="node-count">${state.fishing.active ? 'FISHING' : 'READY'}</div>
+        <img src="${asset(room.sceneImage ?? '')}" alt="South Dock Pier" class="scene scene-image" />
+        <div class="scrap-node gather-node fishing-node shrimp-node" data-node-action="start-fishing-shrimp" role="button" tabindex="0" aria-label="Shrimp fishing spot. Double-click to net shrimp.">
+          <div class="node-label">SHRIMP SPOT</div><img src="${asset('fishing-node-shrimp.png')}" alt="Shrimp fishing spot" /><div class="node-count">${fishingMethod === 'shrimp' ? 'NETTING' : 'READY'}</div>
         </div>
-        <div class="mara-anchor asset-mara-anchor ${state.fishing.active ? 'visible' : ''}" id="mara-anchor">
-          <div class="xp-layer" id="xp-layer"></div>
-          <div class="mara-nameplate">${characterName()}</div>
-          <div class="asset-mara-sprite ${state.fishing.active ? 'salvaging' : ''}" aria-hidden="true"></div>
+        <div class="scrap-node gather-node fishing-node sardine-node" data-node-action="start-fishing-sardine" role="button" tabindex="0" aria-label="Sardine fishing spot. Double-click to fish for sardines.">
+          <div class="node-label">SARDINE SPOT</div><img src="${asset('fishing-node-sardine.png')}" alt="Sardine fishing spot" /><div class="node-count">${fishingMethod === 'sardine' ? 'FISHING' : 'READY'}</div>
+        </div>
+        <div class="mara-anchor fishing-mara-anchor ${state.fishing.active ? 'visible' : ''}" id="mara-anchor">
+          <div class="xp-layer" id="xp-layer"></div><div class="mara-nameplate">${characterName()}</div>
+          ${fishingMethod ? `<div class="fishing-mara-sprite ${fishingMethod}" style="background-image:url('${asset(fishingMethod === 'sardine' ? 'fishing-rod-mara.png' : 'fishing-net-mara.png')}')" aria-hidden="true"></div>` : ''}
         </div>
         <div class="scene-tag scene-tag-left">SOUTH DOCK<br><small>WATERFRONT</small></div>
-        <div class="scene-tag scene-tag-right">PIER<br><small>FISHING DEMO</small></div>
+        <div class="scene-tag scene-tag-right">PIER<br><small>FISHING</small></div>
       </div>`;
   }
 
@@ -649,22 +661,23 @@ function worldActionsMarkup(actions: RoomAction[]) {
                 disabled = true;
                 detail = 'Finish the current activity before salvaging';
             }
-          } else if (action.type === 'start-fishing') {
+          } else if (action.type === 'start-fishing-shrimp' || action.type === 'start-fishing-sardine') {
             if (state.fishing.active) {
               disabled = true;
               detail = `${characterName()} is already fishing`;
               } else if (state.salvage.active || state.cooking.active) {
                 disabled = true;
                 detail = 'Finish the current activity before fishing';
-            } else if (equipment.main_hand !== 'fishing_rod') {
-              disabled = true;
-              detail = 'Equip the Fishing Rod in Main Hand to fish';
+            } else {
+              const required = action.type === 'start-fishing-shrimp' ? 'fishing_net' : 'fishing_rod';
+              const requiredName = required === 'fishing_net' ? 'Fishing Net' : 'Fishing Rod';
+              if (equipment.main_hand !== required) { disabled = true; detail = `Equip the ${requiredName} in Main Hand`; }
             }
           }
 
           return `
             <button type="button" data-action="${action.type}" ${disabled ? 'disabled' : ''}>
-              <span>${action.type === 'start-salvaging' ? '⛭' : action.type === 'start-fishing' ? '≈' : action.type === 'goto-breaker-yard' || action.type === 'goto-south-dock-pier' ? '↗' : action.type === 'goto-glassmarket' ? '↙' : '⌕'}</span>
+              <span>${action.type === 'start-salvaging' ? '⛭' : action.type === 'start-fishing-shrimp' || action.type === 'start-fishing-sardine' ? '≈' : action.type === 'goto-breaker-yard' || action.type === 'goto-south-dock-pier' ? '↗' : action.type === 'goto-glassmarket' ? '↙' : '⌕'}</span>
               ${action.label}
               <b>›</b>
             </button>
@@ -696,9 +709,9 @@ function renderPanel() {
         <p>${room.description}</p>
         ${worldActionsMarkup(room.actions)}
         <div class="gather-summary">
-          <div class="summary-card"><span>Gathering node</span><strong>Fishing spot</strong></div>
-          <div class="summary-card"><span>Node status</span><strong>Unlimited</strong></div>
-          <div class="summary-card"><span>Yield rule</span><strong>100% Uncooked Shrimp</strong></div>
+          <div class="summary-card"><span>Shrimp</span><strong>Fishing Net · Main Hand</strong></div>
+          <div class="summary-card"><span>Sardines</span><strong>Fishing Rod · Main Hand</strong></div>
+          <div class="summary-card"><span>Node status</span><strong>Unlimited · +3 XP</strong></div>
         </div>
       `
         : `
@@ -926,8 +939,11 @@ function handleAction(action: ActionType) {
       startSalvaging();
       return;
 
-    case 'start-fishing':
-      startFishing();
+    case 'start-fishing-shrimp':
+      startFishing('shrimp');
+      return;
+    case 'start-fishing-sardine':
+      startFishing('sardine');
       return;
 
     case 'reset-node':
@@ -978,26 +994,18 @@ function stopSalvaging(withLog: boolean) {
   }
 }
 
-function startFishing() {
-  if (state.roomId !== 'south-dock-pier') return;
-  if (state.fishing.active) return;
-  if (state.salvage.active || state.cooking.active) {
-    addLog('Finish the current activity before fishing.');
-    return;
-  }
-  if (equipment.main_hand !== 'fishing_rod') {
-    addLog('Equip the Fishing Rod in Main Hand before fishing.');
-    return;
-  }
+function startFishing(method: 'shrimp' | 'sardine') {
+  if (state.roomId !== 'south-dock-pier' || state.fishing.active) return;
+  if (state.salvage.active || state.cooking.active) { addLog('Finish the current activity before fishing.'); return; }
+  const required: ItemKey = method === 'shrimp' ? 'fishing_net' : 'fishing_rod';
+  const requiredName = method === 'shrimp' ? 'Fishing Net' : 'Fishing Rod';
+  if (equipment.main_hand !== required) { addLog(`Equip the ${requiredName} in Main Hand before fishing here.`); return; }
   state.fishing.active = true;
-  addLog(`${characterName()} starts fishing at South Dock Pier.`);
+  state.fishing.method = method;
+  addLog(`${characterName()} starts ${method === 'shrimp' ? 'netting shrimp' : 'fishing for sardines'} at South Dock Pier.`);
   renderAll();
-
-  state.fishing.intervalId = window.setInterval(() => {
-    runFishingTick();
-  }, 1200);
+  state.fishing.intervalId = window.setInterval(() => runFishingTick(), 1200);
 }
-
 function stopFishing() {
   const wasActive = state.fishing.active;
   if (state.fishing.intervalId !== null) {
@@ -1006,6 +1014,7 @@ function stopFishing() {
   }
 
   state.fishing.active = false;
+  state.fishing.method = null;
   if (wasActive) renderScene();
 }
 
@@ -1148,25 +1157,16 @@ function runSalvageTick() {
 }
 
 function runFishingTick() {
-  if (!state.fishing.active) return;
-
-  if (!addInventoryItem('uncooked_shrimp', 1)) {
-    stopFishing();
-    addLog('Inventory full. Fishing stops.');
-    renderAll();
-    return;
-  }
-
-  state.inventory['Uncooked Shrimp'] += 1;
+  if (!state.fishing.active || !state.fishing.method) return;
+  const shrimp = state.fishing.method === 'shrimp';
+  const item: ItemKey = shrimp ? 'uncooked_shrimp' : 'sardine';
+  const name = shrimp ? 'Uncooked Shrimp' : 'Sardine';
+  if (!addInventoryItem(item, 1)) { stopFishing(); addLog('Inventory full. Fishing stops.'); renderAll(); return; }
+  state.inventory[name] = (state.inventory[name] ?? 0) + 1;
   grantSkillXp('fishing', 3);
-
-  addLog('Uncooked Shrimp collected. +3 Fishing XP.');
-  renderScene();
-  renderPanel();
-  renderLog();
-  spawnXpPopup('+1 Uncooked Shrimp');
+  addLog(`${name} collected. +3 Fishing XP.`);
+  renderScene(); renderPanel(); renderLog(); spawnXpPopup(`+1 ${name}`);
 }
-
 function spawnXpPopup(text: string) {
   const host = document.querySelector<HTMLElement>('#xp-layer');
   if (!host) return;
