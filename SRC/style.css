@@ -1721,7 +1721,8 @@ body{min-height:100vh;background-color:#07090a;overflow-x:hidden}
 }
 
 /* ===== SOUTH DOCK FISHING CONTENT — LOCKED SHELL SAFE =====
-   Populates the existing scene only. No shell geometry changes. */
+   Adds fishing presentation only. It does not alter game-shell, masthead,
+   play-grid, world-column, sidebar, menu, active-panel, or desktop sizing. */
 .pier-stage{background:#0b0f13}
 .pier-stage::before,.pier-stage::after{content:none}
 .pier-stage>.scene-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
@@ -1736,28 +1737,17 @@ body{min-height:100vh;background-color:#07090a;overflow-x:hidden}
 .fishing-mara-sprite.shrimp{background-size:500% 300%;animation:fish-net-frames 2.25s steps(1,end) infinite}
 .fishing-mara-sprite.sardine{background-size:400% 200%;animation:fish-rod-frames 1.6s steps(1,end) infinite}
 @keyframes fish-net-frames{
-  0%{background-position:0 0}6.66%{background-position:25% 0}13.33%{background-position:50% 0}20%{background-position:75% 0}26.66%{background-position:100% 0}
-  33.33%{background-position:0 50%}40%{background-position:25% 50%}46.66%{background-position:50% 50%}53.33%{background-position:75% 50%}60%{background-position:100% 50%}
-  66.66%{background-position:0 100%}73.33%{background-position:25% 100%}80%{background-position:50% 100%}86.66%{background-position:75% 100%}93.33%,100%{background-position:100% 100%}
+0%{background-position:0 0}6.66%{background-position:25% 0}13.33%{background-position:50% 0}20%{background-position:75% 0}26.66%{background-position:100% 0}
+33.33%{background-position:0 50%}40%{background-position:25% 50%}46.66%{background-position:50% 50%}53.33%{background-position:75% 50%}60%{background-position:100% 50%}
+66.66%{background-position:0 100%}73.33%{background-position:25% 100%}80%{background-position:50% 100%}86.66%{background-position:75% 100%}93.33%,100%{background-position:100% 100%}
 }
 @keyframes fish-rod-frames{
-  0%{background-position:0 0}12.5%{background-position:33.333% 0}25%{background-position:66.666% 0}37.5%{background-position:100% 0}
-  50%{background-position:0 100%}62.5%{background-position:33.333% 100%}75%{background-position:66.666% 100%}87.5%,100%{background-position:100% 100%}
+0%{background-position:0 0}12.5%{background-position:33.333% 0}25%{background-position:66.666% 0}37.5%{background-position:100% 0}
+50%{background-position:0 100%}62.5%{background-position:33.333% 100%}75%{background-position:66.666% 100%}87.5%,100%{background-position:100% 100%}
 }
 @media(max-width:820px){
-  .pier-stage .fishing-node{width:min(25vw,110px)}
-  .pier-stage .shrimp-node{left:55%;bottom:7%}
-  .pier-stage .sardine-node{left:76%;bottom:18%}
-  .fishing-mara-anchor{left:27%;bottom:3%;width:190px;height:155px}
-}
-
-/* Desktop shell breakpoint repair.
-   The earlier <=1180 responsive rules and >=951 desktop rules overlap on
-   mobile browsers using "Desktop site" (~980 CSS px). Explicitly restore
-   the locked desktop grid in that overlap. */
-@media(min-width:951px){
-  .play-grid{grid-template-columns:minmax(0,1fr) 420px}
-  .sidebar{grid-template-columns:1fr}
-  .active-panel{grid-column:auto}
-  .brand{order:initial}
+.pier-stage .fishing-node{width:min(25vw,110px)}
+.pier-stage .shrimp-node{left:55%;bottom:7%}
+.pier-stage .sardine-node{left:76%;bottom:18%}
+.fishing-mara-anchor{left:27%;bottom:3%;width:190px;height:155px}
 }
