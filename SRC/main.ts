@@ -280,19 +280,19 @@ app.innerHTML = `
           <div class="map-legend"><span><i class="you"></i>You</span><span><i class="npc"></i>Salvage</span><span><i class="shop"></i>Market</span><span><i class="transit"></i>Transit</span></div>
         </section>
 
-        <nav class="rune-menu panel" aria-label="Game menu">
-          ${(['world', 'inventory', 'equipment', 'skills', 'journal', 'comms', 'map'] as Panel[])
-            .map(
-              (panel) => `
-                <button type="button" data-panel="${panel}" class="${panel === 'world' ? 'active' : ''}">
-                  <span class="menu-icon">${panelIcons[panel]}</span>
-                  <small>${panel.toUpperCase()}</small>
-                </button>`
-            )
-            .join('')}
+        <nav class="rune-menu rune-menu-top panel" aria-label="Primary game menu">
+          ${(['world', 'inventory', 'equipment', 'skills', 'journal'] as Panel[]).map((panel) => `
+            <button type="button" data-panel="${panel}" class="${panel === 'world' ? 'active' : ''}">
+              <span class="menu-icon">${panelIcons[panel]}</span><small>${panel.toUpperCase()}</small>
+            </button>`).join('')}
         </nav>
-
         <section class="active-panel panel" id="active-panel" aria-live="polite"></section>
+        <nav class="rune-menu rune-menu-bottom panel" aria-label="Secondary game menu">
+          ${(['comms', 'map'] as Panel[]).map((panel) => `
+            <button type="button" data-panel="${panel}">
+              <span class="menu-icon">${panelIcons[panel]}</span><small>${panel.toUpperCase()}</small>
+            </button>`).join('')}
+        </nav>
       </aside>
     </main>
   </div>
@@ -463,12 +463,14 @@ function renderPanel() {
   const inventoryContent = `
     <div class="panel-kicker">INVENTORY</div><h3>36 Slots</h3>
     <div class="inventory-tiles">${inventorySlots.map((entry,index)=>inventorySlotMarkup(entry,index)).join('')}</div>
-    <p class="inventory-hint">Double-click equippable items. Hover any item for details.</p>`;
+    <div class="touch-item-detail" id="touch-item-detail">Tap an item for details · Double-tap to equip</div>
+    <p class="inventory-hint">Desktop: hover for details, double-click to equip.</p>`;
   const equipmentContent = `
     <div class="panel-kicker">EQUIPMENT</div><h3>Equipped Gear</h3>
     <div class="equipment-grid">${EQUIPMENT_SLOTS.map(([slot,label])=>equipmentSlotMarkup(slot,label)).join('')}</div>
     <div class="derived-stats"><span>Equipment Defense</span><strong>${derivedDefense()}</strong></div>
-    <p class="inventory-hint">Double-click equipped gear to return it to inventory.</p>`;
+    <div class="touch-item-detail" id="touch-item-detail">Tap equipped gear for details · Double-tap to unequip</div>
+    <p class="inventory-hint">Desktop: hover for details, double-click to unequip.</p>`;
 
   const skillsContent = `
     <div class="panel-kicker">SKILLS</div>
@@ -529,8 +531,29 @@ function renderPanel() {
     });
   });
 
-  target.querySelectorAll<HTMLButtonElement>('[data-inventory-index]').forEach(button=>button.addEventListener('dblclick',()=>{const i=Number(button.dataset.inventoryIndex);if(Number.isInteger(i))equipFromInventory(i)}));
-  target.querySelectorAll<HTMLButtonElement>('[data-equipment-slot]').forEach(button=>button.addEventListener('dblclick',()=>{const slot=button.dataset.equipmentSlot as EquipmentSlot|undefined;if(slot)unequipToInventory(slot)}));
+  const showTouchDetail = (button: HTMLButtonElement) => {
+    const detail = target.querySelector<HTMLElement>('#touch-item-detail');
+    if (detail && button.dataset.tooltip) detail.textContent = button.dataset.tooltip;
+  };
+  const bindItemInteraction = (button: HTMLButtonElement, action: () => void) => {
+    let lastTouchTap = 0;
+    button.addEventListener('click', () => showTouchDetail(button));
+    button.addEventListener('touchend', (event) => {
+      showTouchDetail(button);
+      const now = Date.now();
+      if (now - lastTouchTap < 360) { event.preventDefault(); lastTouchTap = 0; action(); return; }
+      lastTouchTap = now;
+    }, { passive: false });
+    button.addEventListener('dblclick', (event) => { event.preventDefault(); action(); });
+  };
+  target.querySelectorAll<HTMLButtonElement>('[data-inventory-index]').forEach((button) => {
+    const index = Number(button.dataset.inventoryIndex);
+    if (Number.isInteger(index) && inventorySlots[index]) bindItemInteraction(button, () => equipFromInventory(index));
+  });
+  target.querySelectorAll<HTMLButtonElement>('[data-equipment-slot]').forEach((button) => {
+    const slot = button.dataset.equipmentSlot as EquipmentSlot | undefined;
+    if (slot && equipment[slot]) bindItemInteraction(button, () => unequipToInventory(slot));
+  });
 }
 
 function addLog(message: string) {
