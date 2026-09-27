@@ -154,367 +154,9 @@ async function preloadCoreAssets() {
   })));
 }
 
-function injectRuntimeStyles() {
-  if (document.getElementById('sf-runtime-styles')) return;
-
-  const style = document.createElement('style');
-  style.id = 'sf-runtime-styles';
-  style.textContent = `
-    .sf-scene-stage {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      isolation: isolate;
-    }
-
-    .sf-scene-stage > .scene {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: center;
-      image-rendering: pixelated;
-      display: block;
-    }
-
-    .sf-scene-overlay {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-    }
-
-    .sf-scene-chip {
-      position: absolute;
-      display: inline-flex;
-      flex-direction: column;
-      gap: 2px;
-      padding: 6px 8px;
-      background: rgba(8, 10, 12, 0.84);
-      border: 1px solid rgba(209, 96, 134, 0.45);
-      border-radius: 8px;
-      color: #f1b625;
-      font-size: 10px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      line-height: 1.15;
-      z-index: 3;
-    }
-
-    .sf-scene-chip small {
-      color: #b9b9b5;
-      font-size: 9px;
-      letter-spacing: 0.08em;
-    }
-
-    .sf-glassmarket-underpass {
-      left: 14px;
-      top: 14px;
-    }
-
-    .sf-glassmarket-departures {
-      right: 14px;
-      top: 14px;
-      text-align: right;
-    }
-
-    .sf-scene-sheen {
-      position: absolute;
-      inset: 0;
-      background:
-        linear-gradient(to bottom, rgba(0,0,0,0.10), transparent 45%, rgba(0,0,0,0.16)),
-        radial-gradient(circle at 25% 15%, rgba(255, 160, 30, 0.10), transparent 30%);
-      z-index: 1;
-    }
-
-    .sf-breaker-node {
-      position: absolute;
-      left: 17%;
-      bottom: 6%;
-      width: min(28vw, 260px);
-      max-width: 34%;
-      min-width: 140px;
-      z-index: 2;
-      filter: drop-shadow(0 14px 14px rgba(0,0,0,0.42));
-    }
-
-    .sf-breaker-node img,
-    .sf-tool-icon,
-    .sf-item-icon,
-    .sf-resource-card img {
-      display: block;
-      width: 100%;
-      height: auto;
-      image-rendering: pixelated;
-    }
-
-    .sf-breaker-node-label {
-      position: absolute;
-      left: 4px;
-      bottom: calc(100% + 8px);
-      padding: 5px 8px;
-      background: rgba(8, 10, 12, 0.88);
-      border: 1px solid rgba(209, 96, 134, 0.45);
-      border-radius: 8px;
-      color: #f1269a;
-      font-size: 10px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      z-index: 3;
-    }
-
-    .sf-breaker-node-status {
-      position: absolute;
-      left: 4px;
-      top: calc(100% + 8px);
-      padding: 4px 8px;
-      background: rgba(8, 10, 12, 0.88);
-      border: 1px solid rgba(74, 70, 64, 0.8);
-      border-radius: 8px;
-      color: #d9d9d6;
-      font-size: 10px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      white-space: nowrap;
-      z-index: 3;
-    }
-
-    .sf-breaker-node.depleted {
-      opacity: 0.72;
-      filter: grayscale(0.25) brightness(0.82);
-    }
-
-    .sf-mara-anchor {
-      position: absolute;
-      left: 44%;
-      bottom: 8%;
-      width: min(24vw, 235px);
-      max-width: 29%;
-      min-width: 120px;
-      z-index: 2;
-      pointer-events: none;
-      filter: drop-shadow(0 12px 18px rgba(0,0,0,0.52));
-    }
-
-    .sf-mara-nameplate {
-      position: absolute;
-      left: 50%;
-      bottom: calc(100% + 4px);
-      transform: translateX(-50%);
-      padding: 4px 8px;
-      background: rgba(8, 10, 12, 0.86);
-      border: 1px solid rgba(74, 70, 64, 0.95);
-      border-radius: 999px;
-      color: #d9d9d6;
-      font-size: 10px;
-      letter-spacing: 0.06em;
-      white-space: nowrap;
-    }
-
-    .sf-mara-sprite {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      background-image: url('${asset('cyberpunk_salvage_swing_sprite_sheet.png')}');
-      background-repeat: no-repeat;
-      background-size: 300% 100%;
-      background-position: 0% 0;
-      image-rendering: pixelated;
-    }
-
-    .sf-mara-anchor.active .sf-mara-sprite {
-      animation: sf-salvage-frames 0.78s steps(3) infinite;
-    }
-
-    @keyframes sf-salvage-frames {
-      from { background-position: 0% 0; }
-      to { background-position: 100% 0; }
-    }
-
-    .sf-xp-layer {
-      position: absolute;
-      left: 50%;
-      bottom: calc(100% + 10px);
-      transform: translateX(-50%);
-      width: 180px;
-      height: 64px;
-      pointer-events: none;
-    }
-
-    .sf-xp-popup {
-      position: absolute;
-      left: 50%;
-      bottom: 0;
-      transform: translateX(-50%);
-      padding: 4px 8px;
-      border-radius: 999px;
-      background: rgba(8, 10, 12, 0.92);
-      border: 1px solid rgba(241, 182, 37, 0.55);
-      color: #f1b625;
-      font-size: 12px;
-      font-weight: 700;
-      white-space: nowrap;
-      animation: sf-xp-rise 1.15s ease forwards;
-    }
-
-    @keyframes sf-xp-rise {
-      0% { opacity: 0; transform: translate(-50%, 8px); }
-      12% { opacity: 1; }
-      100% { opacity: 0; transform: translate(-50%, -40px); }
-    }
-
-    .sf-gather-summary,
-    .sf-resource-grid,
-    .sf-tool-card,
-    .sf-item-grid {
-      display: grid;
-      gap: 10px;
-      margin-top: 14px;
-    }
-
-    .sf-gather-summary {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .sf-summary-card,
-    .sf-resource-card,
-    .sf-tool-card,
-    .sf-item-card {
-      border: 1px solid #303437;
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 10px;
-      padding: 10px;
-    }
-
-    .sf-summary-card span,
-    .sf-tool-card span,
-    .sf-item-card span {
-      display: block;
-      color: #858784;
-      font-size: 11px;
-      margin-bottom: 5px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    .sf-summary-card strong,
-    .sf-tool-card strong,
-    .sf-item-card strong {
-      display: block;
-      color: #d9d9d6;
-      font-size: 15px;
-      line-height: 1.25;
-    }
-
-    .sf-resource-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .sf-resource-card,
-    .sf-item-card {
-      display: grid;
-      grid-template-columns: 62px minmax(0, 1fr);
-      align-items: center;
-      gap: 10px;
-    }
-
-    .sf-resource-card img,
-    .sf-item-card img,
-    .sf-tool-icon {
-      width: 62px;
-      height: 62px;
-      object-fit: contain;
-      image-rendering: pixelated;
-    }
-
-    .sf-resource-card strong,
-    .sf-item-card strong {
-      display: block;
-      font-size: 14px;
-      color: #d9d9d6;
-      line-height: 1.2;
-      margin-bottom: 4px;
-    }
-
-    .sf-resource-card small,
-    .sf-item-card small,
-    .sf-tool-card p {
-      display: block;
-      color: #858784;
-      font-size: 11px;
-      line-height: 1.35;
-      margin: 0;
-    }
-
-    .sf-resource-card em {
-      display: inline-block;
-      margin-top: 6px;
-      font-style: normal;
-      color: #f1b625;
-      font-size: 11px;
-    }
-
-    .sf-tool-card {
-      grid-template-columns: 72px minmax(0, 1fr);
-      align-items: center;
-    }
-
-    .sf-node-reset {
-      width: 100%;
-      margin-top: 12px;
-      padding: 10px 12px;
-      border: 1px solid #4a4640;
-      background: rgba(255,255,255,0.03);
-      color: #f1b625;
-      text-align: left;
-      cursor: pointer;
-    }
-
-    .sf-map-label {
-      position: absolute;
-      padding: 4px 6px;
-      border: 1px solid #505456;
-      background: #111518;
-      font-size: 9px;
-      white-space: nowrap;
-      transform: translate(-50%, -50%);
-      z-index: 1;
-    }
-
-    .sf-map-label.current {
-      border-color: #f1269a;
-      color: #f1269a;
-    }
-
-    .sf-map-label.secondary {
-      color: #d9d9d6;
-    }
-
-    @media (max-width: 820px) {
-      .sf-breaker-node {
-        left: 8%;
-        bottom: 5%;
-        max-width: 42%;
-      }
-
-      .sf-mara-anchor {
-        left: 48%;
-        bottom: 6%;
-        max-width: 40%;
-      }
-
-      .sf-gather-summary,
-      .sf-resource-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-  `;
-
-  document.head.appendChild(style);
-}
-
 const app = document.querySelector<HTMLDivElement>('#app')!;
 if (!app) throw new Error('App root missing');
 
-injectRuntimeStyles();
 
 function characterName() {
   return currentCharacter?.name ?? 'Contractor';
@@ -650,32 +292,10 @@ function updateShell() {
 
 function updateMinimap() {
   const marker = document.querySelector<SVGPathElement>('#player-marker');
-  const minimap = document.querySelector('.minimap') as HTMLElement | null;
-  if (!marker || !minimap) return;
-
-  if (state.roomId === 'glassmarket') {
-    marker.setAttribute('d', 'M154 75 166 98 142 98Z');
-  } else {
-    marker.setAttribute('d', 'M224 122 236 145 212 145Z');
-  }
-
-  minimap.querySelectorAll('.sf-map-label').forEach((node) => node.remove());
-
-  const glassmarket = document.createElement('div');
-  glassmarket.className = `sf-map-label ${state.roomId === 'glassmarket' ? 'current' : 'secondary'}`;
-  glassmarket.style.left = '48%';
-  glassmarket.style.top = '38%';
-  glassmarket.textContent = 'Glassmarket';
-
-  const breaker = document.createElement('div');
-  breaker.className = `sf-map-label ${state.roomId === 'breaker-yard' ? 'current' : 'secondary'}`;
-  breaker.style.left = '72%';
-  breaker.style.top = '72%';
-  breaker.textContent = 'Breaker Yard 12';
-
-  minimap.style.position = 'relative';
-  minimap.appendChild(glassmarket);
-  minimap.appendChild(breaker);
+  if (!marker) return;
+  marker.setAttribute('d', state.roomId === 'glassmarket'
+    ? 'M154 75 166 98 142 98Z'
+    : 'M224 122 236 145 212 145Z');
 }
 
 function renderScene() {
@@ -685,40 +305,30 @@ function renderScene() {
 
   if (room.id === 'glassmarket') {
     target.innerHTML = `
-      <div class="sf-scene-stage">
-        <img src="${asset(room.sceneImage)}" alt="Pixel art view of the rainy Glassmarket Transit Concourse" class="scene" />
-        <div class="sf-scene-overlay">
-          <div class="sf-scene-chip sf-glassmarket-underpass">UNDERPASS<small>BREAKER YARD 12</small></div>
-          <div class="sf-scene-chip sf-glassmarket-departures">DEPARTURES<small>PLATFORM 4</small></div>
-          <div class="sf-scene-sheen"></div>
-        </div>
-      </div>
-    `;
+      <div class="scene-stage glassmarket-stage">
+        <img src="${asset(room.sceneImage)}" alt="Pixel art view of the rainy Glassmarket Transit Concourse" class="scene scene-image" />
+        <div class="scene-tag scene-tag-left">UNDERPASS<br><small>BREAKER YARD 12</small></div>
+        <div class="scene-tag scene-tag-right">DEPARTURES<br><small>PLATFORM 4</small></div>
+      </div>`;
   } else {
-    const pullsLeft = state.salvage.remainingTicks;
-    const nodeState = pullsLeft > 0 ? `${pullsLeft} pulls left` : 'Picked clean';
+    const remaining = state.salvage.remainingTicks;
+    const depleted = remaining <= 0;
     target.innerHTML = `
-      <div class="sf-scene-stage">
-        <img src="${asset(room.sceneImage)}" alt="Pixel art view of Breaker Yard 12 beneath the overpass" class="scene" />
-        <div class="sf-scene-overlay">
-          <div class="sf-breaker-node ${pullsLeft <= 0 ? 'depleted' : ''}">
-            <div class="sf-breaker-node-label">Tier 1 Scrap</div>
-            <img src="${asset('neon_cyberpunk_scrap_pile.png')}" alt="Tier 1 scrap node" />
-            <div class="sf-breaker-node-status">${nodeState}</div>
-          </div>
-
-          <div class="sf-mara-anchor ${state.salvage.active ? 'active' : ''}">
-            <div class="sf-xp-layer" id="sf-xp-layer"></div>
-            <div class="sf-mara-nameplate">${escapeHtml(characterName())}</div>
-            <div class="sf-mara-sprite" aria-hidden="true"></div>
-          </div>
-
-          <div class="sf-scene-chip sf-glassmarket-underpass">SALVAGE LOT<small>PERSONAL DEMO NODE</small></div>
-          <div class="sf-scene-chip sf-glassmarket-departures">SOUTH DOCK<small>BREAKER YARD 12</small></div>
-          <div class="sf-scene-sheen"></div>
+      <div class="scene-stage breaker-stage asset-breaker-stage">
+        <img src="${asset(room.sceneImage)}" alt="Pixel art view of Breaker Yard 12 beneath the overpass" class="scene scene-image" />
+        <div class="scrap-node asset-scrap-node ${depleted ? 'depleted' : ''}" id="scrap-node">
+          <div class="node-label">TIER 1 SCRAP</div>
+          <img src="${asset('neon_cyberpunk_scrap_pile.png')}" alt="Tier 1 scrap node" />
+          <div class="node-count">${depleted ? 'PICKED CLEAN' : `${remaining} salvage pulls left`}</div>
         </div>
-      </div>
-    `;
+        <div class="mara-anchor asset-mara-anchor ${state.salvage.active ? 'visible' : ''}" id="mara-anchor">
+          <div class="xp-layer" id="xp-layer"></div>
+          <div class="mara-nameplate">${characterName()}</div>
+          <div class="asset-mara-sprite ${state.salvage.active ? 'salvaging' : ''}" aria-hidden="true"></div>
+        </div>
+        <div class="scene-tag scene-tag-left">SALVAGE LOT<br><small>PERSONAL DEMO NODE</small></div>
+        <div class="scene-tag scene-tag-right">SOUTH DOCK<br><small>BREAKER YARD 12</small></div>
+      </div>`;
   }
 
   updateMinimap();
@@ -784,27 +394,27 @@ function renderPanel() {
         <p>${room.description}</p>
         ${worldActionsMarkup(room.actions)}
 
-        <div class="sf-gather-summary">
-          <div class="sf-summary-card">
+        <div class="gather-summary">
+          <div class="summary-card">
             <span>Gathering node</span>
             <strong>Tier 1 Scrap</strong>
           </div>
-          <div class="sf-summary-card">
+          <div class="summary-card">
             <span>Pulls left</span>
             <strong>${state.salvage.remainingTicks}</strong>
           </div>
-          <div class="sf-summary-card">
+          <div class="summary-card">
             <span>Requires</span>
             <strong>Salvaging ${state.salvage.requirement}</strong>
           </div>
-          <div class="sf-summary-card">
+          <div class="summary-card">
             <span>Yield rule</span>
             <strong>50% metal / 50% composite</strong>
           </div>
         </div>
 
-        <div class="sf-tool-card">
-          <img class="sf-tool-icon" src="${asset('cyberpunk_salvage_crowbar_tool.png')}" alt="Salvage tool" />
+        <div class="tool-card">
+          <img class="tool-icon" src="${asset('cyberpunk_salvage_crowbar_tool.png')}" alt="Salvage tool" />
           <div>
             <span>Equipped tool</span>
             <strong>Powered Salvage Bar</strong>
@@ -812,8 +422,8 @@ function renderPanel() {
           </div>
         </div>
 
-        <div class="sf-resource-grid">
-          <div class="sf-resource-card">
+        <div class="asset-resource-grid">
+          <div class="asset-resource-card">
             <img src="${asset('cyberpunk_scrap_metal_pile.png')}" alt="Tier 1 Metal Scrap" />
             <div>
               <strong>Tier 1 Metal Scrap</strong>
@@ -821,7 +431,7 @@ function renderPanel() {
               <em>Owned: ${state.inventory['Tier 1 Metal Scrap']}</em>
             </div>
           </div>
-          <div class="sf-resource-card">
+          <div class="asset-resource-card">
             <img src="${asset('neon_cyberpunk_scrapyard_heap.png')}" alt="Tier 1 Composite Scrap" />
             <div>
               <strong>Tier 1 Composite Scrap</strong>
@@ -831,14 +441,14 @@ function renderPanel() {
           </div>
         </div>
 
-        <button class="sf-node-reset" type="button" data-action="reset-node">Reset demo node</button>
+        <button class="node-reset" type="button" data-action="reset-node">Reset demo node</button>
       `;
 
   const inventoryContent = `
     <div class="panel-kicker">INVENTORY</div>
     <h3>Carried Materials</h3>
-    <div class="sf-item-grid">
-      <div class="sf-item-card">
+    <div class="asset-item-grid">
+      <div class="asset-item-card">
         <img src="${asset('cyberpunk_salvage_crowbar_tool.png')}" alt="Powered Salvage Bar" />
         <div>
           <span>Tool</span>
@@ -847,7 +457,7 @@ function renderPanel() {
         </div>
       </div>
 
-      <div class="sf-item-card">
+      <div class="asset-item-card">
         <img src="${asset('cyberpunk_scrap_metal_pile.png')}" alt="Tier 1 Metal Scrap" />
         <div>
           <span>Material</span>
@@ -856,7 +466,7 @@ function renderPanel() {
         </div>
       </div>
 
-      <div class="sf-item-card">
+      <div class="asset-item-card">
         <img src="${asset('neon_cyberpunk_scrapyard_heap.png')}" alt="Tier 1 Composite Scrap" />
         <div>
           <span>Material</span>
@@ -1024,11 +634,11 @@ function runSalvageTick() {
 }
 
 function spawnXpPopup(text: string) {
-  const host = document.querySelector<HTMLElement>('#sf-xp-layer');
+  const host = document.querySelector<HTMLElement>('#xp-layer');
   if (!host) return;
 
   const popup = document.createElement('div');
-  popup.className = 'sf-xp-popup';
+  popup.className = 'xp-popup';
   popup.textContent = text;
   host.appendChild(popup);
 
