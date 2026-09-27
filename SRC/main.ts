@@ -30,6 +30,8 @@ const STARTING_SKILLS = [
 let currentSkills: CharacterSkill[] = [];
 const MAX_SKILL_LEVEL=100;
 const SKILL_ICONS:Record<string,string>={firearms:'⌖',close_combat:'⚔',survivability:'♥',salvaging:'⛭',metalworking:'⚒',fabrication:'▦',fishing:'◒',cooking:'♨'};
+const SKILL_DESCRIPTIONS:Record<string,string>={firearms:'Placeholder: ranged weapon handling, accuracy, and firearm proficiency.',close_combat:'Placeholder: melee technique and close-quarters combat proficiency.',survivability:'Placeholder: endurance, defensive tactics, and recovery.',salvaging:'Placeholder: scrap recovery, tool use, and salvage yield.',metalworking:'Placeholder: processing and shaping recovered metals.',fabrication:'Placeholder: constructing useful gear and components.',fishing:'Placeholder: locating, catching, and preparing fish.',cooking:'Placeholder: preparing meals and useful consumables.'};
+const SKILL_UNLOCK_LEVELS=Array.from({length:MAX_SKILL_LEVEL},(_,index)=>index+1);
 function xpForNextSkillLevel(level:number){return level>=MAX_SKILL_LEVEL?0:Math.max(83,Math.floor(83*Math.pow(1.12,level-1)));}
 
 let currentUser: User | null = null;
@@ -292,6 +294,7 @@ app.innerHTML = `
       </aside>
     </main>
   </div>
+  <dialog class="skill-details-dialog" id="skill-details-dialog" aria-labelledby="skill-details-title"></dialog>
 `;
 
 function getCurrentRoom() {
@@ -466,7 +469,7 @@ function renderPanel() {
     <div class="touch-item-detail" id="touch-item-detail">Tap equipped gear for details · Double-tap to unequip</div>
     <p class="inventory-hint">Desktop: hover for details, double-click to unequip.</p>`;
 
-  const skillsContent = `<div class="panel-kicker">SKILLS</div><h3>Capability</h3><div class="skill-tiles">${STARTING_SKILLS.map(([key,name])=>{const skill=currentSkills.find(s=>s.skill_key===key);const level=skill?.level??1,xp=skill?.xp??0,next=xpForNextSkillLevel(level);const tip=level>=MAX_SKILL_LEVEL?`${name} — Level ${level}/${MAX_SKILL_LEVEL} — MAX LEVEL`:`${name} — Level ${level}/${MAX_SKILL_LEVEL} — XP ${xp} / ${next} to next level`;return `<button type="button" class="skill-tile" data-tooltip="${escapeHtml(tip)}"><span class="skill-icon">${SKILL_ICONS[key]}</span><span class="skill-name">${name}</span><strong>${level}<small>/${MAX_SKILL_LEVEL}</small></strong></button>`;}).join('')}</div>`;
+  const skillsContent = `<div class="panel-kicker">SKILLS</div><h3>Capability</h3><div class="skill-tiles">${STARTING_SKILLS.map(([key,name])=>{const skill=currentSkills.find(s=>s.skill_key===key);const level=skill?.level??1,xp=skill?.xp??0,next=xpForNextSkillLevel(level);const tip=level>=MAX_SKILL_LEVEL?`${name} — Level ${level}/${MAX_SKILL_LEVEL} — MAX LEVEL`:`${name} — Level ${level}/${MAX_SKILL_LEVEL} — XP ${xp} / ${next} to next level`;return `<button type="button" class="skill-tile" data-skill="${key}" data-tooltip="${escapeHtml(tip)}" aria-haspopup="dialog" aria-controls="skill-details-dialog"><span class="skill-icon">${SKILL_ICONS[key]}</span><span class="skill-name">${name}</span><strong>${level}<small>/${MAX_SKILL_LEVEL}</small></strong></button>`;}).join('')}</div>`;
   const journalContent = `
     <div class="panel-kicker">JOURNAL</div>
     <h3>Stories & Jobs</h3>
@@ -521,6 +524,42 @@ function renderPanel() {
   target.querySelectorAll<HTMLButtonElement>('[data-inventory-index]').forEach(button=>{const i=Number(button.dataset.inventoryIndex);if(Number.isInteger(i)&&inventorySlots[i])bindItemInteraction(button,()=>equipFromInventory(i))});
   target.querySelectorAll<HTMLButtonElement>('[data-equipment-slot]').forEach(button=>{const slot=button.dataset.equipmentSlot as EquipmentSlot|undefined;if(slot&&equipment[slot])bindItemInteraction(button,()=>unequipToInventory(slot))});
   target.querySelectorAll<HTMLButtonElement>('[data-inventory-page]').forEach(button=>button.addEventListener('click',()=>{mobileInventoryPage=(mobileInventoryPage+Number(button.dataset.inventoryPage)+3)%3;renderPanel()}));
+}
+
+function openSkillDetails(skillKey: string) {
+  const skillEntry = STARTING_SKILLS.find(([key]) => key === skillKey);
+  const dialog = document.querySelector<HTMLDialogElement>('#skill-details-dialog');
+  if (!skillEntry || !dialog) return;
+
+  const [key, name] = skillEntry;
+  const skill = currentSkills.find((entry) => entry.skill_key === key);
+  const level = Math.min(MAX_SKILL_LEVEL, skill?.level ?? 1);
+  const xp = skill?.xp ?? 0;
+  const nextLevelXp = xpForNextSkillLevel(level);
+  const progress = nextLevelXp ? Math.max(0, Math.min(100, xp / nextLevelXp * 100)) : 100;
+  const unlocks = SKILL_UNLOCK_LEVELS.map((unlockLevel) => `
+    <li class="skill-unlock ${level >= unlockLevel ? 'reached' : ''}">
+      <span class="skill-unlock-level">LV ${unlockLevel}</span>
+      <span class="skill-unlock-dot" aria-hidden="true"></span>
+      <div><strong>${level >= unlockLevel ? 'REACHED' : 'LOCKED'}</strong><p>Placeholder reward details to be defined.</p></div>
+    </li>`).join('');
+
+  dialog.innerHTML = `
+    <header class="skill-details-header">
+      <div><div class="panel-kicker">SKILL DETAILS · PLACEHOLDER</div><h2 id="skill-details-title">${escapeHtml(name)}</h2></div>
+      <button class="skill-details-close" type="button" data-close-skill-details aria-label="Close skill details">×</button>
+    </header>
+    <p class="skill-details-description">${escapeHtml(SKILL_DESCRIPTIONS[key] ?? 'Placeholder skill description.')}</p>
+    <section class="skill-details-progress" aria-label="Skill progress">
+      <div class="skill-details-progress-label"><strong>LEVEL ${level}</strong><span>${level >= MAX_SKILL_LEVEL ? 'MAX LEVEL' : `${xp} / ${nextLevelXp} XP TO NEXT LEVEL`}</span></div>
+      <div class="skill-details-xp-track" role="progressbar" aria-label="Experience progress to next level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(progress)}"><span style="width:${progress}%"></span></div>
+    </section>
+    <h3 class="skill-unlocks-heading">LEVEL UNLOCKS</h3>
+    <p class="skill-placeholder-note">Unlock levels and rewards are placeholders for now.</p>
+    <ol class="skill-unlocks">${unlocks}</ol>
+  `;
+  dialog.showModal();
+  dialog.querySelector<HTMLButtonElement>('.skill-details-close')?.focus();
 }
 
 function addLog(message: string) {
@@ -674,6 +713,17 @@ document.querySelector<HTMLFormElement>('#chat-form')?.addEventListener('submit'
   if (!value) return;
   addLog(`${characterName()}: ${value}`);
   input.value = '';
+});
+
+document.querySelector<HTMLElement>('#active-panel')?.addEventListener('click', (event) => {
+  const tile = (event.target as HTMLElement).closest<HTMLButtonElement>('.skill-tile[data-skill]');
+  if (tile?.dataset.skill) openSkillDetails(tile.dataset.skill);
+});
+
+document.querySelector<HTMLDialogElement>('#skill-details-dialog')?.addEventListener('click', (event) => {
+  if ((event.target as HTMLElement).closest('[data-close-skill-details]')) {
+    (event.currentTarget as HTMLDialogElement).close();
+  }
 });
 
 renderAll();
