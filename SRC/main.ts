@@ -77,26 +77,35 @@ const panelIcons: Record<Panel, string> = {
 };
 
 type EquipmentSlot = 'main_hand' | 'off_hand' | 'head' | 'torso' | 'legs' | 'boots';
-type ItemKey = 'salvage_bar' | 'metal_scrap' | 'composite_scrap' | 'uncooked_shrimp';
-type ItemDefinition = { key:ItemKey; name:string; description:string; asset:string; stackable:boolean; equipmentSlot?:EquipmentSlot; defense?:number; toolType?:'salvage'; toolTier?:number };
+type ItemKey = 'salvage_bar' | 'metal_scrap' | 'composite_scrap' | 'uncooked_shrimp' | 'cooked_shrimp' | 'copper_coils' | 'portable_induction_pad' | 'fishing_rod';
+type ItemDefinition = { key:ItemKey; name:string; description:string; asset:string; stackable:boolean; usable?:boolean; equipmentSlot?:EquipmentSlot; defense?:number; toolType?:'salvage'; toolTier?:number };
 type InventoryEntry = { item:ItemKey; quantity:number } | null;
 
 const ITEM_DEFINITIONS: Record<ItemKey, ItemDefinition> = {
   salvage_bar:{key:'salvage_bar',name:'Powered Salvage Bar',description:'A powered utility breaker for prying, splitting and stripping Tier 1 scrap.',asset:'cyberpunk_salvage_crowbar_tool.png',stackable:false,equipmentSlot:'main_hand',toolType:'salvage',toolTier:1},
   metal_scrap:{key:'metal_scrap',name:'Tier 1 Metal Scrap',description:'Bolts, plates and structural metal recovered from salvage.',asset:'cyberpunk_scrap_metal_pile.png',stackable:true},
   composite_scrap:{key:'composite_scrap',name:'Tier 1 Composite Scrap',description:'Mixed housings, casings and recoverable composite material.',asset:'neon_cyberpunk_scrapyard_heap.png',stackable:true},
-  uncooked_shrimp:{key:'uncooked_shrimp',name:'Uncooked Shrimp',description:'Placeholder catch from South Dock Pier. Cooking details coming soon.',asset:'neon_cyberpunk_scrap_pile.png',stackable:true}
+  uncooked_shrimp:{key:'uncooked_shrimp',name:'Uncooked Shrimp',description:'Placeholder catch from South Dock Pier. Cooking details coming soon.',asset:'neon_cyberpunk_scrap_pile.png',stackable:true},
+  copper_coils:{key:'copper_coils',name:'Copper Coils',description:'Copper wiring coils recovered from a scrap node.',asset:'neon_cyberpunk_scrap_pile.png',stackable:true},
+  cooked_shrimp:{key:'cooked_shrimp',name:'Cooked Shrimp',description:'A cooked meal that restores 3 HP when used.',asset:'neon_cyberpunk_scrap_pile.png',stackable:true,usable:true},
+  portable_induction_pad:{key:'portable_induction_pad',name:'Portable Induction Pad',description:'Click to cook one Uncooked Shrimp into Cooked Shrimp.',asset:'cyberpunk_salvage_crowbar_tool.png',stackable:false,usable:true},
+  fishing_rod:{key:'fishing_rod',name:'Fishing Rod',description:'Equip in Main Hand to fish at South Dock Pier.',asset:'neon_cyberpunk_scrap_pile.png',stackable:false,equipmentSlot:'main_hand'}
 };
 const EQUIPMENT_SLOTS:Array<[EquipmentSlot,string]>=[['main_hand','Main Hand'],['off_hand','Off Hand'],['head','Head'],['torso','Torso'],['legs','Legs'],['boots','Boots']];
 const inventorySlots:InventoryEntry[]=Array.from({length:36},()=>null);
 inventorySlots[0]={item:'salvage_bar',quantity:1};
+inventorySlots[1]={item:'portable_induction_pad',quantity:1};
+inventorySlots[2]={item:'fishing_rod',quantity:1};
 const equipment:Record<EquipmentSlot,ItemKey|null>={main_hand:null,off_hand:null,head:null,torso:null,legs:null,boots:null};
 let mobileInventoryPage=0;
 
 function derivedDefense(){return Object.values(equipment).reduce((n,k)=>n+(k?(ITEM_DEFINITIONS[k].defense??0):0),0)}
 function equippedToolAllows(type:'salvage',tier:number){return Object.values(equipment).some(k=>{if(!k)return false;const i=ITEM_DEFINITIONS[k];return i.toolType===type&&(i.toolTier??0)>=tier})}
 function firstEmptyInventorySlot(){return inventorySlots.findIndex(e=>e===null)}
-function addInventoryItem(item:ItemKey,quantity=1){const d=ITEM_DEFINITIONS[item];if(d.stackable){const e=inventorySlots.find(x=>x?.item===item);if(e){e.quantity+=quantity;return true}}const n=firstEmptyInventorySlot();if(n<0)return false;inventorySlots[n]={item,quantity};return true}
+function addInventoryItem(item:ItemKey,quantity=1){const d=ITEM_DEFINITIONS[item];if(d.stackable){const e=inventorySlots.find(x=>x?.item===item);if(e){e.quantity+=quantity;saveCharacterProgress();return true}}const n=firstEmptyInventorySlot();if(n<0)return false;inventorySlots[n]={item,quantity};saveCharacterProgress();return true}
+function consumeInventoryItem(index:number){const entry=inventorySlots[index];if(!entry)return false;entry.quantity-=1;if(entry.quantity<=0)inventorySlots[index]=null;saveCharacterProgress();return true}
+function transformInventoryItem(index:number,result:ItemKey){const entry=inventorySlots[index];if(!entry)return false;const existing=inventorySlots.find((slot,slotIndex)=>slotIndex!==index&&slot?.item===result);if(existing){existing.quantity+=1;consumeInventoryItem(index);return true}if(entry.quantity===1){inventorySlots[index]={item:result,quantity:1};saveCharacterProgress();return true}const empty=firstEmptyInventorySlot();if(empty<0)return false;entry.quantity-=1;inventorySlots[empty]={item:result,quantity:1};saveCharacterProgress();return true}
+function grantSkillXp(skillKey:string,amount:number){let skill=currentSkills.find((entry)=>entry.skill_key===skillKey);if(!skill){skill={skill_key:skillKey,level:1,xp:0};currentSkills.push(skill)}let remaining=amount;while(skill.level<MAX_SKILL_LEVEL){const needed=xpForNextSkillLevel(skill.level)-skill.xp;if(remaining<needed){skill.xp+=remaining;saveCharacterProgress();return}remaining-=needed;skill.level+=1;skill.xp=0}skill.xp=0;saveCharacterProgress()}
 
 
 const rooms: Record<RoomId, Room> = {
@@ -179,21 +188,128 @@ const state = {
   inventory: {
     'Tier 1 Metal Scrap': 0,
     'Tier 1 Composite Scrap': 0,
-    'Uncooked Shrimp': 0
+    'Uncooked Shrimp': 0,
+    'Cooked Shrimp': 0,
+    'Copper Coils': 0
   } as Record<string, number>,
   salvage: {
     active: false,
     intervalId: null as number | null,
-    xpPerTick: 8,
+    xpPerTick: 3,
     requirement: 1,
     remainingTicks: 4,
-    maxTicks: 4
+    maxTicks: 4,
+    resetTimeoutId: null as number | null
   },
   fishing: {
     active: false,
     intervalId: null as number | null
   }
 };
+
+type StoredCharacterProgress = {
+  version: 1;
+  inventory: InventoryEntry[];
+  equipment: Record<EquipmentSlot, ItemKey | null>;
+  skills: CharacterSkill[];
+};
+
+function characterProgressStorageKey() {
+  return currentCharacter ? `stray-frequency:character:${currentCharacter.id}:progress` : null;
+}
+
+function saveCharacterProgress() {
+  const key = characterProgressStorageKey();
+  if (!key) return;
+  const progress: StoredCharacterProgress = {
+    version: 1,
+    inventory: inventorySlots,
+    equipment: { ...equipment },
+    skills: currentSkills
+  };
+  try {
+    localStorage.setItem(key, JSON.stringify(progress));
+  } catch (error) {
+    console.warn('Could not save character progress locally.', error);
+  }
+}
+
+function resetCharacterProgress() {
+  inventorySlots.fill(null);
+  inventorySlots[0] = { item: 'salvage_bar', quantity: 1 };
+  inventorySlots[1] = { item: 'portable_induction_pad', quantity: 1 };
+  inventorySlots[2] = { item: 'fishing_rod', quantity: 1 };
+  for (const [slot] of EQUIPMENT_SLOTS) equipment[slot] = null;
+  currentSkills = [];
+  for (const key of Object.keys(state.inventory)) state.inventory[key] = 0;
+}
+
+function loadCharacterProgress() {
+  const key = characterProgressStorageKey();
+  if (!key) return;
+  resetCharacterProgress();
+  let raw: string | null;
+  try {
+    raw = localStorage.getItem(key);
+  } catch (error) {
+    console.warn('Could not load character progress locally.', error);
+    return;
+  }
+  if (!raw) {
+    saveCharacterProgress();
+    return;
+  }
+
+  try {
+    const progress = JSON.parse(raw) as Partial<StoredCharacterProgress>;
+    if (progress.version !== 1) return;
+
+    if (Array.isArray(progress.inventory)) {
+      inventorySlots.fill(null);
+      progress.inventory.slice(0, inventorySlots.length).forEach((entry, index) => {
+        if (!entry || typeof entry !== 'object') return;
+        const candidate = entry as { item?: unknown; quantity?: unknown };
+        if (typeof candidate.item !== 'string' || !Object.prototype.hasOwnProperty.call(ITEM_DEFINITIONS, candidate.item)) return;
+        if (!Number.isSafeInteger(candidate.quantity) || Number(candidate.quantity) < 1) return;
+        inventorySlots[index] = { item: candidate.item as ItemKey, quantity: Number(candidate.quantity) };
+      });
+    }
+
+    if (progress.equipment && typeof progress.equipment === 'object') {
+      for (const [slot] of EQUIPMENT_SLOTS) {
+        const item = progress.equipment[slot];
+        equipment[slot] = typeof item === 'string'
+          && Object.prototype.hasOwnProperty.call(ITEM_DEFINITIONS, item)
+          && ITEM_DEFINITIONS[item as ItemKey].equipmentSlot === slot
+          ? item as ItemKey
+          : null;
+      }
+    }
+
+    if (Array.isArray(progress.skills)) {
+      const seen = new Set<string>();
+      currentSkills = progress.skills.filter((entry): entry is CharacterSkill => {
+        if (!entry || typeof entry !== 'object' || !STARTING_SKILLS.some(([key]) => key === entry.skill_key)) return false;
+        if (seen.has(entry.skill_key) || !Number.isSafeInteger(entry.level) || entry.level < 1 || entry.level > MAX_SKILL_LEVEL) return false;
+        if (!Number.isSafeInteger(entry.xp) || entry.xp < 0 || (entry.level === MAX_SKILL_LEVEL && entry.xp > 0) || (entry.level < MAX_SKILL_LEVEL && entry.xp >= xpForNextSkillLevel(entry.level))) return false;
+        seen.add(entry.skill_key);
+        return true;
+      }).map((entry) => ({ ...entry }));
+    }
+
+    for (const key of Object.keys(state.inventory)) state.inventory[key] = 0;
+    for (const entry of inventorySlots) {
+      if (!entry) continue;
+      const itemName = ITEM_DEFINITIONS[entry.item].name;
+      if (itemName in state.inventory) state.inventory[itemName] += entry.quantity;
+    }
+    saveCharacterProgress();
+  } catch (error) {
+    resetCharacterProgress();
+    saveCharacterProgress();
+    console.warn('Could not restore character progress; keeping starting progress.', error);
+  }
+}
 
 function asset(path: string) {
   return `${assetBase}assets/${path}`;
@@ -228,10 +344,13 @@ function escapeGateway(value: string) {
 
 function renderGame() {
 function refreshCharacterStats(){const e=document.querySelector<HTMLElement>('#derived-defense');if(e)e.textContent=String(derivedDefense())}
-function equipFromInventory(index:number){const e=inventorySlots[index];if(!e)return;const d=ITEM_DEFINITIONS[e.item];if(!d.equipmentSlot)return;const slot=d.equipmentSlot,old=equipment[slot];equipment[slot]=e.item;inventorySlots[index]=old?{item:old,quantity:1}:null;addLog(old?`${d.name} equipped; ${ITEM_DEFINITIONS[old].name} returned to inventory.`:`${d.name} equipped.`);renderPanel();refreshCharacterStats()}
-function unequipToInventory(slot:EquipmentSlot){const k=equipment[slot];if(!k)return;const n=firstEmptyInventorySlot();if(n<0){addLog(`Inventory full. ${ITEM_DEFINITIONS[k].name} remains equipped.`);return}inventorySlots[n]={item:k,quantity:1};equipment[slot]=null;addLog(`${ITEM_DEFINITIONS[k].name} unequipped.`);renderPanel();refreshCharacterStats()}
-function inventorySlotMarkup(e:InventoryEntry,index:number){if(!e)return `<button class="inventory-tile empty" type="button" data-inventory-index="${index}" aria-label="Empty inventory slot"></button>`;const i=ITEM_DEFINITIONS[e.item];return `<button class="inventory-tile" type="button" data-inventory-index="${index}" data-tooltip="${escapeHtml(`${i.name} — ${i.description}`)}" aria-label="${escapeHtml(i.name)}"><img src="${asset(i.asset)}" alt="" />${e.quantity>1?`<span class="item-quantity">${e.quantity}</span>`:''}</button>`}
+function refreshCharacterHealth(){const e=document.querySelector<HTMLElement>('#character-health');if(e)e.textContent=`${currentCharacter?.health??10}/${currentCharacter?.max_health??10}`}
+function equipFromInventory(index:number){const e=inventorySlots[index];if(!e)return;const d=ITEM_DEFINITIONS[e.item];if(!d.equipmentSlot)return;const slot=d.equipmentSlot,old=equipment[slot];if(slot==='main_hand'&&old==='fishing_rod'&&e.item!=='fishing_rod')stopFishing();equipment[slot]=e.item;inventorySlots[index]=old?{item:old,quantity:1}:null;saveCharacterProgress();addLog(old?`${d.name} equipped; ${ITEM_DEFINITIONS[old].name} returned to inventory.`:`${d.name} equipped.`);renderPanel();refreshCharacterStats()}
+function unequipToInventory(slot:EquipmentSlot){const k=equipment[slot];if(!k)return;const n=firstEmptyInventorySlot();if(n<0){addLog(`Inventory full. ${ITEM_DEFINITIONS[k].name} remains equipped.`);return}if(slot==='main_hand'&&k==='fishing_rod')stopFishing();inventorySlots[n]={item:k,quantity:1};equipment[slot]=null;saveCharacterProgress();addLog(`${ITEM_DEFINITIONS[k].name} unequipped.`);renderPanel();refreshCharacterStats()}
+function inventorySlotMarkup(e:InventoryEntry,index:number){if(!e)return `<button class="inventory-tile empty" type="button" data-inventory-index="${index}" aria-label="Empty inventory slot"></button>`;const i=ITEM_DEFINITIONS[e.item];return `<button class="inventory-tile" type="button" data-inventory-index="${index}" data-use-item="${i.usable?'true':'false'}" data-tooltip="${escapeHtml(`${i.name} — ${i.description}`)}" aria-label="${escapeHtml(i.name)}"><img src="${asset(i.asset)}" alt="" />${e.quantity>1?`<span class="item-quantity">${e.quantity}</span>`:''}</button>`}
 function equipmentSlotMarkup(slot:EquipmentSlot,label:string){const k=equipment[slot];if(!k)return `<button class="equipment-slot empty" type="button" data-equipment-slot="${slot}"><span>${label}</span><small>EMPTY</small></button>`;const i=ITEM_DEFINITIONS[k];return `<button class="equipment-slot" type="button" data-equipment-slot="${slot}" data-tooltip="${escapeHtml(`${i.name} — ${i.description}`)}"><span>${label}</span><img src="${asset(i.asset)}" alt="${escapeHtml(i.name)}" /><small>${escapeHtml(i.name)}</small></button>`}
+function activateInventoryItem(index:number){const entry=inventorySlots[index];if(!entry)return;if(ITEM_DEFINITIONS[entry.item].equipmentSlot){equipFromInventory(index);return}void useInventoryItem(index)}
+async function useInventoryItem(index:number){const entry=inventorySlots[index];if(!entry)return;if(entry.item==='portable_induction_pad'){const rawIndex=inventorySlots.findIndex((slot)=>slot?.item==='uncooked_shrimp');if(rawIndex<0){addLog('No Uncooked Shrimp to cook.');return}if(!transformInventoryItem(rawIndex,'cooked_shrimp')){addLog('Inventory full. There is no room for Cooked Shrimp.');return}state.inventory['Uncooked Shrimp']-=1;state.inventory['Cooked Shrimp']+=1;grantSkillXp('cooking',3);addLog('Portable Induction Pad cooked 1 Uncooked Shrimp. +3 Cooking XP.');renderPanel();return}if(entry.item==='cooked_shrimp'){const health=currentCharacter?.health??10,maxHealth=currentCharacter?.max_health??10;if(health>=maxHealth){addLog('HP is already full. Cooked Shrimp was not used.');return}consumeInventoryItem(index);state.inventory['Cooked Shrimp']-=1;const newHealth=Math.min(maxHealth,health+3);if(currentCharacter)currentCharacter.health=newHealth;refreshCharacterHealth();addLog(`Cooked Shrimp restored ${newHealth-health} HP.`);renderPanel();if(currentCharacter){const {error}=await supabase.from('characters').update({health:newHealth}).eq('id',currentCharacter.id);if(error)addLog('HP updated locally but could not be saved.')}}}
 
 /*
  * LOCKED GAME SHELL: do not rearrange the .game-shell structural markup.
@@ -248,7 +367,7 @@ app.innerHTML = `
           <p class="muted">Unregistered Contractor</p>
         </div>
         <div class="quick-stats" aria-label="Quick stats">
-          <div><span class="stat-icon hp">♥</span><strong>${currentCharacter?.health ?? 10}/${currentCharacter?.max_health ?? 10}</strong><small>HP</small></div>
+          <div><span class="stat-icon hp">♥</span><strong id="character-health">${currentCharacter?.health ?? 10}/${currentCharacter?.max_health ?? 10}</strong><small>HP</small></div>
           <div><span class="stat-icon focus">◆</span><strong id="derived-defense">${derivedDefense()}</strong><small>Defense</small></div>
           <div><span class="stat-icon credits">¢</span><strong>${currentCharacter?.credits ?? 0}</strong><small>Credits</small></div>
         </div>
@@ -438,6 +557,9 @@ function worldActionsMarkup(actions: RoomAction[]) {
             if (state.fishing.active) {
               disabled = true;
               detail = `${characterName()} is already fishing`;
+            } else if (equipment.main_hand !== 'fishing_rod') {
+              disabled = true;
+              detail = 'Equip the Fishing Rod in Main Hand to fish';
             }
           }
 
@@ -501,7 +623,7 @@ function renderPanel() {
           </div>
           <div class="summary-card">
             <span>Yield rule</span>
-            <strong>50% metal / 50% composite</strong>
+            <strong>30% metal / 30% composite / 40% copper coils</strong>
           </div>
         </div>
 
@@ -587,9 +709,9 @@ function renderPanel() {
   });
 
   const showTouchDetail=(button:HTMLButtonElement)=>{const d=target.querySelector<HTMLElement>('#touch-item-detail');if(d&&button.dataset.tooltip)d.textContent=button.dataset.tooltip};
-  const moveInventoryItem=(from:number,to:number)=>{if(from===to||from<0||to<0||from>=36||to>=36)return;const moving=inventorySlots[from];if(!moving)return;const displaced=inventorySlots[to];inventorySlots[to]=moving;inventorySlots[from]=displaced;renderPanel()};
-  const bindItemInteraction=(button:HTMLButtonElement,action:()=>void)=>{let timer:number|null=null,startX=0,startY=0,dragging=false,held=false;const index=Number(button.dataset.inventoryIndex);button.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse')return;startX=e.clientX;startY=e.clientY;dragging=false;held=false;timer=window.setTimeout(()=>{held=true;showTouchDetail(button);button.classList.add('inspecting')},475)});button.addEventListener('pointermove',e=>{if(e.pointerType==='mouse')return;if(Math.hypot(e.clientX-startX,e.clientY-startY)>10){if(timer!==null)clearTimeout(timer);timer=null;dragging=true;button.classList.add('touch-dragging')}});button.addEventListener('pointerup',e=>{if(e.pointerType==='mouse')return;if(timer!==null)clearTimeout(timer);timer=null;button.classList.remove('inspecting','touch-dragging');if(held)return;if(dragging&&Number.isInteger(index)){const drop=document.elementFromPoint(e.clientX,e.clientY)?.closest<HTMLButtonElement>('[data-inventory-index]');const to=drop?Number(drop.dataset.inventoryIndex):NaN;if(Number.isInteger(to))moveInventoryItem(index,to);return}action()});button.addEventListener('pointercancel',()=>{if(timer!==null)clearTimeout(timer);timer=null;button.classList.remove('inspecting','touch-dragging')});button.addEventListener('dblclick',e=>{e.preventDefault();action()})};
-  target.querySelectorAll<HTMLButtonElement>('[data-inventory-index]').forEach(button=>{const i=Number(button.dataset.inventoryIndex);if(Number.isInteger(i)&&inventorySlots[i])bindItemInteraction(button,()=>equipFromInventory(i))});
+  const moveInventoryItem=(from:number,to:number)=>{if(from===to||from<0||to<0||from>=36||to>=36)return;const moving=inventorySlots[from];if(!moving)return;const displaced=inventorySlots[to];inventorySlots[to]=moving;inventorySlots[from]=displaced;saveCharacterProgress();renderPanel()};
+  const bindItemInteraction=(button:HTMLButtonElement,action:()=>void)=>{let timer:number|null=null,startX=0,startY=0,dragging=false,held=false,handledTouch=false;const index=Number(button.dataset.inventoryIndex);button.addEventListener('click',()=>{if(button.dataset.useItem!=='true')return;if(handledTouch){handledTouch=false;return}action()});button.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse')return;startX=e.clientX;startY=e.clientY;dragging=false;held=false;timer=window.setTimeout(()=>{held=true;showTouchDetail(button);button.classList.add('inspecting')},475)});button.addEventListener('pointermove',e=>{if(e.pointerType==='mouse')return;if(Math.hypot(e.clientX-startX,e.clientY-startY)>10){if(timer!==null)clearTimeout(timer);timer=null;dragging=true;button.classList.add('touch-dragging')}});button.addEventListener('pointerup',e=>{if(e.pointerType==='mouse')return;if(timer!==null)clearTimeout(timer);timer=null;button.classList.remove('inspecting','touch-dragging');if(held)return;if(dragging&&Number.isInteger(index)){const drop=document.elementFromPoint(e.clientX,e.clientY)?.closest<HTMLButtonElement>('[data-inventory-index]');const to=drop?Number(drop.dataset.inventoryIndex):NaN;if(Number.isInteger(to))moveInventoryItem(index,to);return}if(button.dataset.useItem==='true'){handledTouch=true;window.setTimeout(()=>{handledTouch=false},0)}action()});button.addEventListener('pointercancel',()=>{if(timer!==null)clearTimeout(timer);timer=null;button.classList.remove('inspecting','touch-dragging')});button.addEventListener('dblclick',e=>{e.preventDefault();if(button.dataset.useItem!=='true')action()})};
+  target.querySelectorAll<HTMLButtonElement>('[data-inventory-index]').forEach(button=>{const i=Number(button.dataset.inventoryIndex);if(Number.isInteger(i)&&inventorySlots[i])bindItemInteraction(button,()=>activateInventoryItem(i))});
   target.querySelectorAll<HTMLButtonElement>('[data-equipment-slot]').forEach(button=>{const slot=button.dataset.equipmentSlot as EquipmentSlot|undefined;if(slot&&equipment[slot])bindItemInteraction(button,()=>unequipToInventory(slot))});
   target.querySelectorAll<HTMLButtonElement>('[data-inventory-page]').forEach(button=>button.addEventListener('click',()=>{mobileInventoryPage=(mobileInventoryPage+Number(button.dataset.inventoryPage)+3)%3;renderPanel()}));
 }
@@ -672,6 +794,10 @@ function handleAction(action: ActionType) {
 
     case 'reset-node':
       stopSalvaging(false);
+      if (state.salvage.resetTimeoutId !== null) {
+        clearTimeout(state.salvage.resetTimeoutId);
+        state.salvage.resetTimeoutId = null;
+      }
       state.salvage.remainingTicks = state.salvage.maxTicks;
       addLog('A fresh Tier 1 Scrap pile is set aside for the demo.');
       renderAll();
@@ -713,6 +839,10 @@ function stopSalvaging(withLog: boolean) {
 function startFishing() {
   if (state.roomId !== 'south-dock-pier') return;
   if (state.fishing.active) return;
+  if (equipment.main_hand !== 'fishing_rod') {
+    addLog('Equip the Fishing Rod in Main Hand before fishing.');
+    return;
+  }
   state.fishing.active = true;
   addLog(`${characterName()} starts fishing at South Dock Pier.`);
   renderAll();
@@ -723,12 +853,14 @@ function startFishing() {
 }
 
 function stopFishing() {
+  const wasActive = state.fishing.active;
   if (state.fishing.intervalId !== null) {
     clearInterval(state.fishing.intervalId);
     state.fishing.intervalId = null;
   }
 
   state.fishing.active = false;
+  if (wasActive) renderScene();
 }
 
 function runSalvageTick() {
@@ -742,25 +874,29 @@ function runSalvageTick() {
 
   state.salvage.remainingTicks -= 1;
 
-  const resource = Math.random() < 0.5 ? 'Tier 1 Metal Scrap' : 'Tier 1 Composite Scrap';
-  const itemKey:ItemKey=resource==='Tier 1 Metal Scrap'?'metal_scrap':'composite_scrap';
+  const roll = Math.random();
+  const itemKey: ItemKey = roll < 0.3 ? 'metal_scrap' : roll < 0.6 ? 'composite_scrap' : 'copper_coils';
+  const resource = ITEM_DEFINITIONS[itemKey].name;
   if(!addInventoryItem(itemKey,1)){stopSalvaging(false);addLog('Inventory full. Salvaging stops.');renderAll();return}
   state.inventory[resource] += 1;
+  grantSkillXp('salvaging', 3);
 
   const finalTick = state.salvage.remainingTicks <= 0;
-
+  if (finalTick) {
+    stopSalvaging(false);
+    state.salvage.resetTimeoutId = window.setTimeout(() => {
+      state.salvage.resetTimeoutId = null;
+      state.salvage.remainingTicks = state.salvage.maxTicks;
+      addLog('The scrap node has replenished.');
+      renderAll();
+    }, 5000);
+    addLog('The scrap node is depleted. It will replenish in 5 seconds.');
+  }
   addLog(`+${state.salvage.xpPerTick} Salvaging XP · ${resource} collected.`);
   renderScene();
   renderPanel();
   renderLog();
   spawnXpPopup(`+${state.salvage.xpPerTick} XP`);
-
-  if (finalTick) {
-    window.setTimeout(() => {
-      stopSalvaging(true);
-      renderAll();
-    }, 220);
-  }
 }
 
 function runFishingTick() {
@@ -774,8 +910,9 @@ function runFishingTick() {
   }
 
   state.inventory['Uncooked Shrimp'] += 1;
+  grantSkillXp('fishing', 3);
 
-  addLog('Uncooked Shrimp collected.');
+  addLog('Uncooked Shrimp collected. +3 Fishing XP.');
   renderScene();
   renderPanel();
   renderLog();
@@ -987,6 +1124,7 @@ function renderCharacterCreation(message = '') {
       return;
     }
     currentCharacter = data as Character;
+    loadCharacterProgress();
     state.roomId = currentCharacter.location_id === 'breaker-yard' ? 'breaker-yard' : 'glassmarket';
     renderGame();
   });
@@ -1008,6 +1146,7 @@ async function routeAuthenticatedUser() {
     return;
   }
   currentCharacter = data as Character;
+  loadCharacterProgress();
   state.roomId = currentCharacter.location_id === 'breaker-yard' ? 'breaker-yard' : 'glassmarket';
   renderGame();
 }
