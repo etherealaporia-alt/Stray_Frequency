@@ -28,6 +28,9 @@ const STARTING_SKILLS = [
 ] as const;
 
 let currentSkills: CharacterSkill[] = [];
+const MAX_SKILL_LEVEL=100;
+const SKILL_ICONS:Record<string,string>={firearms:'⌖',close_combat:'⚔',survivability:'♥',salvaging:'⛭',metalworking:'⚒',fabrication:'▦',fishing:'◒',cooking:'♨'};
+function xpForNextSkillLevel(level:number){return level>=MAX_SKILL_LEVEL?0:Math.max(83,Math.floor(83*Math.pow(1.12,level-1)));}
 
 let currentUser: User | null = null;
 let currentCharacter: Character | null = null;
@@ -83,6 +86,7 @@ const EQUIPMENT_SLOTS:Array<[EquipmentSlot,string]>=[['main_hand','Main Hand'],[
 const inventorySlots:InventoryEntry[]=Array.from({length:36},()=>null);
 inventorySlots[0]={item:'salvage_bar',quantity:1};
 const equipment:Record<EquipmentSlot,ItemKey|null>={main_hand:null,off_hand:null,head:null,torso:null,legs:null,boots:null};
+let mobileInventoryPage=0;
 
 function derivedDefense(){return Object.values(equipment).reduce((n,k)=>n+(k?(ITEM_DEFINITIONS[k].defense??0):0),0)}
 function equippedToolAllows(type:'salvage',tier:number){return Object.values(equipment).some(k=>{if(!k)return false;const i=ITEM_DEFINITIONS[k];return i.toolType===type&&(i.toolTier??0)>=tier})}
@@ -460,11 +464,9 @@ function renderPanel() {
         <button class="node-reset" type="button" data-action="reset-node">Reset demo node</button>
       `;
 
-  const inventoryContent = `
-    <div class="panel-kicker">INVENTORY</div><h3>36 Slots</h3>
-    <div class="inventory-tiles">${inventorySlots.map((entry,index)=>inventorySlotMarkup(entry,index)).join('')}</div>
-    <div class="touch-item-detail" id="touch-item-detail">Tap an item for details · Double-tap to equip</div>
-    <p class="inventory-hint">Desktop: hover for details, double-click to equip.</p>`;
+  const mobileInventory=window.matchMedia('(max-width: 820px)').matches;
+  const inventoryStart=mobileInventory?mobileInventoryPage*12:0, inventoryEnd=mobileInventory?inventoryStart+12:inventorySlots.length;
+  const inventoryContent = `<div class="panel-kicker">INVENTORY</div><div class="inventory-heading"><h3>36 Slots</h3><span>${inventorySlots.filter(Boolean).length}/36 USED</span></div><div class="inventory-tiles">${inventorySlots.slice(inventoryStart,inventoryEnd).map((entry,offset)=>inventorySlotMarkup(entry,inventoryStart+offset)).join('')}</div><div class="mobile-inventory-pages"><button type="button" data-inventory-page="-1">‹</button><span>PAGE ${mobileInventoryPage+1} / 3</span><button type="button" data-inventory-page="1">›</button></div><div class="touch-item-detail" id="touch-item-detail">Tap = use/equip · Hold = inspect · Drag = move</div><p class="inventory-hint">Desktop: hover for details, double-click to equip.</p>`;
   const equipmentContent = `
     <div class="panel-kicker">EQUIPMENT</div><h3>Equipped Gear</h3>
     <div class="equipment-grid">${EQUIPMENT_SLOTS.map(([slot,label])=>equipmentSlotMarkup(slot,label)).join('')}</div>
@@ -472,17 +474,7 @@ function renderPanel() {
     <div class="touch-item-detail" id="touch-item-detail">Tap equipped gear for details · Double-tap to unequip</div>
     <p class="inventory-hint">Desktop: hover for details, double-click to unequip.</p>`;
 
-  const skillsContent = `
-    <div class="panel-kicker">SKILLS</div>
-    <h3>Capability</h3>
-    <div class="skill-list">
-      ${STARTING_SKILLS.map(([key, name]) => {
-        const level = currentSkills.find((skill) => skill.skill_key === key)?.level ?? 1;
-        return `<div><span>${name}</span><strong>${level}</strong><i><em style="width:${Math.min(100, level * 2)}%"></em></i></div>`;
-      }).join('')}
-    </div>
-  `;
-
+  const skillsContent = `<div class="panel-kicker">SKILLS</div><h3>Capability</h3><div class="skill-tiles">${STARTING_SKILLS.map(([key,name])=>{const skill=currentSkills.find(s=>s.skill_key===key);const level=skill?.level??1,xp=skill?.xp??0,next=xpForNextSkillLevel(level);const tip=level>=MAX_SKILL_LEVEL?`${name} — Level ${level}/${MAX_SKILL_LEVEL} — MAX LEVEL`:`${name} — Level ${level}/${MAX_SKILL_LEVEL} — XP ${xp} / ${next} to next level`;return `<button type="button" class="skill-tile" data-tooltip="${escapeHtml(tip)}"><span class="skill-icon">${SKILL_ICONS[key]}</span><span class="skill-name">${name}</span><strong>${level}<small>/${MAX_SKILL_LEVEL}</small></strong></button>`;}).join('')}</div>`;
   const journalContent = `
     <div class="panel-kicker">JOURNAL</div>
     <h3>Stories & Jobs</h3>
@@ -531,29 +523,12 @@ function renderPanel() {
     });
   });
 
-  const showTouchDetail = (button: HTMLButtonElement) => {
-    const detail = target.querySelector<HTMLElement>('#touch-item-detail');
-    if (detail && button.dataset.tooltip) detail.textContent = button.dataset.tooltip;
-  };
-  const bindItemInteraction = (button: HTMLButtonElement, action: () => void) => {
-    let lastTouchTap = 0;
-    button.addEventListener('click', () => showTouchDetail(button));
-    button.addEventListener('touchend', (event) => {
-      showTouchDetail(button);
-      const now = Date.now();
-      if (now - lastTouchTap < 360) { event.preventDefault(); lastTouchTap = 0; action(); return; }
-      lastTouchTap = now;
-    }, { passive: false });
-    button.addEventListener('dblclick', (event) => { event.preventDefault(); action(); });
-  };
-  target.querySelectorAll<HTMLButtonElement>('[data-inventory-index]').forEach((button) => {
-    const index = Number(button.dataset.inventoryIndex);
-    if (Number.isInteger(index) && inventorySlots[index]) bindItemInteraction(button, () => equipFromInventory(index));
-  });
-  target.querySelectorAll<HTMLButtonElement>('[data-equipment-slot]').forEach((button) => {
-    const slot = button.dataset.equipmentSlot as EquipmentSlot | undefined;
-    if (slot && equipment[slot]) bindItemInteraction(button, () => unequipToInventory(slot));
-  });
+  const showTouchDetail=(button:HTMLButtonElement)=>{const d=target.querySelector<HTMLElement>('#touch-item-detail');if(d&&button.dataset.tooltip)d.textContent=button.dataset.tooltip};
+  const moveInventoryItem=(from:number,to:number)=>{if(from===to||from<0||to<0||from>=36||to>=36)return;const moving=inventorySlots[from];if(!moving)return;const displaced=inventorySlots[to];inventorySlots[to]=moving;inventorySlots[from]=displaced;renderPanel()};
+  const bindItemInteraction=(button:HTMLButtonElement,action:()=>void)=>{let timer:number|null=null,startX=0,startY=0,dragging=false,held=false;const index=Number(button.dataset.inventoryIndex);button.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse')return;startX=e.clientX;startY=e.clientY;dragging=false;held=false;timer=window.setTimeout(()=>{held=true;showTouchDetail(button);button.classList.add('inspecting')},475)});button.addEventListener('pointermove',e=>{if(e.pointerType==='mouse')return;if(Math.hypot(e.clientX-startX,e.clientY-startY)>10){if(timer!==null)clearTimeout(timer);timer=null;dragging=true;button.classList.add('touch-dragging')}});button.addEventListener('pointerup',e=>{if(e.pointerType==='mouse')return;if(timer!==null)clearTimeout(timer);timer=null;button.classList.remove('inspecting','touch-dragging');if(held)return;if(dragging&&Number.isInteger(index)){const drop=document.elementFromPoint(e.clientX,e.clientY)?.closest<HTMLButtonElement>('[data-inventory-index]');const to=drop?Number(drop.dataset.inventoryIndex):NaN;if(Number.isInteger(to))moveInventoryItem(index,to);return}action()});button.addEventListener('pointercancel',()=>{if(timer!==null)clearTimeout(timer);timer=null;button.classList.remove('inspecting','touch-dragging')});button.addEventListener('dblclick',e=>{e.preventDefault();action()})};
+  target.querySelectorAll<HTMLButtonElement>('[data-inventory-index]').forEach(button=>{const i=Number(button.dataset.inventoryIndex);if(Number.isInteger(i)&&inventorySlots[i])bindItemInteraction(button,()=>equipFromInventory(i))});
+  target.querySelectorAll<HTMLButtonElement>('[data-equipment-slot]').forEach(button=>{const slot=button.dataset.equipmentSlot as EquipmentSlot|undefined;if(slot&&equipment[slot])bindItemInteraction(button,()=>unequipToInventory(slot))});
+  target.querySelectorAll<HTMLButtonElement>('[data-inventory-page]').forEach(button=>button.addEventListener('click',()=>{mobileInventoryPage=(mobileInventoryPage+Number(button.dataset.inventoryPage)+3)%3;renderPanel()}));
 }
 
 function addLog(message: string) {
