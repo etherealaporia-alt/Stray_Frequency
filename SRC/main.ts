@@ -88,11 +88,7 @@ function derivedDefense(){return Object.values(equipment).reduce((n,k)=>n+(k?(IT
 function equippedToolAllows(type:'salvage',tier:number){return Object.values(equipment).some(k=>{if(!k)return false;const i=ITEM_DEFINITIONS[k];return i.toolType===type&&(i.toolTier??0)>=tier})}
 function firstEmptyInventorySlot(){return inventorySlots.findIndex(e=>e===null)}
 function addInventoryItem(item:ItemKey,quantity=1){const d=ITEM_DEFINITIONS[item];if(d.stackable){const e=inventorySlots.find(x=>x?.item===item);if(e){e.quantity+=quantity;return true}}const n=firstEmptyInventorySlot();if(n<0)return false;inventorySlots[n]={item,quantity};return true}
-function refreshCharacterStats(){const e=document.querySelector<HTMLElement>('#derived-defense');if(e)e.textContent=String(derivedDefense())}
-function equipFromInventory(index:number){const e=inventorySlots[index];if(!e)return;const d=ITEM_DEFINITIONS[e.item];if(!d.equipmentSlot)return;const slot=d.equipmentSlot,old=equipment[slot];equipment[slot]=e.item;inventorySlots[index]=old?{item:old,quantity:1}:null;addLog(old?`${d.name} equipped; ${ITEM_DEFINITIONS[old].name} returned to inventory.`:`${d.name} equipped.`);renderPanel();refreshCharacterStats()}
-function unequipToInventory(slot:EquipmentSlot){const k=equipment[slot];if(!k)return;const n=firstEmptyInventorySlot();if(n<0){addLog(`Inventory full. ${ITEM_DEFINITIONS[k].name} remains equipped.`);return}inventorySlots[n]={item:k,quantity:1};equipment[slot]=null;addLog(`${ITEM_DEFINITIONS[k].name} unequipped.`);renderPanel();refreshCharacterStats()}
-function inventorySlotMarkup(e:InventoryEntry,index:number){if(!e)return `<button class="inventory-tile empty" type="button" data-inventory-index="${index}" aria-label="Empty inventory slot"></button>`;const i=ITEM_DEFINITIONS[e.item];return `<button class="inventory-tile" type="button" data-inventory-index="${index}" data-tooltip="${escapeHtml(`${i.name} — ${i.description}`)}" aria-label="${escapeHtml(i.name)}"><img src="${asset(i.asset)}" alt="" />${e.quantity>1?`<span class="item-quantity">${e.quantity}</span>`:''}</button>`}
-function equipmentSlotMarkup(slot:EquipmentSlot,label:string){const k=equipment[slot];if(!k)return `<button class="equipment-slot empty" type="button" data-equipment-slot="${slot}"><span>${label}</span><small>EMPTY</small></button>`;const i=ITEM_DEFINITIONS[k];return `<button class="equipment-slot" type="button" data-equipment-slot="${slot}" data-tooltip="${escapeHtml(`${i.name} — ${i.description}`)}"><span>${label}</span><img src="${asset(i.asset)}" alt="${escapeHtml(i.name)}" /><small>${escapeHtml(i.name)}</small></button>`}
+
 
 const rooms: Record<RoomId, Room> = {
   glassmarket: {
@@ -193,6 +189,12 @@ function escapeGateway(value: string) {
 }
 
 function renderGame() {
+function refreshCharacterStats(){const e=document.querySelector<HTMLElement>('#derived-defense');if(e)e.textContent=String(derivedDefense())}
+function equipFromInventory(index:number){const e=inventorySlots[index];if(!e)return;const d=ITEM_DEFINITIONS[e.item];if(!d.equipmentSlot)return;const slot=d.equipmentSlot,old=equipment[slot];equipment[slot]=e.item;inventorySlots[index]=old?{item:old,quantity:1}:null;addLog(old?`${d.name} equipped; ${ITEM_DEFINITIONS[old].name} returned to inventory.`:`${d.name} equipped.`);renderPanel();refreshCharacterStats()}
+function unequipToInventory(slot:EquipmentSlot){const k=equipment[slot];if(!k)return;const n=firstEmptyInventorySlot();if(n<0){addLog(`Inventory full. ${ITEM_DEFINITIONS[k].name} remains equipped.`);return}inventorySlots[n]={item:k,quantity:1};equipment[slot]=null;addLog(`${ITEM_DEFINITIONS[k].name} unequipped.`);renderPanel();refreshCharacterStats()}
+function inventorySlotMarkup(e:InventoryEntry,index:number){if(!e)return `<button class="inventory-tile empty" type="button" data-inventory-index="${index}" aria-label="Empty inventory slot"></button>`;const i=ITEM_DEFINITIONS[e.item];return `<button class="inventory-tile" type="button" data-inventory-index="${index}" data-tooltip="${escapeHtml(`${i.name} — ${i.description}`)}" aria-label="${escapeHtml(i.name)}"><img src="${asset(i.asset)}" alt="" />${e.quantity>1?`<span class="item-quantity">${e.quantity}</span>`:''}</button>`}
+function equipmentSlotMarkup(slot:EquipmentSlot,label:string){const k=equipment[slot];if(!k)return `<button class="equipment-slot empty" type="button" data-equipment-slot="${slot}"><span>${label}</span><small>EMPTY</small></button>`;const i=ITEM_DEFINITIONS[k];return `<button class="equipment-slot" type="button" data-equipment-slot="${slot}" data-tooltip="${escapeHtml(`${i.name} — ${i.description}`)}"><span>${label}</span><img src="${asset(i.asset)}" alt="${escapeHtml(i.name)}" /><small>${escapeHtml(i.name)}</small></button>`}
+
 /*
  * LOCKED GAME SHELL: do not rearrange the .game-shell structural markup.
  * New systems populate existing regions/panels unless the owner explicitly unlocks it.
