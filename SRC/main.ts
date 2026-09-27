@@ -16,6 +16,7 @@ type Character = {
   credits: number;
   health: number;
   max_health: number;
+  progress?: StoredCharacterProgress | null;
 };
 
 type CharacterSkill = { skill_key: string; level: number; xp: number };
@@ -214,24 +215,36 @@ type StoredCharacterProgress = {
   skills: CharacterSkill[];
 };
 
-function characterProgressStorageKey() {
+let progressSaveQueue: Promise<void> = Promise.resolve();
+
+function legacyCharacterProgressStorageKey() {
   return currentCharacter ? `stray-frequency:character:${currentCharacter.id}:progress` : null;
 }
 
-function saveCharacterProgress() {
-  const key = characterProgressStorageKey();
-  if (!key) return;
+function saveCharacterProgress(): Promise<boolean> {
+  const characterId = currentCharacter?.id;
+  if (!characterId) return Promise.resolve(false);
   const progress: StoredCharacterProgress = {
     version: 1,
-    inventory: inventorySlots,
+    inventory: inventorySlots.map((entry) => entry ? { ...entry } : null),
     equipment: { ...equipment },
-    skills: currentSkills
+    skills: currentSkills.map((skill) => ({ ...skill }))
   };
-  try {
-    localStorage.setItem(key, JSON.stringify(progress));
-  } catch (error) {
-    console.warn('Could not save character progress locally.', error);
-  }
+  const save = progressSaveQueue.then(async () => {
+    const { data, error } = await supabase.from('characters')
+      .update({ progress })
+      .eq('id', characterId)
+      .select('id')
+      .maybeSingle();
+    if (error || !data) {
+      console.error('Could not save character progress to Supabase.', error ?? 'Character row not found.');
+      return false;
+    }
+    if (currentCharacter?.id === characterId) currentCharacter.progress = progress;
+    return true;
+  });
+  progressSaveQueue = save.then(() => undefined, () => undefined);
+  return save;
 }
 
 function resetCharacterProgress() {
@@ -244,27 +257,13 @@ function resetCharacterProgress() {
   for (const key of Object.keys(state.inventory)) state.inventory[key] = 0;
 }
 
-function loadCharacterProgress() {
-  const key = characterProgressStorageKey();
-  if (!key) return;
+function applyCharacterProgress(value: unknown) {
+  if (!value || typeof value !== 'object') return false;
+  const progress = value as Partial<StoredCharacterProgress>;
+  if (progress.version !== 1) return false;
+
   resetCharacterProgress();
-  let raw: string | null;
-  try {
-    raw = localStorage.getItem(key);
-  } catch (error) {
-    console.warn('Could not load character progress locally.', error);
-    return;
-  }
-  if (!raw) {
-    saveCharacterProgress();
-    return;
-  }
-
-  try {
-    const progress = JSON.parse(raw) as Partial<StoredCharacterProgress>;
-    if (progress.version !== 1) return;
-
-    if (Array.isArray(progress.inventory)) {
+  if (Array.isArray(progress.inventory)) {
       inventorySlots.fill(null);
       progress.inventory.slice(0, inventorySlots.length).forEach((entry, index) => {
         if (!entry || typeof entry !== 'object') return;
@@ -273,41 +272,74 @@ function loadCharacterProgress() {
         if (!Number.isSafeInteger(candidate.quantity) || Number(candidate.quantity) < 1) return;
         inventorySlots[index] = { item: candidate.item as ItemKey, quantity: Number(candidate.quantity) };
       });
-    }
+  }
 
-    if (progress.equipment && typeof progress.equipment === 'object') {
-      for (const [slot] of EQUIPMENT_SLOTS) {
-        const item = progress.equipment[slot];
-        equipment[slot] = typeof item === 'string'
-          && Object.prototype.hasOwnProperty.call(ITEM_DEFINITIONS, item)
-          && ITEM_DEFINITIONS[item as ItemKey].equipmentSlot === slot
-          ? item as ItemKey
-          : null;
+  if (progress.equipment && typeof progress.equipment === 'object') {
+    for (const [slot] of EQUIPMENT_SLOTS) {
+      const item = progress.equipment[slot];
+      equipment[slot] = typeof item === 'string'
+        && Object.prototype.hasOwnProperty.call(ITEM_DEFINITIONS, item)
+        && ITEM_DEFINITIONS[item as ItemKey].equipmentSlot === slot
+        ? item as ItemKey
+        : null;
+    }
+  }
+
+  if (Array.isArray(progress.skills)) {
+    const seen = new Set<string>();
+    currentSkills = progress.skills.flatMap((entry) => {
+      if (!entry || typeof entry !== 'object') return [];
+      const candidate = entry as { skill_key?: unknown; level?: unknown; xp?: unknown };
+      if (typeof candidate.skill_key !== 'string' || !STARTING_SKILLS.some(([key]) => key === candidate.skill_key)) return [];
+      if (seen.has(candidate.skill_key) || typeof candidate.level !== 'number' || !Number.isSafeInteger(candidate.level) || candidate.level < 1 || candidate.level > MAX_SKILL_LEVEL) return [];
+      if (typeof candidate.xp !== 'number' || !Number.isSafeInteger(candidate.xp) || candidate.xp < 0 || (candidate.level === MAX_SKILL_LEVEL && candidate.xp > 0) || (candidate.level < MAX_SKILL_LEVEL && candidate.xp >= xpForNextSkillLevel(candidate.level))) return [];
+      seen.add(candidate.skill_key);
+      return [{ skill_key: candidate.skill_key, level: candidate.level, xp: candidate.xp }];
+    });
+  }
+
+  for (const key of Object.keys(state.inventory)) state.inventory[key] = 0;
+  for (const entry of inventorySlots) {
+    if (!entry) continue;
+    const itemName = ITEM_DEFINITIONS[entry.item].name;
+    if (itemName in state.inventory) state.inventory[itemName] += entry.quantity;
+  }
+  return true;
+}
+
+async function loadCharacterProgress() {
+  const characterId = currentCharacter?.id;
+  const legacyKey = legacyCharacterProgressStorageKey();
+  if (!characterId || !legacyKey) return;
+  resetCharacterProgress();
+
+  const { data, error } = await supabase.from('characters').select('progress').eq('id', characterId).maybeSingle();
+  if (error) console.warn('Could not load character progress from Supabase.', error);
+
+  let restored = !error && applyCharacterProgress(data?.progress);
+  let importedLegacy = false;
+  if (!restored) {
+    try {
+      const raw = localStorage.getItem(legacyKey);
+      if (raw) {
+        importedLegacy = applyCharacterProgress(JSON.parse(raw));
+        restored = importedLegacy;
       }
+    } catch (legacyError) {
+      console.warn('Could not import legacy local progress.', legacyError);
     }
+  }
 
-    if (Array.isArray(progress.skills)) {
-      const seen = new Set<string>();
-      currentSkills = progress.skills.filter((entry): entry is CharacterSkill => {
-        if (!entry || typeof entry !== 'object' || !STARTING_SKILLS.some(([key]) => key === entry.skill_key)) return false;
-        if (seen.has(entry.skill_key) || !Number.isSafeInteger(entry.level) || entry.level < 1 || entry.level > MAX_SKILL_LEVEL) return false;
-        if (!Number.isSafeInteger(entry.xp) || entry.xp < 0 || (entry.level === MAX_SKILL_LEVEL && entry.xp > 0) || (entry.level < MAX_SKILL_LEVEL && entry.xp >= xpForNextSkillLevel(entry.level))) return false;
-        seen.add(entry.skill_key);
-        return true;
-      }).map((entry) => ({ ...entry }));
-    }
+  if (!restored) resetCharacterProgress();
+  if (!error && data?.progress && restored) {
+    currentCharacter!.progress = data.progress as StoredCharacterProgress;
+    try { localStorage.removeItem(legacyKey); } catch { /* Legacy cleanup is best effort. */ }
+    return;
+  }
 
-    for (const key of Object.keys(state.inventory)) state.inventory[key] = 0;
-    for (const entry of inventorySlots) {
-      if (!entry) continue;
-      const itemName = ITEM_DEFINITIONS[entry.item].name;
-      if (itemName in state.inventory) state.inventory[itemName] += entry.quantity;
-    }
-    saveCharacterProgress();
-  } catch (error) {
-    resetCharacterProgress();
-    saveCharacterProgress();
-    console.warn('Could not restore character progress; keeping starting progress.', error);
+  const saved = await saveCharacterProgress();
+  if (saved && importedLegacy) {
+    try { localStorage.removeItem(legacyKey); } catch { /* Legacy cleanup is best effort. */ }
   }
 }
 
@@ -1124,7 +1156,7 @@ function renderCharacterCreation(message = '') {
       return;
     }
     currentCharacter = data as Character;
-    loadCharacterProgress();
+    await loadCharacterProgress();
     state.roomId = currentCharacter.location_id === 'breaker-yard' ? 'breaker-yard' : 'glassmarket';
     renderGame();
   });
@@ -1146,7 +1178,7 @@ async function routeAuthenticatedUser() {
     return;
   }
   currentCharacter = data as Character;
-  loadCharacterProgress();
+  await loadCharacterProgress();
   state.roomId = currentCharacter.location_id === 'breaker-yard' ? 'breaker-yard' : 'glassmarket';
   renderGame();
 }

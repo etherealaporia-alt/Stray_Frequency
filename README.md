@@ -30,6 +30,10 @@ Then open the local URL Vite prints.
 npm run build
 ```
 
+## Character progress persistence
+
+Inventory, equipment and skills are stored in the signed-in character's Supabase `characters.progress` JSONB column. Apply `supabase/migrations/20260927143000_add_character_progress.sql` in the Supabase SQL Editor before using cloud saves. Existing browser-local progress is imported once after the migration is applied, then removed after a successful cloud save.
+
 ## Next likely steps
 
 1. Define the world/location data model.
