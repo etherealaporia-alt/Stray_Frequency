@@ -1,4 +1,23 @@
 import './style.css';
+import { createClient, type User } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  'https://aikcmzqdzsbnknvcapvm.supabase.co',
+  'sb_publishable_lF1shaFKY_Mcl8e0p7amqQ_UcBL_yV9'
+);
+
+type Character = {
+  id: string;
+  account_id: string;
+  name: string;
+  body_type: 'male' | 'female';
+  appearance_skipped: boolean;
+  location_id: string;
+  credits: number;
+};
+
+let currentUser: User | null = null;
+let currentCharacter: Character | null = null;
 
 const assetBase = import.meta.env.BASE_URL;
 
@@ -469,6 +488,15 @@ if (!app) throw new Error('App root missing');
 
 injectRuntimeStyles();
 
+function characterName() {
+  return currentCharacter?.name ?? 'Contractor';
+}
+
+function escapeGateway(value: string) {
+  return value.replace(/[&<>'\"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '\"': '&quot;' }[character] ?? character));
+}
+
+function renderGame() {
 app.innerHTML = `
   <div class="game-shell">
     <header class="masthead">
@@ -476,7 +504,7 @@ app.innerHTML = `
         <img src="${asset('mara-vale.png')}" alt="Pixel portrait of Mara Vale" class="portrait" />
         <div class="character-copy">
           <div class="eyebrow">PLAYER</div>
-          <h2>Mara Vale</h2>
+          <h2>${escapeHtml(characterName())}</h2>
           <p class="muted">Unregistered Contractor</p>
           <div class="level-row"><span>Level 34</span><span>12,480 / 22,000 XP</span></div>
           <div class="xp-track"><span></span></div>
@@ -485,7 +513,7 @@ app.innerHTML = `
         <div class="quick-stats" aria-label="Quick stats">
           <div><span class="stat-icon hp">♥</span><strong>86%</strong><small>HP</small></div>
           <div><span class="stat-icon focus">ϟ</span><strong>63%</strong><small>Focus</small></div>
-          <div><span class="stat-icon credits">¢</span><strong>1,842</strong><small>Credits</small></div>
+          <div><span class="stat-icon credits">¢</span><strong>${currentCharacter?.credits ?? 0}</strong><small>Credits</small></div>
         </div>
       </section>
 
@@ -502,6 +530,7 @@ app.innerHTML = `
         </div>
         <div class="weather" title="Heavy rain">☂</div>
         <div class="skyline" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+        <button id="logout-button" class="sf-logout" type="button">LOG OUT</button>
       </section>
     </header>
 
@@ -648,7 +677,7 @@ function renderScene() {
 
           <div class="sf-mara-anchor ${state.salvage.active ? 'active' : ''}">
             <div class="sf-xp-layer" id="sf-xp-layer"></div>
-            <div class="sf-mara-nameplate">Mara Vale</div>
+            <div class="sf-mara-nameplate">${escapeHtml(characterName())}</div>
             <div class="sf-mara-sprite" aria-hidden="true"></div>
           </div>
 
@@ -683,7 +712,7 @@ function worldActionsMarkup(actions: RoomAction[]) {
           if (action.type === 'start-salvaging') {
             if (state.salvage.active) {
               disabled = true;
-              detail = 'Mara is already salvaging this node';
+              detail = `${characterName()} is already salvaging this node`;
             } else if (state.salvage.remainingTicks <= 0) {
               disabled = true;
               detail = 'This node has been picked clean';
@@ -921,7 +950,7 @@ function startSalvaging() {
   if (state.salvage.active || state.salvage.remainingTicks <= 0) return;
 
   state.salvage.active = true;
-  addLog('Mara steps into the bay and starts salvaging the node.');
+  addLog(`${characterName()} steps into the bay and starts salvaging the node.`);
   renderAll();
 
   state.salvage.intervalId = window.setInterval(() => {
@@ -1024,8 +1053,170 @@ document.querySelector<HTMLFormElement>('#chat-form')?.addEventListener('submit'
   if (!input) return;
   const value = input.value.trim();
   if (!value) return;
-  addLog(`Mara: ${value}`);
+  addLog(`${characterName()}: ${value}`);
   input.value = '';
 });
 
 renderAll();
+
+document.querySelector<HTMLButtonElement>('#logout-button')?.addEventListener('click', async () => {
+  stopSalvaging(false);
+  await supabase.auth.signOut();
+});
+}
+
+function renderAuth(message = '') {
+  app.innerHTML = `
+    <main class="gateway-shell">
+      <section class="gateway-card panel">
+        <div class="gateway-brand"><span>STRAY</span> <b>FREQUENCY</b></div>
+        <p class="gateway-tagline">some places never log off</p>
+        <div class="gateway-tabs">
+          <button type="button" class="active" data-auth-tab="login">LOG IN</button>
+          <button type="button" data-auth-tab="register">CREATE ACCOUNT</button>
+        </div>
+        <form id="auth-form" class="gateway-form">
+          <input type="hidden" id="auth-mode" value="login" />
+          <label>EMAIL<input id="auth-email" type="email" required autocomplete="email" /></label>
+          <label>PASSWORD<input id="auth-password" type="password" required minlength="6" autocomplete="current-password" /></label>
+          <button class="gateway-primary" type="submit">CONNECT</button>
+        </form>
+        <p id="gateway-message" class="gateway-message">${escapeGateway(message)}</p>
+      </section>
+    </main>`;
+
+  document.querySelectorAll<HTMLButtonElement>('[data-auth-tab]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const mode = button.dataset.authTab === 'register' ? 'register' : 'login';
+      (document.querySelector('#auth-mode') as HTMLInputElement).value = mode;
+      document.querySelectorAll<HTMLButtonElement>('[data-auth-tab]').forEach((tab) => tab.classList.toggle('active', tab === button));
+      const password = document.querySelector<HTMLInputElement>('#auth-password');
+      if (password) password.autocomplete = mode === 'register' ? 'new-password' : 'current-password';
+      const submit = document.querySelector<HTMLButtonElement>('.gateway-primary');
+      if (submit) submit.textContent = mode === 'register' ? 'CREATE ACCOUNT' : 'CONNECT';
+    });
+  });
+
+  document.querySelector<HTMLFormElement>('#auth-form')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const email = (document.querySelector('#auth-email') as HTMLInputElement).value.trim();
+    const password = (document.querySelector('#auth-password') as HTMLInputElement).value;
+    const mode = (document.querySelector('#auth-mode') as HTMLInputElement).value;
+    const messageNode = document.querySelector<HTMLElement>('#gateway-message');
+    if (messageNode) messageNode.textContent = 'Connecting…';
+
+    const result = mode === 'register'
+      ? await supabase.auth.signUp({ email, password })
+      : await supabase.auth.signInWithPassword({ email, password });
+
+    if (result.error) {
+      if (messageNode) messageNode.textContent = result.error.message;
+      return;
+    }
+    if (!result.data.session) {
+      if (messageNode) messageNode.textContent = 'Account created. Check your email if confirmation is required, then log in.';
+      return;
+    }
+    currentUser = result.data.user;
+    await routeAuthenticatedUser();
+  });
+}
+
+function renderCharacterCreation(message = '') {
+  app.innerHTML = `
+    <main class="gateway-shell">
+      <section class="creator-card panel">
+        <div class="gateway-brand"><span>STRAY</span> <b>FREQUENCY</b></div>
+        <div class="panel-kicker">CHARACTER CREATION // PROTOTYPE</div>
+        <h1>Who answers the frequency?</h1>
+        <div class="creator-grid">
+          <div class="creator-preview">
+            <img src="${asset('mara-vale.png')}" alt="Temporary character placeholder portrait" />
+            <strong>PLACEHOLDER VISUAL</strong>
+            <small>Mara's artwork is standing in until modular character assets are ready. This does not make Mara your character.</small>
+          </div>
+          <form id="character-form" class="gateway-form">
+            <label>CHARACTER NAME<input id="character-name" type="text" required minlength="3" maxlength="24" autocomplete="off" /></label>
+            <fieldset>
+              <legend>BODY TYPE</legend>
+              <label class="creator-choice"><input type="radio" name="body-type" value="female" checked /> FEMALE</label>
+              <label class="creator-choice"><input type="radio" name="body-type" value="male" /> MALE</label>
+            </fieldset>
+            <div class="creator-disabled"><span>APPEARANCE</span><strong>COMING LATER</strong><small>Hair, face, clothing and visual customisation will plug into this stage.</small></div>
+            <button class="gateway-primary" type="submit">SKIP APPEARANCE & ENTER CITY</button>
+            <button class="gateway-secondary" id="creator-signout" type="button">LOG OUT</button>
+          </form>
+        </div>
+        <p id="gateway-message" class="gateway-message">${escapeGateway(message)}</p>
+      </section>
+    </main>`;
+
+  document.querySelector<HTMLButtonElement>('#creator-signout')?.addEventListener('click', async () => {
+    await supabase.auth.signOut();
+  });
+
+  document.querySelector<HTMLFormElement>('#character-form')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!currentUser) return;
+    const name = (document.querySelector('#character-name') as HTMLInputElement).value.trim();
+    const bodyType = document.querySelector<HTMLInputElement>('input[name="body-type"]:checked')?.value as 'male' | 'female';
+    const messageNode = document.querySelector<HTMLElement>('#gateway-message');
+    if (messageNode) messageNode.textContent = 'Registering character…';
+
+    const { data, error } = await supabase.from('characters').insert({
+      account_id: currentUser.id,
+      name,
+      body_type: bodyType,
+      appearance_skipped: true
+    }).select().single();
+
+    if (error) {
+      if (messageNode) messageNode.textContent = error.message;
+      return;
+    }
+    currentCharacter = data as Character;
+    state.roomId = currentCharacter.location_id === 'breaker-yard' ? 'breaker-yard' : 'glassmarket';
+    renderGame();
+  });
+}
+
+async function routeAuthenticatedUser() {
+  if (!currentUser) {
+    renderAuth();
+    return;
+  }
+  const { data, error } = await supabase.from('characters').select('*').eq('account_id', currentUser.id).maybeSingle();
+  if (error) {
+    app.innerHTML = `<main class="gateway-shell"><section class="gateway-card panel"><div class="gateway-brand"><span>STRAY</span> <b>FREQUENCY</b></div><p class="gateway-message">Character lookup failed: ${escapeGateway(error.message)}</p><button id="retry-auth" class="gateway-primary" type="button">RETRY</button></section></main>`;
+    document.querySelector<HTMLButtonElement>('#retry-auth')?.addEventListener('click', () => void routeAuthenticatedUser());
+    return;
+  }
+  if (!data) {
+    renderCharacterCreation();
+    return;
+  }
+  currentCharacter = data as Character;
+  state.roomId = currentCharacter.location_id === 'breaker-yard' ? 'breaker-yard' : 'glassmarket';
+  renderGame();
+}
+
+async function bootstrap() {
+  app.innerHTML = `<main class="gateway-shell"><section class="gateway-card panel"><div class="gateway-brand"><span>STRAY</span> <b>FREQUENCY</b></div><p class="gateway-message">Tuning frequency…</p></section></main>`;
+  const { data, error } = await supabase.auth.getSession();
+  if (error) {
+    renderAuth(error.message);
+    return;
+  }
+  currentUser = data.session?.user ?? null;
+  if (currentUser) await routeAuthenticatedUser(); else renderAuth();
+
+  supabase.auth.onAuthStateChange((event, session) => {
+    currentUser = session?.user ?? null;
+    if (event === 'SIGNED_OUT' || !currentUser) {
+      currentCharacter = null;
+      renderAuth();
+    }
+  });
+}
+
+void bootstrap();
