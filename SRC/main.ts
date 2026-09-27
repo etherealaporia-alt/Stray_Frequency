@@ -40,11 +40,13 @@ let currentCharacter: Character | null = null;
 const assetBase = import.meta.env.BASE_URL;
 
 type Panel = 'world' | 'inventory' | 'equipment' | 'skills' | 'journal' | 'comms' | 'map';
-type RoomId = 'glassmarket' | 'breaker-yard';
+type RoomId = 'glassmarket' | 'breaker-yard' | 'south-dock-pier';
 type ActionType =
   | 'goto-breaker-yard'
+  | 'goto-south-dock-pier'
   | 'goto-glassmarket'
   | 'start-salvaging'
+  | 'start-fishing'
   | 'reset-node'
   | 'inspect-board';
 
@@ -60,7 +62,7 @@ type Room = {
   name: string;
   slogan: string;
   description: string;
-  sceneImage: string;
+  sceneImage?: string;
   actions: RoomAction[];
 };
 
@@ -75,14 +77,15 @@ const panelIcons: Record<Panel, string> = {
 };
 
 type EquipmentSlot = 'main_hand' | 'off_hand' | 'head' | 'torso' | 'legs' | 'boots';
-type ItemKey = 'salvage_bar' | 'metal_scrap' | 'composite_scrap';
+type ItemKey = 'salvage_bar' | 'metal_scrap' | 'composite_scrap' | 'uncooked_shrimp';
 type ItemDefinition = { key:ItemKey; name:string; description:string; asset:string; stackable:boolean; equipmentSlot?:EquipmentSlot; defense?:number; toolType?:'salvage'; toolTier?:number };
 type InventoryEntry = { item:ItemKey; quantity:number } | null;
 
 const ITEM_DEFINITIONS: Record<ItemKey, ItemDefinition> = {
   salvage_bar:{key:'salvage_bar',name:'Powered Salvage Bar',description:'A powered utility breaker for prying, splitting and stripping Tier 1 scrap.',asset:'cyberpunk_salvage_crowbar_tool.png',stackable:false,equipmentSlot:'main_hand',toolType:'salvage',toolTier:1},
   metal_scrap:{key:'metal_scrap',name:'Tier 1 Metal Scrap',description:'Bolts, plates and structural metal recovered from salvage.',asset:'cyberpunk_scrap_metal_pile.png',stackable:true},
-  composite_scrap:{key:'composite_scrap',name:'Tier 1 Composite Scrap',description:'Mixed housings, casings and recoverable composite material.',asset:'neon_cyberpunk_scrapyard_heap.png',stackable:true}
+  composite_scrap:{key:'composite_scrap',name:'Tier 1 Composite Scrap',description:'Mixed housings, casings and recoverable composite material.',asset:'neon_cyberpunk_scrapyard_heap.png',stackable:true},
+  uncooked_shrimp:{key:'uncooked_shrimp',name:'Uncooked Shrimp',description:'Placeholder catch from South Dock Pier. Cooking details coming soon.',asset:'neon_cyberpunk_scrap_pile.png',stackable:true}
 };
 const EQUIPMENT_SLOTS:Array<[EquipmentSlot,string]>=[['main_hand','Main Hand'],['off_hand','Off Hand'],['head','Head'],['torso','Torso'],['legs','Legs'],['boots','Boots']];
 const inventorySlots:InventoryEntry[]=Array.from({length:36},()=>null);
@@ -112,6 +115,11 @@ const rooms: Record<RoomId, Room> = {
         type: 'goto-breaker-yard'
       },
       {
+        label: 'Head to South Dock Pier',
+        detail: 'Follow the waterfront route to the pier',
+        type: 'goto-south-dock-pier'
+      },
+      {
         label: 'Inspect the departures board',
         detail: 'A harmless local interaction',
         type: 'inspect-board'
@@ -138,6 +146,25 @@ const rooms: Record<RoomId, Room> = {
         type: 'goto-glassmarket'
       }
     ]
+  },
+  'south-dock-pier': {
+    id: 'south-dock-pier',
+    district: 'South Dock',
+    name: 'South Dock Pier',
+    slogan: 'SOUTH DOCK WATERFRONT',
+    description: 'A quiet stretch of the South Dock waterfront. More details coming soon.',
+    actions: [
+      {
+        label: 'Fish for Uncooked Shrimp',
+        detail: 'Cast at the pier and bring in a catch',
+        type: 'start-fishing'
+      },
+      {
+        label: 'Return to Glassmarket',
+        detail: 'Follow the waterfront route back to the transit concourse',
+        type: 'goto-glassmarket'
+      }
+    ]
   }
 };
 
@@ -151,7 +178,8 @@ const state = {
   ],
   inventory: {
     'Tier 1 Metal Scrap': 0,
-    'Tier 1 Composite Scrap': 0
+    'Tier 1 Composite Scrap': 0,
+    'Uncooked Shrimp': 0
   } as Record<string, number>,
   salvage: {
     active: false,
@@ -160,6 +188,10 @@ const state = {
     requirement: 1,
     remainingTicks: 4,
     maxTicks: 4
+  },
+  fishing: {
+    active: false,
+    intervalId: null as number | null
   }
 };
 
@@ -319,7 +351,9 @@ function updateMinimap() {
   if (!marker) return;
   marker.setAttribute('d', state.roomId === 'glassmarket'
     ? 'M154 75 166 98 142 98Z'
-    : 'M224 122 236 145 212 145Z');
+    : state.roomId === 'breaker-yard'
+      ? 'M224 122 236 145 212 145Z'
+      : 'M272 57 284 80 260 80Z');
 }
 
 function renderScene() {
@@ -330,16 +364,16 @@ function renderScene() {
   if (room.id === 'glassmarket') {
     target.innerHTML = `
       <div class="scene-stage glassmarket-stage">
-        <img src="${asset(room.sceneImage)}" alt="Pixel art view of the rainy Glassmarket Transit Concourse" class="scene scene-image" />
+        <img src="${asset(room.sceneImage ?? '')}" alt="Pixel art view of the rainy Glassmarket Transit Concourse" class="scene scene-image" />
         <div class="scene-tag scene-tag-left">UNDERPASS<br><small>BREAKER YARD 12</small></div>
         <div class="scene-tag scene-tag-right">DEPARTURES<br><small>PLATFORM 4</small></div>
       </div>`;
-  } else {
+  } else if (room.id === 'breaker-yard') {
     const remaining = state.salvage.remainingTicks;
     const depleted = remaining <= 0;
     target.innerHTML = `
       <div class="scene-stage breaker-stage asset-breaker-stage">
-        <img src="${asset(room.sceneImage)}" alt="Pixel art view of Breaker Yard 12 beneath the overpass" class="scene scene-image" />
+        <img src="${asset(room.sceneImage ?? '')}" alt="Pixel art view of Breaker Yard 12 beneath the overpass" class="scene scene-image" />
         <div class="scrap-node asset-scrap-node ${depleted ? 'depleted' : ''}" id="scrap-node">
           <div class="node-label">TIER 1 SCRAP</div>
           <img src="${asset('neon_cyberpunk_scrap_pile.png')}" alt="Tier 1 scrap node" />
@@ -352,6 +386,23 @@ function renderScene() {
         </div>
         <div class="scene-tag scene-tag-left">SALVAGE LOT<br><small>PERSONAL DEMO NODE</small></div>
         <div class="scene-tag scene-tag-right">SOUTH DOCK<br><small>BREAKER YARD 12</small></div>
+      </div>`;
+  } else {
+    target.innerHTML = `
+      <div class="scene-stage pier-stage">
+        <div class="pier-waterline" aria-hidden="true"></div>
+        <div class="scrap-node asset-scrap-node" id="fishing-node">
+          <div class="node-label">FISHING SPOT</div>
+          <img src="${asset('neon_cyberpunk_scrap_pile.png')}" alt="Placeholder fishing spot" />
+          <div class="node-count">${state.fishing.active ? 'FISHING' : 'READY'}</div>
+        </div>
+        <div class="mara-anchor asset-mara-anchor ${state.fishing.active ? 'visible' : ''}" id="mara-anchor">
+          <div class="xp-layer" id="xp-layer"></div>
+          <div class="mara-nameplate">${characterName()}</div>
+          <div class="asset-mara-sprite ${state.fishing.active ? 'salvaging' : ''}" aria-hidden="true"></div>
+        </div>
+        <div class="scene-tag scene-tag-left">SOUTH DOCK<br><small>WATERFRONT</small></div>
+        <div class="scene-tag scene-tag-right">PIER<br><small>FISHING DEMO</small></div>
       </div>`;
   }
 
@@ -383,11 +434,16 @@ function worldActionsMarkup(actions: RoomAction[]) {
               disabled = true;
               detail = 'This node has been picked clean';
             }
+          } else if (action.type === 'start-fishing') {
+            if (state.fishing.active) {
+              disabled = true;
+              detail = `${characterName()} is already fishing`;
+            }
           }
 
           return `
             <button type="button" data-action="${action.type}" ${disabled ? 'disabled' : ''}>
-              <span>${action.type === 'start-salvaging' ? '⛭' : action.type === 'goto-breaker-yard' ? '↗' : action.type === 'goto-glassmarket' ? '↙' : '⌕'}</span>
+              <span>${action.type === 'start-salvaging' ? '⛭' : action.type === 'start-fishing' ? '≈' : action.type === 'goto-breaker-yard' || action.type === 'goto-south-dock-pier' ? '↗' : action.type === 'goto-glassmarket' ? '↙' : '⌕'}</span>
               ${action.label}
               <b>›</b>
             </button>
@@ -412,7 +468,19 @@ function renderPanel() {
         <p class="world-note">The service underpass gives you a direct route to the local gathering area.</p>
         ${worldActionsMarkup(room.actions)}
       `
-      : `
+      : room.id === 'south-dock-pier'
+        ? `
+        <div class="panel-kicker">CURRENT LOCATION</div>
+        <h3>${room.name}</h3>
+        <p>${room.description}</p>
+        ${worldActionsMarkup(room.actions)}
+        <div class="gather-summary">
+          <div class="summary-card"><span>Gathering node</span><strong>Fishing spot</strong></div>
+          <div class="summary-card"><span>Node status</span><strong>Unlimited</strong></div>
+          <div class="summary-card"><span>Yield rule</span><strong>100% Uncooked Shrimp</strong></div>
+        </div>
+      `
+        : `
         <div class="panel-kicker">CURRENT LOCATION</div>
         <h3>${room.name}</h3>
         <p>${room.description}</p>
@@ -572,20 +640,34 @@ function handleAction(action: ActionType) {
   switch (action) {
     case 'goto-breaker-yard':
       stopSalvaging(false);
+      stopFishing();
       state.roomId = 'breaker-yard';
       addLog('You head through the service underpass to Breaker Yard 12.');
       renderAll();
       return;
 
+    case 'goto-south-dock-pier':
+      stopSalvaging(false);
+      stopFishing();
+      state.roomId = 'south-dock-pier';
+      addLog('You follow the waterfront route to South Dock Pier.');
+      renderAll();
+      return;
+
     case 'goto-glassmarket':
       stopSalvaging(false);
+      stopFishing();
       state.roomId = 'glassmarket';
-      addLog('You leave the yard and return to Glassmarket.');
+      addLog('You return to Glassmarket.');
       renderAll();
       return;
 
     case 'start-salvaging':
       startSalvaging();
+      return;
+
+    case 'start-fishing':
+      startFishing();
       return;
 
     case 'reset-node':
@@ -628,6 +710,27 @@ function stopSalvaging(withLog: boolean) {
   }
 }
 
+function startFishing() {
+  if (state.roomId !== 'south-dock-pier') return;
+  if (state.fishing.active) return;
+  state.fishing.active = true;
+  addLog(`${characterName()} starts fishing at South Dock Pier.`);
+  renderAll();
+
+  state.fishing.intervalId = window.setInterval(() => {
+    runFishingTick();
+  }, 1200);
+}
+
+function stopFishing() {
+  if (state.fishing.intervalId !== null) {
+    clearInterval(state.fishing.intervalId);
+    state.fishing.intervalId = null;
+  }
+
+  state.fishing.active = false;
+}
+
 function runSalvageTick() {
   if (!state.salvage.active) return;
 
@@ -658,6 +761,25 @@ function runSalvageTick() {
       renderAll();
     }, 220);
   }
+}
+
+function runFishingTick() {
+  if (!state.fishing.active) return;
+
+  if (!addInventoryItem('uncooked_shrimp', 1)) {
+    stopFishing();
+    addLog('Inventory full. Fishing stops.');
+    renderAll();
+    return;
+  }
+
+  state.inventory['Uncooked Shrimp'] += 1;
+
+  addLog('Uncooked Shrimp collected.');
+  renderScene();
+  renderPanel();
+  renderLog();
+  spawnXpPopup('+1 Uncooked Shrimp');
 }
 
 function spawnXpPopup(text: string) {
@@ -730,6 +852,7 @@ renderAll();
 
 document.querySelector<HTMLButtonElement>('#logout-button')?.addEventListener('click', async () => {
   stopSalvaging(false);
+  stopFishing();
   await supabase.auth.signOut();
 });
 }
