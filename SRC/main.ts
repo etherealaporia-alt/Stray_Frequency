@@ -218,6 +218,7 @@ app.innerHTML = `
           <div><span class="stat-icon focus">◆</span><strong id="derived-defense">${derivedDefense()}</strong><small>Defense</small></div>
           <div><span class="stat-icon credits">¢</span><strong>${currentCharacter?.credits ?? 0}</strong><small>Credits</small></div>
         </div>
+        <button id="logout-button" class="sf-logout character-logout" type="button">LOG OUT</button>
       </section>
 
       <div class="brand" aria-label="Stray Frequency">
@@ -225,16 +226,7 @@ app.innerHTML = `
         <small>some places never log off</small>
       </div>
 
-      <section class="district-status panel" aria-label="District status">
-        <div>
-          <span class="district-name" id="district-name">SOUTH DOCK</span>
-          <span class="muted">CYCLE 2147.8.12</span>
-          <span>21:47</span>
-        </div>
-        <div class="weather" title="Heavy rain">☂</div>
-        <div class="skyline" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
-        <button id="logout-button" class="sf-logout" type="button">LOG OUT</button>
-      </section>
+
     </header>
 
     <main class="play-grid">
