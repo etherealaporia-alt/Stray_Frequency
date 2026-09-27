@@ -34,7 +34,7 @@ let currentCharacter: Character | null = null;
 
 const assetBase = import.meta.env.BASE_URL;
 
-type Panel = 'world' | 'inventory' | 'skills' | 'journal' | 'comms' | 'map';
+type Panel = 'world' | 'inventory' | 'equipment' | 'skills' | 'journal' | 'comms' | 'map';
 type RoomId = 'glassmarket' | 'breaker-yard';
 type ActionType =
   | 'goto-breaker-yard'
@@ -62,11 +62,37 @@ type Room = {
 const panelIcons: Record<Panel, string> = {
   world: '◎',
   inventory: '▣',
+  equipment: '♙',
   skills: '▥',
   journal: '▤',
   comms: '◌',
   map: '◆'
 };
+
+type EquipmentSlot = 'main_hand' | 'off_hand' | 'head' | 'torso' | 'legs' | 'boots';
+type ItemKey = 'salvage_bar' | 'metal_scrap' | 'composite_scrap';
+type ItemDefinition = { key:ItemKey; name:string; description:string; asset:string; stackable:boolean; equipmentSlot?:EquipmentSlot; defense?:number; toolType?:'salvage'; toolTier?:number };
+type InventoryEntry = { item:ItemKey; quantity:number } | null;
+
+const ITEM_DEFINITIONS: Record<ItemKey, ItemDefinition> = {
+  salvage_bar:{key:'salvage_bar',name:'Powered Salvage Bar',description:'A powered utility breaker for prying, splitting and stripping Tier 1 scrap.',asset:'cyberpunk_salvage_crowbar_tool.png',stackable:false,equipmentSlot:'main_hand',toolType:'salvage',toolTier:1},
+  metal_scrap:{key:'metal_scrap',name:'Tier 1 Metal Scrap',description:'Bolts, plates and structural metal recovered from salvage.',asset:'cyberpunk_scrap_metal_pile.png',stackable:true},
+  composite_scrap:{key:'composite_scrap',name:'Tier 1 Composite Scrap',description:'Mixed housings, casings and recoverable composite material.',asset:'neon_cyberpunk_scrapyard_heap.png',stackable:true}
+};
+const EQUIPMENT_SLOTS:Array<[EquipmentSlot,string]>=[['main_hand','Main Hand'],['off_hand','Off Hand'],['head','Head'],['torso','Torso'],['legs','Legs'],['boots','Boots']];
+const inventorySlots:InventoryEntry[]=Array.from({length:36},()=>null);
+inventorySlots[0]={item:'salvage_bar',quantity:1};
+const equipment:Record<EquipmentSlot,ItemKey|null>={main_hand:null,off_hand:null,head:null,torso:null,legs:null,boots:null};
+
+function derivedDefense(){return Object.values(equipment).reduce((n,k)=>n+(k?(ITEM_DEFINITIONS[k].defense??0):0),0)}
+function equippedToolAllows(type:'salvage',tier:number){return Object.values(equipment).some(k=>{if(!k)return false;const i=ITEM_DEFINITIONS[k];return i.toolType===type&&(i.toolTier??0)>=tier})}
+function firstEmptyInventorySlot(){return inventorySlots.findIndex(e=>e===null)}
+function addInventoryItem(item:ItemKey,quantity=1){const d=ITEM_DEFINITIONS[item];if(d.stackable){const e=inventorySlots.find(x=>x?.item===item);if(e){e.quantity+=quantity;return true}}const n=firstEmptyInventorySlot();if(n<0)return false;inventorySlots[n]={item,quantity};return true}
+function refreshCharacterStats(){const e=document.querySelector<HTMLElement>('#derived-defense');if(e)e.textContent=String(derivedDefense())}
+function equipFromInventory(index:number){const e=inventorySlots[index];if(!e)return;const d=ITEM_DEFINITIONS[e.item];if(!d.equipmentSlot)return;const slot=d.equipmentSlot,old=equipment[slot];equipment[slot]=e.item;inventorySlots[index]=old?{item:old,quantity:1}:null;addLog(old?`${d.name} equipped; ${ITEM_DEFINITIONS[old].name} returned to inventory.`:`${d.name} equipped.`);renderPanel();refreshCharacterStats()}
+function unequipToInventory(slot:EquipmentSlot){const k=equipment[slot];if(!k)return;const n=firstEmptyInventorySlot();if(n<0){addLog(`Inventory full. ${ITEM_DEFINITIONS[k].name} remains equipped.`);return}inventorySlots[n]={item:k,quantity:1};equipment[slot]=null;addLog(`${ITEM_DEFINITIONS[k].name} unequipped.`);renderPanel();refreshCharacterStats()}
+function inventorySlotMarkup(e:InventoryEntry,index:number){if(!e)return `<button class="inventory-tile empty" type="button" data-inventory-index="${index}" aria-label="Empty inventory slot"></button>`;const i=ITEM_DEFINITIONS[e.item];return `<button class="inventory-tile" type="button" data-inventory-index="${index}" data-tooltip="${escapeHtml(`${i.name} — ${i.description}`)}" aria-label="${escapeHtml(i.name)}"><img src="${asset(i.asset)}" alt="" />${e.quantity>1?`<span class="item-quantity">${e.quantity}</span>`:''}</button>`}
+function equipmentSlotMarkup(slot:EquipmentSlot,label:string){const k=equipment[slot];if(!k)return `<button class="equipment-slot empty" type="button" data-equipment-slot="${slot}"><span>${label}</span><small>EMPTY</small></button>`;const i=ITEM_DEFINITIONS[k];return `<button class="equipment-slot" type="button" data-equipment-slot="${slot}" data-tooltip="${escapeHtml(`${i.name} — ${i.description}`)}"><span>${label}</span><img src="${asset(i.asset)}" alt="${escapeHtml(i.name)}" /><small>${escapeHtml(i.name)}</small></button>`}
 
 const rooms: Record<RoomId, Room> = {
   glassmarket: {
@@ -180,13 +206,10 @@ app.innerHTML = `
           <div class="eyebrow">PLAYER</div>
           <h2>${escapeHtml(characterName())}</h2>
           <p class="muted">Unregistered Contractor</p>
-          <div class="level-row"><span>Level 34</span><span>12,480 / 22,000 XP</span></div>
-          <div class="xp-track"><span></span></div>
-          <p class="character-quote">“Still here. Still breathing. That's a win.”</p>
         </div>
         <div class="quick-stats" aria-label="Quick stats">
           <div><span class="stat-icon hp">♥</span><strong>${currentCharacter?.health ?? 10}/${currentCharacter?.max_health ?? 10}</strong><small>HP</small></div>
-          <div><span class="stat-icon focus">ϟ</span><strong>63%</strong><small>Focus</small></div>
+          <div><span class="stat-icon focus">◆</span><strong id="derived-defense">${derivedDefense()}</strong><small>Defense</small></div>
           <div><span class="stat-icon credits">¢</span><strong>${currentCharacter?.credits ?? 0}</strong><small>Credits</small></div>
         </div>
       </section>
@@ -256,7 +279,7 @@ app.innerHTML = `
         </section>
 
         <nav class="rune-menu panel" aria-label="Game menu">
-          ${(['world', 'inventory', 'skills', 'journal', 'comms', 'map'] as Panel[])
+          ${(['world', 'inventory', 'equipment', 'skills', 'journal', 'comms', 'map'] as Panel[])
             .map(
               (panel) => `
                 <button type="button" data-panel="${panel}" class="${panel === 'world' ? 'active' : ''}">
@@ -413,15 +436,6 @@ function renderPanel() {
           </div>
         </div>
 
-        <div class="tool-card">
-          <img class="tool-icon" src="${asset('cyberpunk_salvage_crowbar_tool.png')}" alt="Salvage tool" />
-          <div>
-            <span>Equipped tool</span>
-            <strong>Powered Salvage Bar</strong>
-            <p>A rough utility breaker used to pry, split and strip low-tier scrap.</p>
-          </div>
-        </div>
-
         <div class="asset-resource-grid">
           <div class="asset-resource-card">
             <img src="${asset('cyberpunk_scrap_metal_pile.png')}" alt="Tier 1 Metal Scrap" />
@@ -445,38 +459,14 @@ function renderPanel() {
       `;
 
   const inventoryContent = `
-    <div class="panel-kicker">INVENTORY</div>
-    <h3>Carried Materials</h3>
-    <div class="asset-item-grid">
-      <div class="asset-item-card">
-        <img src="${asset('cyberpunk_salvage_crowbar_tool.png')}" alt="Powered Salvage Bar" />
-        <div>
-          <span>Tool</span>
-          <strong>Powered Salvage Bar</strong>
-          <small>Used to work Tier 1 Scrap nodes in Breaker Yard 12.</small>
-        </div>
-      </div>
-
-      <div class="asset-item-card">
-        <img src="${asset('cyberpunk_scrap_metal_pile.png')}" alt="Tier 1 Metal Scrap" />
-        <div>
-          <span>Material</span>
-          <strong>Tier 1 Metal Scrap × ${state.inventory['Tier 1 Metal Scrap']}</strong>
-          <small>Placeholder material for metalworking routes.</small>
-        </div>
-      </div>
-
-      <div class="asset-item-card">
-        <img src="${asset('neon_cyberpunk_scrapyard_heap.png')}" alt="Tier 1 Composite Scrap" />
-        <div>
-          <span>Material</span>
-          <strong>Tier 1 Composite Scrap × ${state.inventory['Tier 1 Composite Scrap']}</strong>
-          <small>Placeholder material for fabrication routes.</small>
-        </div>
-      </div>
-    </div>
-    <p class="footnote">This panel is now using the generated asset icons rather than CSS mock items.</p>
-  `;
+    <div class="panel-kicker">INVENTORY</div><h3>36 Slots</h3>
+    <div class="inventory-tiles">${inventorySlots.map((entry,index)=>inventorySlotMarkup(entry,index)).join('')}</div>
+    <p class="inventory-hint">Double-click equippable items. Hover any item for details.</p>`;
+  const equipmentContent = `
+    <div class="panel-kicker">EQUIPMENT</div><h3>Equipped Gear</h3>
+    <div class="equipment-grid">${EQUIPMENT_SLOTS.map(([slot,label])=>equipmentSlotMarkup(slot,label)).join('')}</div>
+    <div class="derived-stats"><span>Equipment Defense</span><strong>${derivedDefense()}</strong></div>
+    <p class="inventory-hint">Double-click equipped gear to return it to inventory.</p>`;
 
   const skillsContent = `
     <div class="panel-kicker">SKILLS</div>
@@ -521,6 +511,7 @@ function renderPanel() {
   const content: Record<Panel, string> = {
     world: worldContent,
     inventory: inventoryContent,
+    equipment: equipmentContent,
     skills: skillsContent,
     journal: journalContent,
     comms: commsContent,
@@ -535,6 +526,9 @@ function renderPanel() {
       if (action) handleAction(action);
     });
   });
+
+  target.querySelectorAll<HTMLButtonElement>('[data-inventory-index]').forEach(button=>button.addEventListener('dblclick',()=>{const i=Number(button.dataset.inventoryIndex);if(Number.isInteger(i))equipFromInventory(i)}));
+  target.querySelectorAll<HTMLButtonElement>('[data-equipment-slot]').forEach(button=>button.addEventListener('dblclick',()=>{const slot=button.dataset.equipmentSlot as EquipmentSlot|undefined;if(slot)unequipToInventory(slot)}));
 }
 
 function addLog(message: string) {
@@ -579,7 +573,7 @@ function handleAction(action: ActionType) {
 function startSalvaging() {
   if (state.roomId !== 'breaker-yard') return;
   if (state.salvage.active || state.salvage.remainingTicks <= 0) return;
-
+  if (!equippedToolAllows('salvage',1)) { addLog('A Tier 1 salvage tool must be equipped in Main Hand to work this node.'); return; }
   state.salvage.active = true;
   addLog(`${characterName()} steps into the bay and starts salvaging the node.`);
   renderAll();
@@ -615,6 +609,8 @@ function runSalvageTick() {
   state.salvage.remainingTicks -= 1;
 
   const resource = Math.random() < 0.5 ? 'Tier 1 Metal Scrap' : 'Tier 1 Composite Scrap';
+  const itemKey:ItemKey=resource==='Tier 1 Metal Scrap'?'metal_scrap':'composite_scrap';
+  if(!addInventoryItem(itemKey,1)){stopSalvaging(false);addLog('Inventory full. Salvaging stops.');renderAll();return}
   state.inventory[resource] += 1;
 
   const finalTick = state.salvage.remainingTicks <= 0;

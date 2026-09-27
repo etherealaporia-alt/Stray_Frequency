@@ -1463,3 +1463,25 @@ img {
   .chat{min-height:190px}
   .inventory-grid{grid-template-columns:repeat(3,1fr)}
 }
+
+/* INVENTORY / EQUIPMENT + FIT-TO-SHELL LOCK */
+html{min-height:100%;background:#07090a;scrollbar-gutter:stable}
+body{min-height:100vh;background-color:#07090a;overflow-x:hidden}
+.character-copy{display:flex;flex-direction:column;justify-content:center}
+.level-row,.xp-track,.character-quote{display:none!important}
+.rune-menu{grid-template-columns:repeat(5,1fr)!important}.rune-menu button{height:58px!important}.menu-icon{font-size:22px!important}
+.active-panel{height:350px;min-height:350px;max-height:350px;overflow:visible;contain:layout}.active-panel>*{min-width:0}.log{overflow-y:auto!important}
+.inventory-tiles{display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(6,1fr);gap:5px;height:252px}
+.inventory-tile{position:relative;min-width:0;min-height:0;padding:3px;border:1px solid #393d40;background:#111518;display:grid;place-items:center;cursor:default}
+.inventory-tile.empty{background:#0c0f11;border-color:#282c2f}.inventory-tile img{width:100%;height:100%;max-width:34px;max-height:34px;object-fit:contain;image-rendering:pixelated;pointer-events:none}
+.item-quantity{position:absolute;right:2px;bottom:1px;padding:1px 3px;background:rgba(0,0,0,.82);color:var(--amber);font-size:9px;line-height:1.1;pointer-events:none}
+.inventory-hint{margin:7px 0 0!important;color:#777!important;font-size:10px!important}
+.inventory-tile[data-tooltip]::after,.equipment-slot[data-tooltip]::after{content:attr(data-tooltip);position:absolute;z-index:40;left:50%;bottom:calc(100% + 6px);transform:translateX(-50%);width:220px;padding:7px 8px;border:1px solid #625a4d;background:#080a0c;color:#d9d9d6;font-size:10px;line-height:1.35;text-align:left;white-space:normal;pointer-events:none;opacity:0;visibility:hidden}
+.inventory-tile[data-tooltip]:hover::after,.equipment-slot[data-tooltip]:hover::after{opacity:1;visibility:visible}
+.equipment-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,112px);gap:8px}
+.equipment-slot{position:relative;min-width:0;padding:6px;border:1px solid #393d40;background:#111518;display:grid;grid-template-rows:auto 1fr auto;place-items:center;gap:3px;cursor:default}
+.equipment-slot>span{color:var(--amber);font-size:9px;text-transform:uppercase}.equipment-slot>small{width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#aaa;font-size:8px;text-align:center}.equipment-slot img{width:56px;height:56px;object-fit:contain;image-rendering:pixelated}.equipment-slot.empty small{color:#555}
+.derived-stats{display:flex;justify-content:space-between;margin-top:8px;padding:6px 8px;border-top:1px solid #303437;font-size:11px}.derived-stats strong{color:var(--amber)}
+.gather-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px}.summary-card{padding:7px;border-radius:0}.asset-resource-grid{display:none}.tool-card{display:none!important}.node-reset{margin-top:7px;padding:7px 9px}
+.skill-list{gap:5px}.skill-list>div{gap:4px;font-size:11px}.journal-entry,.message{padding:8px 4px}
+@media(max-width:820px){.rune-menu{grid-template-columns:repeat(5,1fr)!important}.active-panel{height:350px;min-height:350px;max-height:350px;overflow:visible}.inventory-tiles{height:252px}}
