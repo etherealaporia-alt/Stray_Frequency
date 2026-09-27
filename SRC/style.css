@@ -1283,7 +1283,7 @@ img {
 .asset-scrap-node .node-count { bottom:-28px; left:4px; z-index:2; white-space:nowrap; }
 .asset-mara-anchor { left:44%; bottom:8%; width:min(24vw,235px); height:auto; min-height:140px; z-index:2; }
 .asset-mara-sprite { width:100%; aspect-ratio:1/1; background-image:url('/Stray_Frequency/assets/cyberpunk_salvage_swing_sprite_sheet.png'); background-repeat:no-repeat; background-size:300% 100%; background-position:0 0; image-rendering:pixelated; }
-.asset-mara-sprite.salvaging { animation:asset-salvage-frames .78s steps(3) infinite; }
+.asset-mara-sprite.salvaging { animation:asset-salvage-frames 1.2s steps(3,jump-none) infinite; }
 @keyframes asset-salvage-frames { from{background-position:0 0} to{background-position:100% 0} }
 
 .asset-item-grid,.asset-resource-grid{display:grid;gap:10px;margin-top:14px}
@@ -1639,6 +1639,8 @@ body{min-height:100vh;background-color:#07090a;overflow-x:hidden}
  .character-card .quick-stats small{font-size:9px;line-height:1}
  .character-card .stat-icon{font-size:18px}
  .character-card .character-logout{position:absolute;top:auto;right:8px;bottom:8px;width:auto;min-height:0;padding:2px 5px;font-size:7px;line-height:1;z-index:3}
+ .asset-scrap-node{left:calc(50% - 12px);right:auto;width:min(18vw,166.5px);z-index:3}
+ .asset-mara-anchor{left:calc(50% - min(24vw,235px) + 42px);bottom:14%}
  .play-grid{min-height:0;grid-template-rows:minmax(0,1fr)}
  .world-column{min-height:0;grid-template-rows:minmax(0,1fr) minmax(150px,min(25vh,205px))}
  .location-card{min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr)}
