@@ -14,7 +14,20 @@ type Character = {
   appearance_skipped: boolean;
   location_id: string;
   credits: number;
+  health: number;
+  max_health: number;
 };
+
+type CharacterSkill = { skill_key: string; level: number; xp: number };
+
+const STARTING_SKILLS = [
+  ['firearms', 'Firearms'], ['close_combat', 'Close Combat'],
+  ['survivability', 'Survivability'], ['salvaging', 'Salvaging'],
+  ['metalworking', 'Metalworking'], ['fabrication', 'Fabrication'],
+  ['fishing', 'Fishing'], ['cooking', 'Cooking']
+] as const;
+
+let currentSkills: CharacterSkill[] = [];
 
 let currentUser: User | null = null;
 let currentCharacter: Character | null = null;
@@ -124,6 +137,21 @@ const state = {
 
 function asset(path: string) {
   return `${assetBase}assets/${path}`;
+}
+
+const CORE_ASSETS = [
+  'mara-vale.png', 'glassmarket.png', 'neon_salvage_yard_under_the_overpass.png',
+  'neon_cyberpunk_scrap_pile.png', 'cyberpunk_salvage_swing_sprite_sheet.png',
+  'cyberpunk_salvage_crowbar_tool.png', 'neon_cyberpunk_scrapyard_heap.png'
+];
+
+async function preloadCoreAssets() {
+  await Promise.all(CORE_ASSETS.map((path) => new Promise<void>((resolve) => {
+    const image = new Image();
+    image.onload = () => resolve();
+    image.onerror = () => resolve();
+    image.src = asset(path);
+  })));
 }
 
 function injectRuntimeStyles() {
@@ -497,6 +525,10 @@ function escapeGateway(value: string) {
 }
 
 function renderGame() {
+/*
+ * LOCKED GAME SHELL: do not rearrange the .game-shell structural markup.
+ * New systems populate existing regions/panels unless the owner explicitly unlocks it.
+ */
 app.innerHTML = `
   <div class="game-shell">
     <header class="masthead">
@@ -511,7 +543,7 @@ app.innerHTML = `
           <p class="character-quote">“Still here. Still breathing. That's a win.”</p>
         </div>
         <div class="quick-stats" aria-label="Quick stats">
-          <div><span class="stat-icon hp">♥</span><strong>86%</strong><small>HP</small></div>
+          <div><span class="stat-icon hp">♥</span><strong>${currentCharacter?.health ?? 10}/${currentCharacter?.max_health ?? 10}</strong><small>HP</small></div>
           <div><span class="stat-icon focus">ϟ</span><strong>63%</strong><small>Focus</small></div>
           <div><span class="stat-icon credits">¢</span><strong>${currentCharacter?.credits ?? 0}</strong><small>Credits</small></div>
         </div>
@@ -840,21 +872,10 @@ function renderPanel() {
     <div class="panel-kicker">SKILLS</div>
     <h3>Capability</h3>
     <div class="skill-list">
-      ${[
-        ['Firearms', 38],
-        ['Close Combat', 34],
-        ['Survivability', 41],
-        ['Salvaging', 9],
-        ['Metalworking', 6],
-        ['Fabrication', 5],
-        ['Fishing', 3],
-        ['Cooking', 2]
-      ]
-        .map(
-          ([name, level]) => `
-            <div><span>${name}</span><strong>${level}</strong><i><em style="width:${Math.min(100, Number(level) * 2)}%"></em></i></div>`
-        )
-        .join('')}
+      ${STARTING_SKILLS.map(([key, name]) => {
+        const level = currentSkills.find((skill) => skill.skill_key === key)?.level ?? 1;
+        return `<div><span>${name}</span><strong>${level}</strong><i><em style="width:${Math.min(100, level * 2)}%"></em></i></div>`;
+      }).join('')}
     </div>
   `;
 
@@ -1067,58 +1088,78 @@ document.querySelector<HTMLButtonElement>('#logout-button')?.addEventListener('c
 
 function renderAuth(message = '') {
   app.innerHTML = `
-    <main class="gateway-shell">
-      <section class="gateway-card panel">
-        <div class="gateway-brand"><span>STRAY</span> <b>FREQUENCY</b></div>
-        <p class="gateway-tagline">some places never log off</p>
-        <div class="gateway-tabs">
-          <button type="button" class="active" data-auth-tab="login">LOG IN</button>
-          <button type="button" data-auth-tab="register">CREATE ACCOUNT</button>
-        </div>
-        <form id="auth-form" class="gateway-form">
-          <input type="hidden" id="auth-mode" value="login" />
-          <label>EMAIL<input id="auth-email" type="email" required autocomplete="email" /></label>
-          <label>PASSWORD<input id="auth-password" type="password" required minlength="6" autocomplete="current-password" /></label>
-          <button class="gateway-primary" type="submit">CONNECT</button>
-        </form>
-        <p id="gateway-message" class="gateway-message">${escapeGateway(message)}</p>
-      </section>
-    </main>`;
+    <main class="gateway-shell"><section class="gateway-card panel">
+      <div class="gateway-brand"><span>STRAY</span> <b>FREQUENCY</b></div>
+      <p class="gateway-tagline">some places never log off</p>
+      <div class="gateway-tabs">
+        <button id="login-tab" class="active" type="button">LOG IN</button>
+        <button id="register-tab" type="button">CREATE ACCOUNT</button>
+      </div>
+      <form id="auth-form" class="gateway-form">
+        <label>EMAIL<input id="auth-email" type="email" autocomplete="email" required /></label>
+        <label>PASSWORD<input id="auth-password" type="password" autocomplete="current-password" minlength="6" required /></label>
+        <label id="confirm-password-row" hidden>CONFIRM PASSWORD<input id="auth-confirm-password" type="password" autocomplete="new-password" minlength="6" /></label>
+        <label class="password-toggle"><input id="show-password" type="checkbox" /><span>SHOW PASSWORD</span></label>
+        <button id="auth-submit" class="gateway-primary" type="submit">LOG IN</button>
+      </form>
+      <p id="auth-message" class="gateway-message">${escapeGateway(message)}</p>
+    </section></main>`;
 
-  document.querySelectorAll<HTMLButtonElement>('[data-auth-tab]').forEach((button) => {
-    button.addEventListener('click', () => {
-      const mode = button.dataset.authTab === 'register' ? 'register' : 'login';
-      (document.querySelector('#auth-mode') as HTMLInputElement).value = mode;
-      document.querySelectorAll<HTMLButtonElement>('[data-auth-tab]').forEach((tab) => tab.classList.toggle('active', tab === button));
-      const password = document.querySelector<HTMLInputElement>('#auth-password');
-      if (password) password.autocomplete = mode === 'register' ? 'new-password' : 'current-password';
-      const submit = document.querySelector<HTMLButtonElement>('.gateway-primary');
-      if (submit) submit.textContent = mode === 'register' ? 'CREATE ACCOUNT' : 'CONNECT';
-    });
+  let mode: 'login' | 'register' = 'login';
+  const loginTab = document.querySelector<HTMLButtonElement>('#login-tab')!;
+  const registerTab = document.querySelector<HTMLButtonElement>('#register-tab')!;
+  const submit = document.querySelector<HTMLButtonElement>('#auth-submit')!;
+  const password = document.querySelector<HTMLInputElement>('#auth-password')!;
+  const confirmRow = document.querySelector<HTMLElement>('#confirm-password-row')!;
+  const confirmPassword = document.querySelector<HTMLInputElement>('#auth-confirm-password')!;
+  const showPassword = document.querySelector<HTMLInputElement>('#show-password')!;
+  const messageNode = document.querySelector<HTMLElement>('#auth-message')!;
+
+  const setMode = (next: 'login' | 'register') => {
+    mode = next;
+    const registering = mode === 'register';
+    loginTab.classList.toggle('active', !registering);
+    registerTab.classList.toggle('active', registering);
+    submit.textContent = registering ? 'CREATE ACCOUNT' : 'LOG IN';
+    confirmRow.hidden = !registering;
+    confirmPassword.required = registering;
+    password.autocomplete = registering ? 'new-password' : 'current-password';
+    confirmPassword.value = '';
+    messageNode.textContent = '';
+  };
+
+  loginTab.addEventListener('click', () => setMode('login'));
+  registerTab.addEventListener('click', () => setMode('register'));
+  showPassword.addEventListener('change', () => {
+    const type = showPassword.checked ? 'text' : 'password';
+    password.type = type; confirmPassword.type = type;
   });
 
-  document.querySelector<HTMLFormElement>('#auth-form')?.addEventListener('submit', async (event) => {
+  document.querySelector<HTMLFormElement>('#auth-form')!.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const email = (document.querySelector('#auth-email') as HTMLInputElement).value.trim();
-    const password = (document.querySelector('#auth-password') as HTMLInputElement).value;
-    const mode = (document.querySelector('#auth-mode') as HTMLInputElement).value;
-    const messageNode = document.querySelector<HTMLElement>('#gateway-message');
-    if (messageNode) messageNode.textContent = 'Connecting…';
-
-    const result = mode === 'register'
-      ? await supabase.auth.signUp({ email, password })
-      : await supabase.auth.signInWithPassword({ email, password });
-
-    if (result.error) {
-      if (messageNode) messageNode.textContent = result.error.message;
-      return;
+    const email = document.querySelector<HTMLInputElement>('#auth-email')!.value.trim();
+    const passwordValue = password.value;
+    if (mode === 'register' && passwordValue !== confirmPassword.value) {
+      messageNode.textContent = 'Passwords do not match. Check both entries and try again.';
+      confirmPassword.focus(); return;
     }
-    if (!result.data.session) {
-      if (messageNode) messageNode.textContent = 'Account created. Check your email if confirmation is required, then log in.';
-      return;
+    submit.disabled = true;
+    messageNode.textContent = mode === 'register' ? 'Creating account…' : 'Signing in…';
+
+    if (mode === 'register') {
+      const { data, error } = await supabase.auth.signUp({ email, password: passwordValue });
+      if (error) { messageNode.textContent = error.message; submit.disabled = false; return; }
+      if (!data.session) {
+        setMode('login');
+        messageNode.textContent = 'Account created. Check your email to verify it, then log in.';
+        submit.disabled = false; return;
+      }
+      currentUser = data.user; await routeAuthenticatedUser(); return;
     }
-    currentUser = result.data.user;
-    await routeAuthenticatedUser();
+
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password: passwordValue });
+    if (error) { messageNode.textContent = error.message; submit.disabled = false; return; }
+    currentUser = data.user; await routeAuthenticatedUser();
   });
 }
 
