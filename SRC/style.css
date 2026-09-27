@@ -1719,32 +1719,3 @@ body{min-height:100vh;background-color:#07090a;overflow-x:hidden}
  .skill-details-header h2{font-size:20px}
  .skill-details-description{font-size:12px}
 }
-
-/* ===== SOUTH DOCK FISHING CONTENT — LOCKED SHELL SAFE =====
-   Fishing visuals only. No shell/layout structural selectors are changed here. */
-.pier-stage{background:#0b0f13}
-.pier-stage::before,.pier-stage::after{content:none}
-.pier-stage>.scene-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center}
-.pier-waterline{display:none}
-.fishing-node{position:absolute;z-index:3;width:min(14vw,150px);height:auto;cursor:pointer;background:transparent;border:0;filter:drop-shadow(0 5px 7px rgba(0,0,0,.45))}
-.fishing-node:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
-.fishing-node img{width:100%;height:auto;display:block;image-rendering:pixelated}
-.fishing-node .node-label,.fishing-node .node-count{z-index:4;left:4px;white-space:nowrap}
-.fishing-node .node-label{top:-24px}
-.fishing-node .node-count{bottom:-22px}
-.fishing-node-shrimp{right:20%;bottom:2%}
-.fishing-node-sardine{right:5%;bottom:10%}
-.fishing-mara{left:39%;bottom:1%;width:min(30vw,300px);min-height:170px;z-index:4}
-.fishing-mara-sprite{width:100%;aspect-ratio:3/2;background-repeat:no-repeat;background-position:0 0;background-size:400% 200%;image-rendering:pixelated}
-.fishing-mara-sprite.rod-fishing{background-image:url('/Stray_Frequency/assets/file_000000002da0824386e4541c086f0595.png');animation:rod-fishing-frames 1.6s steps(1,end) infinite}
-.fishing-mara-sprite.netting{aspect-ratio:3/2;background-image:url('/Stray_Frequency/assets/file_000000008e0482109cf027d0192fbdf3.png');background-size:500% 300%;animation:net-fishing-frames 2.4s steps(1,end) infinite}
-@keyframes rod-fishing-frames{
- 0%,12.49%{background-position:0 0}12.5%,24.99%{background-position:33.333% 0}25%,37.49%{background-position:66.666% 0}37.5%,49.99%{background-position:100% 0}
- 50%,62.49%{background-position:0 100%}62.5%,74.99%{background-position:33.333% 100%}75%,87.49%{background-position:66.666% 100%}87.5%,100%{background-position:100% 100%}
-}
-@keyframes net-fishing-frames{
- 0%,6.65%{background-position:0 0}6.66%,13.32%{background-position:25% 0}13.33%,19.99%{background-position:50% 0}20%,26.65%{background-position:75% 0}26.66%,33.32%{background-position:100% 0}
- 33.33%,39.99%{background-position:0 50%}40%,46.65%{background-position:25% 50%}46.66%,53.32%{background-position:50% 50%}53.33%,59.99%{background-position:75% 50%}60%,66.65%{background-position:100% 50%}
- 66.66%,73.32%{background-position:0 100%}73.33%,79.99%{background-position:25% 100%}80%,86.65%{background-position:50% 100%}86.66%,93.32%{background-position:75% 100%}93.33%,100%{background-position:100% 100%}
-}
-@media(max-width:820px){.fishing-node{width:min(24vw,128px)}.fishing-node-shrimp{right:18%}.fishing-node-sardine{right:2%}.fishing-mara{left:28%;width:min(42vw,250px)}}
