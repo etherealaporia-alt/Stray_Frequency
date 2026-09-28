@@ -43,29 +43,18 @@ export const ASSETS = {
   }
 } as const;
 
-/**
- * These two files existed before the public asset reorganisation but have no
- * replacement in the current public tree. Keeping the unresolved URLs named
- * here prevents fallback paths from leaking into data or rendering modules.
- */
 export const LEGACY_UNRESOLVED_ASSETS = {
   maraValePortrait: assetUrl('assets/mara-vale.png'),
   glassmarketScene: assetUrl('assets/glassmarket.png')
 } as const;
 
-/**
- * Current-path aliases for assets whose pixels were previously used as
- * placeholders for several concepts. The aliases preserve existing visuals
- * without reviving the obsolete flat asset paths.
- */
 export const LEGACY_VISUAL_EQUIVALENTS = {
   poweredSalvageBar: ASSETS.items.tools.breaker,
   portableInductionPad: ASSETS.items.tools.breaker,
   metalScrap: ASSETS.items.resources.scrap,
-  compositeScrap: ASSETS.environments.nodes.salvage,
+  compositeScrap: ASSETS.items.resources.synthetics,
   copperCoils: ASSETS.items.resources.synthetics,
-  cookedShrimp: ASSETS.items.resources.synthetics,
-  salvageSceneNode: ASSETS.items.resources.synthetics
+  cookedShrimp: ASSETS.items.resources.synthetics
 } as const;
 
 export const CORE_ASSET_URLS = [
@@ -88,7 +77,6 @@ export const CORE_ASSET_URLS = [
   ASSETS.items.food.sardine
 ] as const;
 
-/** Values a UI bootstrap can install on the shell/document style. */
 export const ASSET_CSS_VARIABLES = {
   '--asset-mara-salvage': `url("${ASSETS.animations.salvaging.maraBreaker}")`
 } as const;
