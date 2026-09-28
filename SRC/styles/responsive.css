@@ -311,6 +311,11 @@
 
   .world-column {
     order: 1;
+    flex: 0 0 auto;
+    height: auto;
+    min-height: 0;
+    grid-template-rows: auto 160px;
+    align-content: start;
     gap: 6px;
   }
 
