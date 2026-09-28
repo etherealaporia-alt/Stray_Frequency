@@ -1,0 +1,32 @@
+/* ===== FEATURE CONTENT INSIDE LOCKED SHELL =====
+   These selectors may style content inside existing shell regions.
+   They must not change .game-shell, .masthead, .play-grid, .world-column,
+   .sidebar, .minimap, .rune-menu, or .active-panel geometry. */
+
+.asset-breaker-stage > .scene-image { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.pier-stage{overflow:hidden;background:linear-gradient(180deg,#121820 0%,#202a31 36%,#52615a 36.5%,#23383a 39%,#15292d 48%,#091317 100%)}
+.pier-stage::before{content:"";position:absolute;left:12%;right:12%;bottom:0;height:24%;border-top:2px solid rgba(177,164,127,.7);background:repeating-linear-gradient(90deg,rgba(116,105,80,.35) 0 2px,transparent 2px 52px),repeating-linear-gradient(0deg,#20282a 0 15px,#303436 16px,#1a2325 18px)}
+.pier-stage::after{content:"";position:absolute;left:0;right:0;top:43%;height:1px;background:rgba(158,177,164,.55);box-shadow:0 12px 0 rgba(149,169,162,.13),0 30px 0 rgba(149,169,162,.1),0 58px 0 rgba(149,169,162,.08)}
+.pier-waterline{position:absolute;z-index:1;left:0;right:0;top:43%;height:3px;background:rgba(192,183,145,.48);box-shadow:0 1px 10px rgba(175,193,171,.28)}
+.asset-scrap-node { left:17%; bottom:6%; width:min(28vw,260px); height:auto; background:transparent; border:0; box-shadow:none; z-index:2; }
+.asset-scrap-node img { width:100%; height:auto; image-rendering:pixelated; }
+.asset-scrap-node .node-label { top:-28px; left:4px; z-index:2; }
+.asset-scrap-node .node-count { bottom:-28px; left:4px; z-index:2; white-space:nowrap; }
+.asset-mara-anchor { left:44%; bottom:8%; width:min(24vw,235px); height:auto; min-height:140px; z-index:2; }
+.asset-mara-sprite { width:100%; aspect-ratio:1/1; background-image:var(--asset-mara-salvage); background-repeat:no-repeat; background-size:300% 100%; background-position:0 0; image-rendering:pixelated; }
+.asset-mara-sprite.salvaging { animation:asset-salvage-frames 1.2s steps(3,jump-none) infinite; }
+@keyframes asset-salvage-frames { from{background-position:0 0} to{background-position:100% 0} }
+
+.asset-item-grid,.asset-resource-grid{display:grid;gap:10px;margin-top:14px}
+.asset-item-grid{grid-template-columns:1fr}
+.asset-resource-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.asset-item-card,.asset-resource-card{display:grid;grid-template-columns:62px minmax(0,1fr);align-items:center;gap:10px;border:1px solid #303437;background:rgba(255,255,255,.03);border-radius:10px;padding:10px}
+.asset-item-card img,.asset-resource-card img{width:62px;height:62px;object-fit:contain;image-rendering:pixelated}
+.asset-item-card span,.asset-resource-card span{display:block;color:#858784;font-size:11px;margin-bottom:5px;letter-spacing:.08em;text-transform:uppercase}
+.asset-item-card strong,.asset-resource-card strong{display:block;font-size:14px;color:#d9d9d6;line-height:1.2;margin-bottom:4px}
+.asset-item-card small,.asset-resource-card small{display:block;color:#858784;font-size:11px;line-height:1.35}
+.gather-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+.summary-card,.tool-card{border:1px solid #303437;background:rgba(255,255,255,.03);border-radius:10px;padding:10px}
+.tool-card{display:grid;grid-template-columns:72px minmax(0,1fr);align-items:center;gap:10px;margin-top:14px}
+.tool-icon{width:62px;height:62px;object-fit:contain;image-rendering:pixelated}
+.node-reset{width:100%;margin-top:12px;padding:10px 12px;border:1px solid #4a4640;background:rgba(255,255,255,.03);color:#f1b625;text-align:left;cursor:pointer}

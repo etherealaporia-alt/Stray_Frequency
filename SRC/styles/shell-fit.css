@@ -1,0 +1,7 @@
+/* INVENTORY / EQUIPMENT + FIT-TO-SHELL LOCK */
+html{min-height:100%;background:#07090a;scrollbar-gutter:stable}
+body{min-height:100vh;background-color:#07090a;overflow-x:hidden}
+.character-copy{display:flex;flex-direction:column;justify-content:center}
+.level-row,.xp-track,.character-quote{display:none!important}
+.rune-menu{grid-template-columns:repeat(5,1fr)!important}.rune-menu button{height:58px!important}.menu-icon{font-size:22px!important}
+.active-panel{height:350px;min-height:350px;max-height:350px;overflow:visible;contain:layout}.active-panel>*{min-width:0}.log{overflow-y:auto!important}
