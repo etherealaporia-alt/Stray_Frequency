@@ -26,9 +26,10 @@
 }
 
 /* --------------------------------------------------------------------------
-   DESKTOP — locked composition fills the viewport.
-   Flexible scene, chat and active-panel regions absorb height differences.
-   No document-level gameplay scrolling and no whole-UI zoom/scaling.
+   DESKTOP — viewport-locked composition.
+   Header contains character card + title.
+   Below it, the world column and sidebar share the full remaining height.
+   Sidebar is exactly: five tabs -> scrolling active panel -> two tabs.
    -------------------------------------------------------------------------- */
 @media (min-width:951px) {
   html,
@@ -54,40 +55,51 @@
   }
 
   .masthead {
-    grid-template-columns: minmax(340px,510px) minmax(0,1fr);
+    grid-template-columns: minmax(520px,620px) minmax(0,1fr);
     align-items: center;
   }
 
   .character-card {
-    grid-template-columns: 142px minmax(0,1fr) 104px;
+    grid-template-columns: 142px minmax(220px,1fr) minmax(112px,126px);
     grid-template-rows: minmax(0,1fr);
     row-gap: 0;
-    height: 140px;
-    min-height: 140px;
+    width: 100%;
+    height: 154px;
+    min-height: 154px;
     align-self: start;
   }
 
   .character-card .quick-stats {
     grid-column: 3;
     grid-row: 1;
-    gap: 2px;
-    align-self: center;
+    gap: 5px;
+    align-self: stretch;
     align-items: stretch;
     border-left: 1px solid var(--line);
     border-top: 0;
-    padding: 0 0 12px 8px;
+    padding: 8px 0 18px 10px;
     flex-direction: column;
     justify-content: center;
   }
 
   .character-card .quick-stats div {
     min-width: 0;
-    grid-template-columns: 21px minmax(0,1fr);
+    grid-template-columns: 24px minmax(0,1fr);
   }
 
-  .character-card .quick-stats strong { font-size:16px; line-height:1; }
-  .character-card .quick-stats small { font-size:9px; line-height:1; }
-  .character-card .stat-icon { font-size:18px; }
+  .character-card .quick-stats strong {
+    font-size: 17px;
+    line-height: 1;
+  }
+
+  .character-card .quick-stats small {
+    font-size: 9px;
+    line-height: 1;
+  }
+
+  .character-card .stat-icon {
+    font-size: 20px;
+  }
 
   .character-card .character-logout {
     position: absolute;
@@ -138,31 +150,29 @@
   .sidebar {
     display: grid;
     min-height: 0;
-    grid-template-rows: minmax(100px,min(24vh,220px)) 58px minmax(0,1fr) 58px;
+    height: 100%;
+    grid-template-rows: 78px minmax(0,1fr) 78px;
     row-gap: 12px;
     align-content: stretch;
-  }
-
-  .minimap {
-    display: grid;
-    min-height: 0;
-    grid-template-rows: auto minmax(0,1fr) auto;
     overflow: hidden;
-  }
-
-  .minimap svg {
-    height: 100%;
-    min-height: 0;
-    object-fit: contain;
   }
 
   .rune-menu-top,
   .rune-menu-bottom {
     margin: 0 !important;
+    min-height: 0;
+  }
+
+  .rune-menu-top {
+    grid-template-columns: repeat(5,minmax(0,1fr));
   }
 
   .rune-menu-bottom {
     grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+  }
+
+  .rune-menu button {
+    height: 78px;
   }
 
   .active-panel {
@@ -171,6 +181,7 @@
     max-height: none;
     overflow-x: hidden;
     overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   /* Feature-object placement inherited from the stable desktop composition. */
