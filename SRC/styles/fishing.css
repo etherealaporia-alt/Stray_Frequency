@@ -1,8 +1,127 @@
+/* STRAY FREQUENCY — FISHING
+   New clean feature module based on the current modular DOM/assets.
+   Owns fishing presentation only. Viewport-specific adaptations belong in responsive.css.
+*/
+
+.fishing-node {
+  position: absolute;
+  width: min(16vw, 150px);
+  height: auto;
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  z-index: 2;
+}
+
+.fishing-node > img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+.fishing-node .node-label,
+.fishing-node .node-count {
+  left: 4px;
+  z-index: 3;
+  white-space: nowrap;
+}
+
+.fishing-node .node-label {
+  top: -28px;
+}
+
+.fishing-node .node-count {
+  bottom: -28px;
+}
+
+.fishing-node:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 3px;
+}
+
+/* Base desktop composition. Responsive placement is intentionally deferred. */
+.shrimp-node {
+  left: 16%;
+  bottom: 9%;
+}
+
+.sardine-node {
+  right: 15%;
+  bottom: 10%;
+}
+
+.fishing-mara-anchor {
+  left: 44%;
+  bottom: 7%;
+  width: min(24vw, 235px);
+  height: auto;
+  min-height: 140px;
+  z-index: 3;
+}
+
+.fishing-mara-sprite {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  image-rendering: pixelated;
+}
+
+/* Current net sheet: 5 columns × 3 rows = 15 authored frames. */
+.fishing-mara-sprite.shrimp {
+  background-size: 500% 300%;
+  animation: fishing-net-frames 1.5s steps(1,end) infinite;
+}
+
+/* Current rod sheet: 4 columns × 2 rows = 8 authored frames. */
+.fishing-mara-sprite.sardine {
+  background-size: 400% 200%;
+  animation: fishing-rod-frames .96s steps(1,end) infinite;
+}
+
 /*
- * Reserved modular stylesheet: fishing.css
- *
- * The previous-build visual baseline currently lives in foundation.css so the
- * original cascade is preserved exactly. Keep this file/path: it remains the
- * intended modular destination when the baseline is separated with visual
- * regression coverage.
+ * Explicit frame positions keep both multi-row sheets deterministic.
+ * The image itself is supplied by ui/scene.ts from core/assets.ts.
  */
+@keyframes fishing-net-frames {
+  0%      { background-position:   0%   0%; }
+  6.666%  { background-position:  25%   0%; }
+  13.333% { background-position:  50%   0%; }
+  20%     { background-position:  75%   0%; }
+  26.666% { background-position: 100%   0%; }
+  33.333% { background-position:   0%  50%; }
+  40%     { background-position:  25%  50%; }
+  46.666% { background-position:  50%  50%; }
+  53.333% { background-position:  75%  50%; }
+  60%     { background-position: 100%  50%; }
+  66.666% { background-position:   0% 100%; }
+  73.333% { background-position:  25% 100%; }
+  80%     { background-position:  50% 100%; }
+  86.666% { background-position:  75% 100%; }
+  93.333%,
+  100%    { background-position: 100% 100%; }
+}
+
+@keyframes fishing-rod-frames {
+  0%,
+  12.499% { background-position:   0%   0%; }
+  12.5%,
+  24.999% { background-position: 33.333% 0%; }
+  25%,
+  37.499% { background-position: 66.666% 0%; }
+  37.5%,
+  49.999% { background-position: 100% 0%; }
+  50%,
+  62.499% { background-position:   0% 100%; }
+  62.5%,
+  74.999% { background-position: 33.333% 100%; }
+  75%,
+  87.499% { background-position: 66.666% 100%; }
+  87.5%,
+  100%    { background-position: 100% 100%; }
+}

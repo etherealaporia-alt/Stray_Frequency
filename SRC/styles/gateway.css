@@ -1,8 +1,211 @@
-/*
- * Reserved modular stylesheet: gateway.css
- *
- * The previous-build visual baseline currently lives in foundation.css so the
- * original cascade is preserved exactly. Keep this file/path: it remains the
- * intended modular destination when the baseline is separated with visual
- * regression coverage.
- */
+/* STRAY FREQUENCY — GATEWAY / CHARACTER CREATION
+   Source: current refactor/modular-architecture branch foundation.css.
+   Auth and character-creation presentation live outside the locked game shell.
+*/
+
+.gateway-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: radial-gradient(circle at 50% 15%,#151a1e 0,#07090a 48%,#040506 100%);
+}
+
+.gateway-card,
+.creator-card {
+  width: min(620px,100%);
+  padding: 28px;
+  border-radius: 8px;
+}
+
+.creator-card {
+  width: min(920px,100%);
+}
+
+.gateway-brand {
+  text-align: center;
+  font-family: Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;
+  font-size: clamp(38px,8vw,68px);
+  letter-spacing: .045em;
+  line-height: .9;
+}
+
+.gateway-brand b {
+  color: var(--pink);
+  font-weight: inherit;
+}
+
+.gateway-tagline {
+  text-align: center !important;
+  color: var(--muted) !important;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  font-size: 10px !important;
+}
+
+.gateway-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin: 28px 0 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.gateway-tabs button {
+  padding: 12px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.gateway-tabs button.active {
+  color: var(--amber);
+  box-shadow: inset 0 -2px var(--amber);
+}
+
+.gateway-form {
+  display: grid;
+  gap: 16px;
+}
+
+.gateway-form > label:not(.password-toggle) {
+  display: grid;
+  gap: 7px;
+  color: var(--amber);
+  font-size: 11px;
+  letter-spacing: .1em;
+}
+
+.gateway-form input[type=email],
+.gateway-form input[type=password],
+.gateway-form input[type=text] {
+  width: 100%;
+  padding: 12px;
+  background: #090c0e;
+  border: 1px solid #3b4043;
+  color: var(--text);
+  font-size: 15px;
+}
+
+.password-toggle {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted) !important;
+  font-size: 11px;
+  letter-spacing: .08em;
+  cursor: pointer;
+}
+
+.password-toggle input {
+  accent-color: var(--amber);
+}
+
+.gateway-primary,
+.gateway-secondary {
+  padding: 13px 16px;
+  border: 1px solid var(--pink);
+  background: #171016;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+
+.gateway-secondary {
+  border-color: #454a4d;
+  background: transparent;
+  color: var(--muted);
+}
+
+.gateway-message {
+  min-height: 20px;
+  color: var(--amber) !important;
+  font-size: 12px !important;
+  margin: 14px 0 0 !important;
+}
+
+.creator-card h1 {
+  color: var(--pink);
+  text-transform: uppercase;
+  margin: 8px 0 22px;
+}
+
+.creator-grid {
+  display: grid;
+  grid-template-columns: minmax(220px,320px) 1fr;
+  gap: 24px;
+}
+
+.creator-preview {
+  border: 1px solid var(--line);
+  background: #090c0e;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.creator-preview img {
+  width: 100%;
+  aspect-ratio: 1/1;
+  object-fit: cover;
+  object-position: top left;
+  image-rendering: pixelated;
+}
+
+.creator-preview strong {
+  color: var(--amber);
+  font-size: 11px;
+  letter-spacing: .1em;
+}
+
+.creator-preview small {
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.gateway-form fieldset {
+  border: 1px solid #3b4043;
+  padding: 12px;
+}
+
+.gateway-form legend {
+  color: var(--amber);
+  font-size: 11px;
+  letter-spacing: .1em;
+  padding: 0 6px;
+}
+
+.creator-choice {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 7px !important;
+  margin-right: 20px;
+  color: var(--text) !important;
+}
+
+.creator-disabled {
+  border: 1px dashed #3b4043;
+  padding: 13px;
+  display: grid;
+  gap: 4px;
+}
+
+.creator-disabled span {
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: .1em;
+}
+
+.creator-disabled strong { color: #aaa; }
+.creator-disabled small { color: #777; line-height: 1.4; }
+
+/* Gateway-specific responsive adaptation from the current source. */
+@media (max-width: 680px) {
+  .creator-grid { grid-template-columns: 1fr; }
+  .creator-preview { max-width: 300px; margin: 0 auto; }
+  .gateway-card,
+  .creator-card { padding: 18px; }
+  .gateway-shell { padding: 10px; }
+}

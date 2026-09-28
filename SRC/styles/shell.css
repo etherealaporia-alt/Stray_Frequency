@@ -1,8 +1,271 @@
-/*
- * Reserved modular stylesheet: shell.css
- *
- * The previous-build visual baseline currently lives in foundation.css so the
- * original cascade is preserved exactly. Keep this file/path: it remains the
- * intended modular destination when the baseline is separated with visual
- * regression coverage.
- */
+/* STRAY FREQUENCY — LOCKED GAME SHELL
+   Source of truth: uploaded last stable build, canonical shell override.
+   Responsive rules are intentionally excluded from this file.
+*/
+
+#app {
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.game-shell {
+  width: min(1680px, 100%);
+  margin: 0 auto;
+  padding: 10px;
+}
+
+.masthead {
+  display: grid;
+  grid-template-columns: minmax(340px, 510px) 1fr minmax(300px, 390px);
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.character-card {
+  min-width: 0;
+  min-height: 154px;
+  display: grid;
+  grid-template-columns: 142px minmax(0, 1fr) 104px;
+  gap: 14px;
+  padding: 8px;
+  border-radius: 7px;
+  position: relative;
+}
+
+.portrait {
+  width: 142px;
+  height: 138px;
+  object-fit: cover;
+  object-position: top left;
+  image-rendering: pixelated;
+  border: 1px solid var(--line);
+  border-radius: 0;
+}
+
+.character-copy {
+  min-width: 0;
+  padding-right: 0;
+}
+
+.eyebrow,
+.panel-kicker {
+  color: var(--amber);
+  font-size: 11px;
+  letter-spacing: .13em;
+}
+
+.character-copy h2 {
+  margin: 2px 0 0;
+  font-size: 25px;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.character-copy p {
+  margin: 5px 0;
+}
+
+.level-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 13px;
+  font-size: 14px;
+}
+
+.level-row span:last-child {
+  color: #a9aaa7;
+  font-size: 12px;
+  align-self: end;
+}
+
+.xp-track {
+  height: 8px;
+  background: #25292c;
+  border: 1px solid #494b4d;
+  margin-top: 4px;
+  border-radius: 0;
+}
+
+.xp-track span {
+  display: block;
+  width: 61%;
+  height: 100%;
+  background: var(--pink);
+}
+
+.character-quote {
+  font-size: 12px;
+  color: #a8a8a3;
+  font-style: italic;
+  line-height: 1.3;
+}
+
+.quick-stats {
+  position: static;
+  width: auto;
+  border-left: 1px solid var(--line);
+  padding-left: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+}
+
+.quick-stats div {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  grid-template-rows: auto auto;
+  align-items: center;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+
+.quick-stats strong {
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.quick-stats small {
+  grid-column: 2;
+  color: var(--muted);
+}
+
+.stat-icon {
+  grid-row: 1 / span 2;
+  font-size: 25px;
+}
+
+.brand {
+  display: block;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: .11em;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+}
+
+.brand div {
+  font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+  font-size: clamp(30px, 4vw, 58px);
+  letter-spacing: .045em;
+  color: #ddd;
+  line-height: .9;
+}
+
+.brand div span {
+  color: #ddd;
+  opacity: 1;
+}
+
+.brand b {
+  color: var(--pink);
+  font-weight: inherit;
+}
+
+.brand small {
+  display: block;
+  margin-top: 8px;
+  color: #8f9090;
+  letter-spacing: .22em;
+  font-size: 12px;
+}
+
+/* Current modular shell has no district-status region. */
+
+.character-logout {
+  position:absolute; right:8px; top:7px; z-index:3;
+  padding:3px 6px; border:1px solid #3b3e41; background:#0c0f11;
+  color:#777; font:inherit; font-size:7px; letter-spacing:.08em; cursor:pointer;
+}
+.character-logout:hover { color:#ddd; border-color:#686c70; }
+
+.play-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 420px;
+  gap: 12px;
+}
+
+.world-column {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto minmax(205px, 1fr);
+  gap: 12px;
+}
+
+.sidebar {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-content: initial;
+}
+
+.minimap {
+  border-radius: 7px;
+  padding: 10px;
+}
+
+.rune-menu {
+  border-radius: 7px;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0;
+  overflow: hidden;
+  padding: 0;
+}
+
+.rune-menu button {
+  min-width: 0;
+  min-height: 0;
+  height: 78px;
+  padding: 0;
+  border-radius: 0;
+  background: #0e1113;
+  border: 0;
+  border-right: 1px solid #35383b;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  color: #c2c3c0;
+  transform: none;
+}
+
+.rune-menu button:hover {
+  border-color: #35383b;
+  transform: none;
+}
+
+.rune-menu button:last-child {
+  border-right: 0;
+}
+
+.rune-menu button.active {
+  box-shadow: inset 0 0 0 2px var(--amber);
+  color: var(--amber);
+  background: #171712;
+  border-color: #35383b;
+}
+
+.menu-icon {
+  font-size: 29px;
+  line-height: 1;
+}
+
+.rune-menu small {
+  font-size: 8px;
+  letter-spacing: .03em;
+}
+
+.active-panel {
+  border-radius: 7px;
+  padding: 14px 14px 16px;
+  min-height: 315px;
+}
