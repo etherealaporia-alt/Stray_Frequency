@@ -1,72 +1,8 @@
-/* Responsive */
-@media (max-width: 1180px) {
-  .masthead {
-    grid-template-columns: 1fr;
-  }
-
-  .brand {
-    order: -1;
-  }
-
-  .play-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .sidebar {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    align-items: start;
-  }
-
-  .active-panel {
-    grid-column: 1 / -1;
-  }
-}
-
-@media (max-width: 780px) {
-  #app {
-    padding: 12px;
-  }
-
-  .character-card {
-    grid-template-columns: 88px 1fr;
-  }
-
-  .portrait {
-    width: 88px;
-    height: 88px;
-  }
-
-  .character-copy {
-    padding-right: 0;
-  }
-
-  .quick-stats {
-    position: static;
-    width: 100%;
-    grid-template-columns: repeat(3, 1fr);
-    grid-column: 1 / -1;
-  }
-
-  .location-heading {
-    flex-direction: column;
-  }
-
-  .location-heading p {
-    text-align: left;
-  }
-
-  .scene-wrap,
-  .scene-stage,
-  .scene-image {
-    min-height: 300px;
-    height: 300px;
-  }
-
-  .sidebar {
-    grid-template-columns: 1fr;
-  }
-
-  .rune-menu {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
+/*
+ * Reserved modular stylesheet: responsive-legacy.css
+ *
+ * The previous-build visual baseline currently lives in foundation.css so the
+ * original cascade is preserved exactly. Keep this file/path: it remains the
+ * intended modular destination when the baseline is separated with visual
+ * regression coverage.
+ */

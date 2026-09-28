@@ -1,17 +1,13 @@
+/*
+ * STRAY FREQUENCY — previous-build visual baseline
+ *
+ * The original known-good stylesheet is intentionally kept intact in
+ * foundation.css so its cascade remains byte-for-byte ordered apart from the
+ * relocated salvage-animation asset URL, which now uses the modular asset map.
+ *
+ * The remaining Codex-created style modules stay in the repository as the
+ * architectural destinations for future cleanup, but are deliberately not
+ * imported here. Re-enabling them on top of this baseline would reintroduce
+ * duplicate/competing shell rules.
+ */
 @import './foundation.css';
-@import './shell-legacy.css';
-@import './gathering-legacy.css';
-@import './log.css';
-@import './panels-legacy.css';
-@import './responsive-legacy.css';
-@import './gathering.css';
-@import './gateway.css';
-@import './shell.css';
-@import './responsive-canonical.css';
-@import './shell-fit.css';
-@import './inventory.css';
-@import './panels-fit.css';
-@import './responsive.css';
-@import './skills.css';
-@import './cooking.css';
-@import './fishing.css';

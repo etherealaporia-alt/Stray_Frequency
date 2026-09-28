@@ -1,2 +1,8 @@
-.gather-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px}.summary-card{padding:7px;border-radius:0}.asset-resource-grid{display:none}.tool-card{display:none!important}.node-reset{margin-top:7px;padding:7px 9px}
-.skill-list{gap:5px}.skill-list>div{gap:4px;font-size:11px}.journal-entry,.message{padding:8px 4px}
+/*
+ * Reserved modular stylesheet: panels-fit.css
+ *
+ * The previous-build visual baseline currently lives in foundation.css so the
+ * original cascade is preserved exactly. Keep this file/path: it remains the
+ * intended modular destination when the baseline is separated with visual
+ * regression coverage.
+ */
