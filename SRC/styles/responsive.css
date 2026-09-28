@@ -153,6 +153,14 @@
     grid-template-rows: auto minmax(0,1fr);
   }
 
+  .location-heading h1 {
+    font-size: 28px;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   .scene-wrap {
     height: 100%;
     min-height: 0;
