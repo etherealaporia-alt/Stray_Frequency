@@ -99,7 +99,13 @@
   .chat {
     height: 100%;
     min-height: 0;
-    grid-template-rows: 34px minmax(0,1fr) 44px;
+    grid-template-rows: 22px minmax(0,1fr) 44px;
+  }
+
+  .chat-tabs button {
+    padding: 2px 14px 3px;
+    font-size: 9px;
+    line-height: 1;
   }
 
   .log {
