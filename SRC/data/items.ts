@@ -25,7 +25,7 @@ export const ITEM_DEFINITIONS: Record<ItemKey, ItemDefinition> = {
     name: 'Tier 1 Composite Scrap',
     description: 'Mixed housings, casings and recoverable composite material.',
     panelDescription: 'Mixed housings, tubing, casings and recoverable composite parts.',
-    asset: LEGACY_VISUAL_EQUIVALENTS.compositeScrap,
+    asset: ASSETS.items.resources.synthetics,
     stackable: true
   },
   uncooked_shrimp: {
