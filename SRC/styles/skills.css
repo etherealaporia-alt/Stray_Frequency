@@ -119,34 +119,3 @@
   opacity: 1;
   visibility: visible;
 }
-
-
-/* Current modular skill-details dialog. */
-.skill-details-dialog{width:min(520px,calc(100vw - 24px));max-width:none;max-height:88dvh;overflow-y:auto;margin:auto;padding:18px;border:1px solid #514a43;background:linear-gradient(180deg,#171b1f,#0a0d0f);color:var(--text);box-shadow:0 24px 80px rgba(0,0,0,.72)}
-.skill-details-dialog::backdrop{background:rgba(0,0,0,.72);backdrop-filter:blur(2px)}
-.skill-details-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding-bottom:12px;border-bottom:1px solid var(--line)}
-.skill-details-header h2{margin:3px 0 0;color:var(--pink);font-size:24px;text-transform:uppercase}
-.skill-details-close{display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;padding:0;border:1px solid #45494c;background:#0d1012;color:#c6c6c3;font-size:21px;line-height:1}
-.skill-details-close:hover{color:#fff;border-color:var(--amber)}
-.skill-details-description{margin:14px 0;color:#c7c6c2;font-size:13px;line-height:1.5}
-.skill-details-progress{padding:12px 0;border-top:1px solid #303437;border-bottom:1px solid #303437}
-.skill-details-progress-label{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
-.skill-details-progress-label strong{color:var(--amber);font-size:13px}
-.skill-details-progress-label span{color:var(--muted);font-size:9px;text-align:right}
-.skill-details-xp-track{height:8px;border:1px solid #45494c;background:#0a0d0f}
-.skill-details-xp-track span{display:block;height:100%;background:var(--pink)}
-.skill-unlocks-heading{margin:16px 0 4px;color:var(--amber);font-size:12px;letter-spacing:.08em}
-.skill-placeholder-note{margin:0 0 9px;color:#8b9297;font-size:10px}
-.skill-unlocks{position:relative;display:grid;gap:6px;max-height:44dvh;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#555 transparent;margin:0;padding:0 4px 0 0;list-style:none}
-.skill-unlock{position:relative;display:grid;grid-template-columns:52px 14px minmax(0,1fr);align-items:center;gap:10px;min-height:44px;padding:6px 8px;background:rgba(255,255,255,.025)}
-.skill-unlock::before{content:"";position:absolute;z-index:1;top:-3px;bottom:-3px;left:77px;width:1px;background:#69645c;pointer-events:none}
-.skill-unlock:last-child::before{bottom:50%}
-.skill-unlock.reached{background:rgba(116,197,138,.035)}
-.skill-unlock-level{display:grid;place-items:center;min-height:30px;border:1px solid #3b4043;background:#0b0e10;color:#c4c6c5;font-size:10px;font-weight:700}
-.skill-unlock-dot{position:relative;z-index:2;grid-column:2;justify-self:center;width:8px;height:8px;border:2px solid #0a0d0f;border-radius:50%;background:#86817a;box-shadow:0 0 0 1px #69645c}
-.skill-unlock.reached .skill-unlock-level{border-color:var(--green);color:var(--green)}
-.skill-unlock.reached .skill-unlock-dot{background:var(--green);box-shadow:0 0 0 1px var(--green)}
-.skill-unlock div strong{color:var(--muted);font-size:9px;letter-spacing:.06em}
-.skill-unlock.reached div strong{color:var(--green)}
-.skill-unlock p{margin:2px 0 0;color:#999;font-size:10px;line-height:1.35}
-@media(max-width:520px){.skill-unlock{grid-template-columns:46px 14px minmax(0,1fr);gap:7px;padding-inline:6px}.skill-unlock::before{left:66px}.skill-details-dialog{padding:14px}.skill-details-header h2{font-size:20px}.skill-details-description{font-size:12px}}
