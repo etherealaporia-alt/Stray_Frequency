@@ -1,7 +1,6 @@
 /* STRAY FREQUENCY — GATHERING / SALVAGING
-   Source: uploaded last stable build.
    Gameplay presentation and Breaker Yard scene objects only.
-   Viewport-specific adaptations belong in responsive.css.
+   Viewport-specific shell adaptations belong in responsive.css.
 */
 
 .node-status-card,
@@ -99,21 +98,31 @@
   box-shadow: 0 1px 10px rgba(175,193,171,.28);
 }
 
-.asset-scrap-node {
-  left: 17%;
+/* Breaker Yard node: specificity intentionally beats viewport placement rules
+   without changing the locked desktop shell geometry. */
+.asset-scrap-node.breaker-scrap-node {
+  left: 54%;
   bottom: 6%;
-  width: min(28vw,260px);
+  width: min(23vw,230px);
   height: auto;
   background: transparent;
   border: 0;
   box-shadow: none;
-  z-index: 2;
+  z-index: 3;
+  cursor: pointer;
+  transition: opacity .2s ease, filter .2s ease;
 }
 
-.asset-scrap-node img {
+.asset-scrap-node.breaker-scrap-node img {
   width: 100%;
   height: auto;
   image-rendering: pixelated;
+}
+
+.asset-scrap-node.breaker-scrap-node.depleted {
+  opacity: .28;
+  filter: grayscale(.65) brightness(.7);
+  cursor: default;
 }
 
 .asset-scrap-node .node-label {
@@ -129,19 +138,21 @@
   white-space: nowrap;
 }
 
-.asset-mara-anchor {
-  left: 44%;
-  bottom: 8%;
-  width: min(24vw,235px);
+/* Mara stands immediately left of the salvage node and only appears while
+   salvaging. The sprite uses the canonical mara-breaker asset variable. */
+.asset-mara-anchor.breaker-mara-anchor {
+  left: 38%;
+  bottom: 6%;
+  width: min(18vw,180px);
   height: auto;
-  min-height: 140px;
-  z-index: 2;
+  min-height: 120px;
+  z-index: 4;
 }
 
 .asset-mara-sprite {
   width: 100%;
   aspect-ratio: 1/1;
-  background-image: url('/Stray_Frequency/assets/cyberpunk_salvage_swing_sprite_sheet.png');
+  background-image: var(--asset-mara-salvage);
   background-repeat: no-repeat;
   background-size: 300% 100%;
   background-position: 0 0;
@@ -155,6 +166,13 @@
 @keyframes asset-salvage-frames {
   from { background-position: 0 0; }
   to { background-position: 100% 0; }
+}
+
+/* Breaker Yard World tab: the node itself carries the Tier 1 Scrap tag.
+   Detailed pulls/requirements/yields belong in Salvaging skill information. */
+.active-panel:has([data-action="start-salvaging"]) .gather-summary,
+.active-panel:has([data-action="start-salvaging"]) .asset-resource-grid {
+  display: none;
 }
 
 /* Asset/resource cards */
@@ -235,7 +253,6 @@
   border-radius: 0;
 }
 
-/* Later stable effective desktop state hides these detailed cards. */
 .asset-resource-grid { display: none; }
 .tool-card { display: none !important; }
 
