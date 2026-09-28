@@ -1,8 +1,28 @@
-/*
- * Reserved modular stylesheet: shell-fit.css
- *
- * The previous-build visual baseline currently lives in foundation.css so the
- * original cascade is preserved exactly. Keep this file/path: it remains the
- * intended modular destination when the baseline is separated with visual
- * regression coverage.
- */
+/* STRAY FREQUENCY — DESKTOP VIEWPORT FIT. Geometry only. */
+@media (min-width:951px){
+ html,body{width:100%;height:100%;min-height:0;overflow:hidden}
+ body{min-height:0}
+ #app{width:100%;height:100vh;height:100dvh;min-height:0;padding:12px;overflow:hidden}
+ .game-shell{width:min(1680px,100%);max-width:none;height:100%;min-height:0;margin:0 auto;display:grid;grid-template-rows:auto minmax(0,1fr);overflow:hidden}
+ .masthead{grid-template-columns:minmax(340px,510px) minmax(0,1fr);align-items:stretch;gap:12px;margin-bottom:12px;min-height:0}
+ .character-card{grid-column:1;height:132px;min-height:132px;zoom:1}
+ .brand{grid-column:2;min-width:0}
+ .play-grid{display:grid;grid-template-columns:minmax(0,1fr) 420px;grid-template-rows:minmax(0,1fr);gap:12px;min-height:0;overflow:hidden}
+ .world-column{display:grid;grid-template-rows:minmax(0,1fr) clamp(150px,22vh,205px);gap:12px;min-width:0;min-height:0;overflow:hidden}
+ .location-card{min-height:0;padding:12px;display:grid;grid-template-rows:auto minmax(0,1fr);overflow:hidden}
+ .location-heading{margin-bottom:10px}
+ .scene-wrap,.scene-stage{width:100%;height:100%;min-height:0;aspect-ratio:auto}
+ .scene-wrap{overflow:hidden}.scene-stage{position:relative}
+ .scene-image{width:100%;height:100%;min-height:0;object-fit:cover}
+ .chat{width:100%;height:100%;min-height:0;padding:10px 12px;grid-template-rows:auto minmax(0,1fr) auto;overflow:hidden}
+ .chat-tabs{margin-bottom:6px}.log{min-height:0;overflow-y:auto}.chat-input{margin-top:6px;padding-top:6px}
+ .sidebar{display:grid;grid-template-rows:minmax(100px,min(22vh,190px)) 58px minmax(0,1fr) 58px;gap:0;min-width:0;min-height:0;align-content:stretch;overflow:hidden}
+ .minimap{min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto;overflow:hidden;border-bottom-left-radius:0;border-bottom-right-radius:0}
+ .minimap svg{width:100%;height:100%;min-height:0}
+ .rune-menu{padding:0;gap:0;min-height:0;border-radius:0;box-shadow:none}
+ .rune-menu-top{display:grid;grid-template-columns:repeat(5,minmax(0,1fr))}
+ .rune-menu-bottom{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))!important;border-top-left-radius:0;border-top-right-radius:0}
+ .rune-menu button{min-width:0;min-height:58px;height:58px;padding:5px 3px;border-radius:0}
+ .rune-menu small{font-size:.58rem;white-space:nowrap}
+ .active-panel{height:100%;min-height:0;max-height:none;padding:12px;overflow-x:hidden;overflow-y:auto;border-radius:0;box-shadow:none}
+}
