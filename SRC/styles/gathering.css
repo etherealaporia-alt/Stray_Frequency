@@ -49,13 +49,20 @@
 .resource-chip.metal { background: #b9c5d0; }
 .resource-chip.composite { background: #77c5c2; }
 
-/* Asset-backed gathering scene */
+/* Asset-backed gathering scene.
+   Establish an explicit layer stack: background scene < gatherables/actor < tags. */
 .asset-breaker-stage > .scene-image {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  z-index: 0;
+}
+
+.asset-breaker-stage > .breaker-scrap-node,
+.asset-breaker-stage > .breaker-mara-anchor {
+  position: absolute;
 }
 
 .pier-stage {
@@ -101,7 +108,7 @@
 /* Breaker Yard node: specificity intentionally beats viewport placement rules
    without changing the locked desktop shell geometry. */
 .asset-scrap-node.breaker-scrap-node {
-  left: 54%;
+  left: calc(50% + 4px);
   bottom: 6%;
   width: min(23vw,230px);
   height: auto;
@@ -141,7 +148,8 @@
 /* Mara stands immediately left of the salvage node and only appears while
    salvaging. The sprite uses the canonical mara-breaker asset variable. */
 .asset-mara-anchor.breaker-mara-anchor {
-  left: 38%;
+  left: auto;
+  right: calc(50% + 4px);
   bottom: 6%;
   width: min(18vw,180px);
   height: auto;
