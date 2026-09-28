@@ -25,10 +25,11 @@ function menuMarkup(panels: Panel[]): string {
 }
 
 /**
- * STRAY FREQUENCY — LOCKED GAME SHELL
+ * STRAY FREQUENCY — GAME SHELL
  *
- * Feature modules may populate the declared regions. They must not rearrange
- * this hierarchy or change its geometry unless the shell is explicitly unlocked.
+ * Desktop treats the character summary as the sidebar header so the world
+ * column can begin at the top of the viewport. Responsive CSS owns alternate
+ * presentations for smaller viewports.
  */
 export function renderShell(app: HTMLDivElement): void {
   for (const [property, value] of Object.entries(ASSET_CSS_VARIABLES)) {
@@ -37,15 +38,6 @@ export function renderShell(app: HTMLDivElement): void {
 
   app.innerHTML = `
     <div class="game-shell">
-      <header class="masthead">
-        ${characterCardMarkup()}
-
-        <div class="brand" aria-label="Stray Frequency">
-          <div><span>STRAY</span> <b>FREQUENCY</b></div>
-          <small>some places never log off</small>
-        </div>
-      </header>
-
       <main class="play-grid">
         <section class="world-column">
           <article class="location-card panel">
@@ -75,6 +67,7 @@ export function renderShell(app: HTMLDivElement): void {
         </section>
 
         <aside class="sidebar">
+          ${characterCardMarkup()}
           <nav class="rune-menu rune-menu-top panel" aria-label="Primary game menu">
             ${menuMarkup(PRIMARY_PANELS)}
           </nav>
