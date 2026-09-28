@@ -60,45 +60,68 @@
   }
 
   .character-card {
-    grid-template-columns: 142px minmax(220px,1fr) minmax(112px,126px);
-    grid-template-rows: minmax(0,1fr);
+    grid-template-columns: 82px minmax(190px,1fr) minmax(220px,260px);
+    grid-template-rows: 88px;
+    column-gap: 12px;
     row-gap: 0;
     width: 100%;
-    height: 154px;
-    min-height: 154px;
+    height: 104px;
+    min-height: 104px;
+    padding: 7px 8px;
     align-self: start;
+  }
+
+  .character-card .portrait {
+    width: 82px;
+    height: 88px;
+  }
+
+  .character-card .character-copy {
+    min-width: 0;
+    align-self: center;
+  }
+
+  .character-card .character-copy h2 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .character-card .quick-stats {
     grid-column: 3;
     grid-row: 1;
-    gap: 5px;
-    align-self: stretch;
-    align-items: stretch;
+    align-self: center;
+    width: 100%;
     border-left: 1px solid var(--line);
     border-top: 0;
-    padding: 8px 0 18px 10px;
-    flex-direction: column;
-    justify-content: center;
+    padding: 0 0 0 10px;
+    display: grid;
+    grid-template-columns: repeat(3,minmax(0,1fr));
+    gap: 8px;
   }
 
   .character-card .quick-stats div {
     min-width: 0;
-    grid-template-columns: 24px minmax(0,1fr);
+    display: grid;
+    grid-template-columns: 20px minmax(0,1fr);
+    grid-template-rows: auto auto;
+    align-items: center;
   }
 
   .character-card .quick-stats strong {
-    font-size: 17px;
+    font-size: 16px;
     line-height: 1;
   }
 
   .character-card .quick-stats small {
-    font-size: 9px;
-    line-height: 1;
+    grid-column: 2;
+    font-size: 8px;
+    line-height: 1.1;
   }
 
   .character-card .stat-icon {
-    font-size: 20px;
+    grid-row: 1 / span 2;
+    font-size: 18px;
   }
 
   .character-card .character-logout {
