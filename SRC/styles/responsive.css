@@ -49,102 +49,19 @@
   .game-shell {
     height: 100dvh;
     min-height: 0;
-    display: grid;
-    grid-template-rows: auto minmax(0,1fr);
     overflow: hidden;
-  }
-
-  .masthead {
-    grid-template-columns: minmax(520px,620px) minmax(0,1fr);
-    align-items: center;
-  }
-
-  .character-card {
-    grid-template-columns: 82px minmax(190px,1fr) minmax(220px,260px);
-    grid-template-rows: 88px;
-    column-gap: 12px;
-    row-gap: 0;
-    width: 100%;
-    height: 104px;
-    min-height: 104px;
-    padding: 7px 8px;
-    align-self: start;
-  }
-
-  .character-card .portrait {
-    width: 82px;
-    height: 88px;
-  }
-
-  .character-card .character-copy {
-    min-width: 0;
-    align-self: center;
-  }
-
-  .character-card .character-copy h2 {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .character-card .quick-stats {
-    grid-column: 3;
-    grid-row: 1;
-    align-self: center;
-    width: 100%;
-    border-left: 1px solid var(--line);
-    border-top: 0;
-    padding: 0 0 0 10px;
-    display: grid;
-    grid-template-columns: repeat(3,minmax(0,1fr));
-    gap: 8px;
-  }
-
-  .character-card .quick-stats div {
-    min-width: 0;
-    display: grid;
-    grid-template-columns: 20px minmax(0,1fr);
-    grid-template-rows: auto auto;
-    align-items: center;
-  }
-
-  .character-card .quick-stats strong {
-    font-size: 16px;
-    line-height: 1;
-  }
-
-  .character-card .quick-stats small {
-    grid-column: 2;
-    font-size: 8px;
-    line-height: 1.1;
-  }
-
-  .character-card .stat-icon {
-    grid-row: 1 / span 2;
-    font-size: 18px;
-  }
-
-  .character-card .character-logout {
-    position: absolute;
-    top: auto;
-    right: 8px;
-    bottom: 8px;
-    width: auto;
-    min-height: 0;
-    padding: 2px 5px;
-    font-size: 7px;
-    line-height: 1;
-    z-index: 3;
   }
 
   .play-grid {
+    height: 100%;
     min-height: 0;
+    grid-template-columns: minmax(0,1fr) 420px;
     grid-template-rows: minmax(0,1fr);
   }
 
   .world-column {
     min-height: 0;
-    grid-template-rows: minmax(0,1fr) minmax(150px,min(25vh,205px));
+    grid-template-rows: minmax(0,1fr) minmax(190px,min(30vh,250px));
   }
 
   .location-card {
@@ -182,10 +99,105 @@
     display: grid;
     min-height: 0;
     height: 100%;
-    grid-template-rows: 78px minmax(0,1fr) 78px;
+    grid-template-rows: 96px 78px minmax(0,1fr) 78px;
     row-gap: 12px;
     align-content: stretch;
     overflow: hidden;
+  }
+
+  .sidebar > .character-card {
+    width: 100%;
+    height: 96px;
+    min-height: 96px;
+    grid-template-columns: 68px minmax(0,1fr);
+    grid-template-rows: auto auto;
+    column-gap: 10px;
+    row-gap: 3px;
+    padding: 7px 8px;
+    align-self: stretch;
+  }
+
+  .sidebar > .character-card .portrait {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    width: 68px;
+    height: 80px;
+  }
+
+  .sidebar > .character-card .character-copy {
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0;
+    padding: 0 48px 0 0;
+    align-self: end;
+  }
+
+  .sidebar > .character-card .eyebrow {
+    font-size: 8px;
+  }
+
+  .sidebar > .character-card .character-copy h2 {
+    margin-top: 1px;
+    font-size: 18px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .sidebar > .character-card .character-copy p {
+    margin: 3px 0 0;
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .sidebar > .character-card .quick-stats {
+    grid-column: 2;
+    grid-row: 2;
+    width: 100%;
+    align-self: start;
+    border: 0;
+    padding: 0 46px 0 0;
+    display: grid;
+    grid-template-columns: repeat(3,minmax(0,1fr));
+    gap: 5px;
+  }
+
+  .sidebar > .character-card .quick-stats div {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: 16px minmax(0,1fr);
+    grid-template-rows: auto auto;
+    align-items: center;
+  }
+
+  .sidebar > .character-card .quick-stats strong {
+    font-size: 13px;
+    line-height: 1;
+  }
+
+  .sidebar > .character-card .quick-stats small {
+    grid-column: 2;
+    font-size: 6px;
+    line-height: 1;
+  }
+
+  .sidebar > .character-card .stat-icon {
+    grid-row: 1 / span 2;
+    font-size: 14px;
+  }
+
+  .sidebar > .character-card .character-logout {
+    top: 7px;
+    right: 7px;
+    bottom: auto;
+    width: auto;
+    min-height: 0;
+    padding: 2px 4px;
+    font-size: 6px;
+    line-height: 1;
+    z-index: 3;
   }
 
   .rune-menu-top,
@@ -215,7 +227,6 @@
     overscroll-behavior: contain;
   }
 
-  /* Feature-object placement inherited from the stable desktop composition. */
   .asset-scrap-node {
     left: calc(50% - 12px);
     right: auto;
