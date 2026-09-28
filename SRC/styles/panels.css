@@ -13,7 +13,7 @@
 }
 
 .chat-tabs {
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--line-soft);
   display: flex;
   gap: 6px;
   margin: 0;
