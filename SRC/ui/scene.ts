@@ -1,7 +1,6 @@
 import {
   ASSETS,
-  ASSET_CSS_VARIABLES,
-  LEGACY_VISUAL_EQUIVALENTS
+  ASSET_CSS_VARIABLES
 } from '../core/assets';
 import { COOKING_TICKS_PER_ITEM } from '../core/constants';
 import { characterName, gameState } from '../core/state';
@@ -31,17 +30,15 @@ export function renderScene(): void {
         <div class="scene-tag scene-tag-right">DEPARTURES<br><small>PLATFORM 4</small></div>
       </div>`;
   } else if (room.id === 'breaker-yard') {
-    const remaining = gameState.salvage.remainingTicks;
-    const depleted = remaining <= 0;
+    const depleted = gameState.salvage.remainingTicks <= 0;
     target.innerHTML = `
       <div class="scene-stage breaker-stage asset-breaker-stage">
         <img src="${escapeHtml(room.sceneImage ?? '')}" alt="Pixel art view of Breaker Yard 12 beneath the overpass" class="scene scene-image" />
-        <div class="scrap-node asset-scrap-node gather-node ${depleted ? 'depleted' : ''}" id="scrap-node" data-node-action="start-salvaging" role="button" tabindex="0" aria-label="Scrap node. Double-click to salvage.">
+        <div class="scrap-node asset-scrap-node breaker-scrap-node gather-node ${depleted ? 'depleted' : ''}" id="scrap-node" data-node-action="start-salvaging" role="button" tabindex="0" aria-label="Tier 1 Scrap node. Double-click to salvage.">
           <div class="node-label">TIER 1 SCRAP</div>
-          <img src="${LEGACY_VISUAL_EQUIVALENTS.salvageSceneNode}" alt="Tier 1 scrap node" />
-          <div class="node-count">${depleted ? 'PICKED CLEAN' : `${remaining} salvage pulls left`}</div>
+          <img src="${ASSETS.environments.nodes.salvage}" alt="Tier 1 Scrap salvage node" />
         </div>
-        <div class="mara-anchor asset-mara-anchor ${gameState.salvage.active ? 'visible' : ''}" id="mara-anchor">
+        <div class="mara-anchor asset-mara-anchor breaker-mara-anchor ${gameState.salvage.active ? 'visible' : ''}" id="mara-anchor">
           <div class="xp-layer" id="xp-layer"></div>
           <div class="mara-nameplate">${characterName(gameState)}</div>
           <div class="asset-mara-sprite ${gameState.salvage.active ? 'salvaging' : ''}" aria-hidden="true"></div>
