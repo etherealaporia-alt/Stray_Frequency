@@ -1,37 +1,68 @@
 /* STRAY FREQUENCY — FOUNDATION
-   Source of truth: uploaded last stable build.
-   Stable declarations are preserved; canonical aliases are explicitly documented.
+   Source of truth: last stable uploaded build.
+   Global design tokens, document defaults, element defaults, and reusable
+   visual primitives only. Application geometry and feature styling live elsewhere.
 */
-*{box-sizing:border-box}
-:root{
-  color-scheme:dark;
-  font-family:Inter,system-ui,sans-serif;
-  background:#06080b;
-  color:#edf2f8;
-  --bg:#06080b;
-  --panel:#10151b;
-  --panel-2:#151b23;
-  --panel-3:#1b2430;
-  --line:#27303b;
-  --line-2:#3b4653;
-  --text:#edf2f8;
-  --muted:#9eabb7;
-  --accent:#d16086;
-  --accent-soft:rgba(209,96,134,.18);
-  --amber:#caa061;
-  --cyan:#67c1d5;
-  --red:#de7373;
-  --green:#74c58a;
-  --shadow:0 18px 40px rgba(0,0,0,.3);
 
-  /* Canonical stable rules reference --pink, but the stable source never
-     declares it. The pre-canonical source uses --accent for the same UI role.
-     This alias is an explicit reconciliation, not a recovered declaration. */
-  --pink:var(--accent);
+* {
+  box-sizing: border-box;
 }
-body{margin:0;min-height:100vh;background:radial-gradient(circle at top,rgba(209,96,134,.1),transparent 30%),linear-gradient(#090c10,#050709 25%);color:var(--text)}
-button,input{font:inherit}
-button{cursor:pointer;border:0;color:inherit}
-img{display:block;max-width:100%}
-.panel{background:linear-gradient(180deg,rgba(17,20,22,.98),rgba(8,11,13,.98));border:1px solid var(--line);border-radius:7px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.025)}
-.muted{color:var(--muted)}
+
+:root {
+  color-scheme: dark;
+  font-family: Inter, system-ui, sans-serif;
+  background: #06080b;
+  color: #edf2f8;
+
+  --bg: #06080b;
+  --panel: #10151b;
+  --panel-2: #151b23;
+  --panel-3: #1b2430;
+  --line: #27303b;
+  --line-2: #3b4653;
+  --text: #edf2f8;
+  --muted: #9eabb7;
+  --accent: #d16086;
+  --accent-soft: rgba(209, 96, 134, 0.18);
+  --amber: #caa061;
+  --cyan: #67c1d5;
+  --red: #de7373;
+  --green: #74c58a;
+  --shadow: 0 18px 40px rgba(0, 0, 0, 0.3);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top, rgba(209, 96, 134, 0.1), transparent 30%),
+    linear-gradient(#090c10, #050709 25%);
+  color: var(--text);
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: 0;
+  color: inherit;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+.panel {
+  background: linear-gradient(180deg, rgba(24, 31, 40, 0.97), rgba(15, 20, 26, 0.98));
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+}
+
+.muted {
+  color: var(--muted);
+}
