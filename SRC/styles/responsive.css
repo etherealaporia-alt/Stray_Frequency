@@ -199,11 +199,6 @@
     overflow-x: hidden;
   }
 
-  #app {
-    min-height: 100vh;
-    padding: 0;
-  }
-
   .game-shell {
     width: 100%;
     padding: 4px;
@@ -483,11 +478,6 @@
    Sidebar remains top tabs -> natural-height panel -> bottom tabs.
    -------------------------------------------------------------------------- */
 @media (max-width:950px) and (orientation:landscape) and (max-height:520px) {
-  #app {
-    min-height: 100vh;
-    padding: 0;
-  }
-
   .game-shell { padding:3px; }
 
   .masthead {
