@@ -3,7 +3,6 @@ import { gameState } from '../core/state';
 import type { Panel } from '../core/types';
 import { getRoom } from '../data/rooms';
 import { characterCardMarkup } from './character-card';
-import { minimapMarkup } from './minimap';
 
 const PANEL_ICONS: Record<Panel, string> = {
   world: '◎',
@@ -76,7 +75,6 @@ export function renderShell(app: HTMLDivElement): void {
         </section>
 
         <aside class="sidebar">
-          ${minimapMarkup()}
           <nav class="rune-menu rune-menu-top panel" aria-label="Primary game menu">
             ${menuMarkup(PRIMARY_PANELS)}
           </nav>
