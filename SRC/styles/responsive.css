@@ -367,9 +367,9 @@
   .active-panel {
     grid-column: 1/-1;
     grid-row: 2;
-    height: 350px;
-    min-height: 350px;
-    max-height: 350px;
+    height: auto;
+    min-height: 0;
+    max-height: none;
     padding: 10px;
     border-radius: 0;
     overflow: visible;
@@ -484,7 +484,6 @@
   .character-card .character-copy h2 { font-size:16px !important; }
   .character-card .quick-stats strong { font-size:12px; }
   .scene-wrap { aspect-ratio:1.65/1; }
-  .active-panel { height:320px; min-height:320px; max-height:320px; }
   .inventory-tiles { width:min(100%,282px); }
   .equipment-grid { grid-template-rows:repeat(2,94px); }
 }
