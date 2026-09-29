@@ -1,4 +1,4 @@
-import { LEGACY_UNRESOLVED_ASSETS } from '../core/assets';
+import { ASSETS } from '../core/assets';
 import { characterName, gameState } from '../core/state';
 import { derivedDefense } from '../systems/equipment';
 import { escapeHtml } from './html';
@@ -6,7 +6,7 @@ import { escapeHtml } from './html';
 export function characterCardMarkup(): string {
   return `
       <section class="character-card panel" aria-label="Character summary">
-        <img src="${LEGACY_UNRESOLVED_ASSETS.maraValePortrait}" alt="Pixel portrait of Mara Vale" class="portrait" />
+        <img src="${ASSETS.characters.maraPortrait}" alt="Pixel portrait of Mara Vale" class="portrait" />
         <div class="character-copy">
           <div class="eyebrow">PLAYER</div>
           <h2>${escapeHtml(characterName(gameState))}</h2>
