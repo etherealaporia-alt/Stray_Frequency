@@ -1,7 +1,7 @@
 const baseUrl = import.meta.env.BASE_URL;
 
 export function assetUrl(publicRelativePath: string): string {
-  return `${baseUrl}${publicRelativePath.replace(/^\\/+/, '')}`;
+  return `${baseUrl}${publicRelativePath.replace(/^\/+/, '')}`;
 }
 
 export const ASSETS = {
@@ -75,7 +75,6 @@ const preloadCache = new Map<string, Promise<void>>();
 function preloadImage(url: string): Promise<void> {
   const cached = preloadCache.get(url);
   if (cached) return cached;
-
   const request = new Promise<void>((resolve) => {
     const image = new Image();
     const finish = () => resolve();
@@ -84,7 +83,6 @@ function preloadImage(url: string): Promise<void> {
     image.src = url;
     if (image.complete) resolve();
   });
-
   preloadCache.set(url, request);
   return request;
 }
