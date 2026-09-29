@@ -1,4 +1,4 @@
-import { ASSETS, LEGACY_UNRESOLVED_ASSETS } from '../core/assets';
+import { ASSETS } from '../core/assets';
 import type { Room, RoomId } from '../core/types';
 
 export const ROOMS: Record<RoomId, Room> = {
@@ -9,7 +9,7 @@ export const ROOMS: Record<RoomId, Room> = {
     slogan: 'TRADE. TRAVEL. TRY TO STAY ALIVE.',
     description:
       'Rainwater drips from the glass canopy as crowds flow through. Street vendors, travellers and fixers jostle beneath a sky of neon. A signed underpass leads toward the local breaker yard.',
-    sceneImage: LEGACY_UNRESOLVED_ASSETS.glassmarketScene,
+    sceneImage: ASSETS.environments.southDock.glassmarket,
     actions: [
       {
         label: 'Head to Breaker Yard 12',
