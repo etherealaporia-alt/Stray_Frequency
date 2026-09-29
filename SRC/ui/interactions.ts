@@ -46,11 +46,13 @@ function spawnXpPopup(text: string): void {
   const host = document.querySelector<HTMLElement>('#xp-layer');
   if (!host) return;
 
+  host.querySelector('.xp-popup')?.remove();
+
   const popup = document.createElement('div');
   popup.className = 'xp-popup';
   popup.textContent = text;
   host.appendChild(popup);
-  window.setTimeout(() => popup.remove(), 1_200);
+  window.setTimeout(() => popup.remove(), 950);
 }
 
 function renderPanelAndBind(): void {

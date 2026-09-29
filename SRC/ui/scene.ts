@@ -34,14 +34,16 @@ export function renderScene(): void {
     target.innerHTML = `
       <div class="scene-stage breaker-stage asset-breaker-stage">
         <img src="${escapeHtml(room.sceneImage ?? '')}" alt="Pixel art view of Breaker Yard 12 beneath the overpass" class="scene scene-image" />
-        <div class="scrap-node asset-scrap-node breaker-scrap-node gather-node ${depleted ? 'depleted' : ''}" id="scrap-node" data-node-action="start-salvaging" role="button" tabindex="0" aria-label="Tier 1 Scrap node. Double-click to salvage.">
-          <div class="node-label">TIER 1 SCRAP</div>
-          <img src="${ASSETS.environments.nodes.salvage}" alt="Tier 1 Scrap salvage node" />
-        </div>
-        <div class="mara-anchor asset-mara-anchor breaker-mara-anchor ${gameState.salvage.active ? 'visible' : ''}" id="mara-anchor">
-          <div class="xp-layer" id="xp-layer"></div>
-          <div class="mara-nameplate">${characterName(gameState)}</div>
-          <div class="asset-mara-sprite ${gameState.salvage.active ? 'salvaging' : ''}" aria-hidden="true"></div>
+        <div class="breaker-salvage-pair">
+          <div class="mara-anchor asset-mara-anchor breaker-mara-anchor ${gameState.salvage.active ? 'visible' : ''}" id="mara-anchor">
+            <div class="mara-nameplate">${characterName(gameState)}</div>
+            <div class="asset-mara-sprite ${gameState.salvage.active ? 'salvaging' : ''}" aria-hidden="true"></div>
+          </div>
+          <div class="scrap-node asset-scrap-node breaker-scrap-node gather-node ${depleted ? 'depleted' : ''}" id="scrap-node" data-node-action="start-salvaging" role="button" tabindex="0" aria-label="Tier 1 Scrap node. Double-click to salvage.">
+            <div class="node-label">TIER 1 SCRAP</div>
+            <img src="${ASSETS.environments.nodes.salvage}" alt="Tier 1 Scrap salvage node" />
+          </div>
+          <div class="xp-layer breaker-xp-layer" id="xp-layer"></div>
         </div>
         <div class="scene-tag scene-tag-left">SALVAGE LOT<br><small>PERSONAL DEMO NODE</small></div>
         <div class="scene-tag scene-tag-right">SOUTH DOCK<br><small>BREAKER YARD 12</small></div>
