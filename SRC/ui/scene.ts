@@ -4,7 +4,13 @@ import {
 } from '../core/assets';
 import { COOKING_TICKS_PER_ITEM } from '../core/constants';
 import { characterName, gameState } from '../core/state';
+import { NODE_PRESENTATIONS } from '../data/node-presentations';
 import { getRoom } from '../data/rooms';
+import {
+  activityAnchorStyle,
+  assignActivityAnchor,
+  releaseActivityAnchor
+} from './activity-anchors';
 import { escapeHtml } from './html';
 import { updateMinimap } from './minimap';
 
@@ -31,20 +37,32 @@ export function renderScene(): void {
       </div>`;
   } else if (room.id === 'breaker-yard') {
     const depleted = gameState.salvage.remainingTicks <= 0;
+    const presentation = NODE_PRESENTATIONS.breakerYardTier1Scrap;
+    const actorId = gameState.character?.id ?? 'local-player';
+    const anchor = gameState.salvage.active
+      ? assignActivityAnchor(presentation, actorId)
+      : null;
+
+    if (!gameState.salvage.active) releaseActivityAnchor(presentation.id, actorId);
+
     target.innerHTML = `
       <div class="scene-stage breaker-stage asset-breaker-stage">
         <img src="${escapeHtml(room.sceneImage ?? '')}" alt="Pixel art view of Breaker Yard 12 beneath the overpass" class="scene scene-image" />
-        <div class="breaker-salvage-pair">
-          <div class="mara-anchor asset-mara-anchor breaker-mara-anchor ${gameState.salvage.active ? 'visible' : ''}" id="mara-anchor">
-            <div class="mara-nameplate">${characterName(gameState)}</div>
-            <div class="asset-mara-sprite ${gameState.salvage.active ? 'salvaging' : ''}" aria-hidden="true"></div>
-          </div>
-          <div class="scrap-node asset-scrap-node breaker-scrap-node gather-node ${depleted ? 'depleted' : ''}" id="scrap-node" data-node-action="start-salvaging" role="button" tabindex="0" aria-label="Tier 1 Scrap node. Double-click to salvage.">
-            <div class="node-label">TIER 1 SCRAP</div>
-            <img src="${ASSETS.environments.nodes.salvage}" alt="Tier 1 Scrap salvage node" />
-          </div>
-          <div class="xp-layer breaker-xp-layer" id="xp-layer"></div>
+
+        <div class="scrap-node asset-scrap-node breaker-scrap-node gather-node ${depleted ? 'depleted' : ''}" id="scrap-node" data-node-action="start-salvaging" role="button" tabindex="0" aria-label="Tier 1 Scrap node. Double-click to salvage.">
+          <div class="node-label">TIER 1 SCRAP</div>
+          <img src="${ASSETS.environments.nodes.salvage}" alt="Tier 1 Scrap salvage node" />
         </div>
+
+        ${anchor ? `
+          <div class="activity-anchor breaker-activity-anchor" data-activity-anchor="${anchor.id}" style="${activityAnchorStyle(anchor)}">
+            <div class="mara-anchor asset-mara-anchor breaker-mara-anchor visible" id="mara-anchor">
+              <div class="mara-nameplate">${characterName(gameState)}</div>
+              <div class="asset-mara-sprite salvaging" aria-hidden="true"></div>
+            </div>
+          </div>` : ''}
+
+        <div class="xp-layer breaker-xp-layer" id="xp-layer"></div>
         <div class="scene-tag scene-tag-left">SALVAGE LOT<br><small>PERSONAL DEMO NODE</small></div>
         <div class="scene-tag scene-tag-right">SOUTH DOCK<br><small>BREAKER YARD 12</small></div>
       </div>`;
