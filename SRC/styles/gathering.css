@@ -117,7 +117,7 @@
   box-shadow: none;
   z-index: 3;
   cursor: pointer;
-  transition: opacity .2s ease, filter .2s ease;
+  transition: filter .2s ease;
 }
 
 .asset-scrap-node.breaker-scrap-node img {
@@ -127,15 +127,27 @@
 }
 
 .asset-scrap-node.breaker-scrap-node.depleted {
-  opacity: .28;
-  filter: grayscale(.65) brightness(.7);
+  filter: none;
   cursor: default;
 }
 
+.asset-scrap-node.breaker-scrap-node.depleted img {
+  opacity: .42;
+  filter: grayscale(.6) brightness(.78);
+}
+
 .asset-scrap-node .node-label {
-  top: -28px;
-  left: 4px;
+  top: -30px;
+  left: 50%;
   z-index: 2;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  border-radius: 2px;
+  font-family: "Arial Narrow", "Roboto Condensed", "Bahnschrift Condensed", sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .18em;
+  text-shadow: 0 0 8px rgba(209,96,134,.45);
 }
 
 .asset-scrap-node .node-count {
@@ -149,7 +161,7 @@
    salvaging. The sprite uses the canonical mara-breaker asset variable. */
 .asset-mara-anchor.breaker-mara-anchor {
   left: auto;
-  right: calc(50% + 4px);
+  right: calc(50% - 18px);
   bottom: 6%;
   width: min(18vw,180px);
   height: auto;
@@ -287,4 +299,38 @@
   color: #f1b625;
   text-align: left;
   cursor: pointer;
+}
+
+
+/* Breaker Yard diegetic labels: compact industrial/cyberpunk treatment. */
+.breaker-mara-anchor .mara-nameplate {
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 2px;
+  padding: 4px 9px;
+  border-color: rgba(103,193,213,.48);
+  background: rgba(5,9,12,.9);
+  color: var(--text);
+  font-family: "Arial Narrow", "Roboto Condensed", "Bahnschrift Condensed", sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  text-align: center;
+  text-shadow: 0 0 8px rgba(103,193,213,.42);
+}
+
+.breaker-mara-anchor .xp-layer {
+  z-index: 8;
+}
+
+.breaker-mara-anchor .xp-popup {
+  border-radius: 2px;
+  padding: 3px 7px;
+  font-family: "Arial Narrow", "Roboto Condensed", "Bahnschrift Condensed", sans-serif;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  text-shadow: 0 0 8px rgba(202,160,97,.5);
 }
