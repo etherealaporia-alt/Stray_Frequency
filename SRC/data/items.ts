@@ -1,4 +1,4 @@
-import { ASSETS, LEGACY_VISUAL_EQUIVALENTS } from '../core/assets';
+import { ASSETS } from '../core/assets';
 import type { ItemDefinition, ItemKey } from '../core/types';
 
 export const ITEM_DEFINITIONS: Record<ItemKey, ItemDefinition> = {
@@ -6,7 +6,7 @@ export const ITEM_DEFINITIONS: Record<ItemKey, ItemDefinition> = {
     key: 'salvage_bar',
     name: 'Powered Salvage Bar',
     description: 'A powered utility breaker for prying, splitting and stripping Tier 1 scrap.',
-    asset: LEGACY_VISUAL_EQUIVALENTS.poweredSalvageBar,
+    asset: ASSETS.items.tools.breaker,
     stackable: false,
     equipmentSlot: 'main_hand',
     toolType: 'salvage',
@@ -17,7 +17,7 @@ export const ITEM_DEFINITIONS: Record<ItemKey, ItemDefinition> = {
     name: 'Tier 1 Metal Scrap',
     description: 'Bolts, plates and structural metal recovered from salvage.',
     panelDescription: 'Bolts, plates and structural metal recovered from salvage.',
-    asset: LEGACY_VISUAL_EQUIVALENTS.metalScrap,
+    asset: ASSETS.items.resources.scrap,
     stackable: true
   },
   composite_scrap: {
@@ -46,14 +46,14 @@ export const ITEM_DEFINITIONS: Record<ItemKey, ItemDefinition> = {
     key: 'copper_coils',
     name: 'Copper Coils',
     description: 'Copper wiring coils recovered from a scrap node.',
-    asset: LEGACY_VISUAL_EQUIVALENTS.copperCoils,
+    asset: ASSETS.items.resources.synthetics,
     stackable: true
   },
   cooked_shrimp: {
     key: 'cooked_shrimp',
     name: 'Cooked Shrimp',
     description: 'A cooked meal that restores 3 HP when used.',
-    asset: LEGACY_VISUAL_EQUIVALENTS.cookedShrimp,
+    asset: ASSETS.items.resources.synthetics,
     stackable: true,
     usable: true
   },
@@ -61,7 +61,7 @@ export const ITEM_DEFINITIONS: Record<ItemKey, ItemDefinition> = {
     key: 'portable_induction_pad',
     name: 'Portable Induction Pad',
     description: 'Double-click to deploy. Cooks each Uncooked Shrimp over 3 ticks.',
-    asset: LEGACY_VISUAL_EQUIVALENTS.portableInductionPad,
+    asset: ASSETS.items.tools.breaker,
     stackable: false,
     usable: true
   },
