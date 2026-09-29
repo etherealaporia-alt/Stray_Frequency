@@ -80,3 +80,30 @@ export const CORE_ASSET_URLS = [
 export const ASSET_CSS_VARIABLES = {
   '--asset-mara-salvage': `url("${ASSETS.animations.salvaging.maraBreaker}")`
 } as const;
+
+const preloadCache = new Map<string, Promise<void>>();
+
+function preloadImage(url: string): Promise<void> {
+  const cached = preloadCache.get(url);
+  if (cached) return cached;
+
+  const request = new Promise<void>((resolve) => {
+    const image = new Image();
+    const finish = () => resolve();
+    image.addEventListener('load', finish, { once: true });
+    image.addEventListener('error', finish, { once: true });
+    image.src = url;
+    if (image.complete) resolve();
+  });
+
+  preloadCache.set(url, request);
+  return request;
+}
+
+/**
+ * Warm every currently known scene, gathering, animation and item image before
+ * the game shell is rendered. Failed/missing prototype assets do not block play.
+ */
+export async function preloadCoreAssets(): Promise<void> {
+  await Promise.all([...new Set(CORE_ASSET_URLS)].map(preloadImage));
+}
