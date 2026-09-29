@@ -15,6 +15,9 @@ export const ASSETS = {
       maraBreaker: assetUrl('animations/salvaging/mara-breaker.png')
     }
   },
+  characters: {
+    maraPortrait: assetUrl('environments/south-dock/mara-character-portrait.png')
+  },
   items: {
     food: {
       sardine: assetUrl('assets/items/food/sardine.png'),
@@ -37,6 +40,7 @@ export const ASSETS = {
       shrimp: assetUrl('environments/nodes/shrimp-node.png')
     },
     southDock: {
+      glassmarket: assetUrl('environments/south-dock/glass-market.png'),
       breakerYard12: assetUrl('environments/south-dock/breakers-yard-12.png'),
       pier: assetUrl('environments/south-dock/pier.png')
     }
@@ -58,8 +62,8 @@ export const LEGACY_VISUAL_EQUIVALENTS = {
 } as const;
 
 export const CORE_ASSET_URLS = [
-  LEGACY_UNRESOLVED_ASSETS.maraValePortrait,
-  LEGACY_UNRESOLVED_ASSETS.glassmarketScene,
+  ASSETS.characters.maraPortrait,
+  ASSETS.environments.southDock.glassmarket,
   ASSETS.environments.southDock.breakerYard12,
   ASSETS.environments.southDock.pier,
   ASSETS.environments.nodes.salvage,
