@@ -26,367 +26,137 @@
 
 .node-status-card span,
 .inventory-row span,
-.resource-summary div {
-  color: #d8e0ea;
-  font-size: .92rem;
-}
+.resource-summary div { color: #d8e0ea; font-size: .92rem; }
 
 .node-status-card strong,
 .inventory-row strong,
-.resource-summary strong {
-  color: #fff;
-}
+.resource-summary strong { color: #fff; }
 
-.resource-chip {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
-  margin-right: 8px;
-  vertical-align: middle;
-}
+.resource-chip { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:8px; vertical-align:middle; }
+.resource-chip.metal { background:#b9c5d0; }
+.resource-chip.composite { background:#77c5c2; }
 
-.resource-chip.metal { background: #b9c5d0; }
-.resource-chip.composite { background: #77c5c2; }
-
-/* Asset-backed gathering scene.
-   Establish an explicit layer stack: background scene < gatherables/actor < tags. */
 .asset-breaker-stage > .scene-image {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: 0;
+  position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0;
 }
 
 .asset-breaker-stage > .breaker-scrap-node,
-.asset-breaker-stage > .breaker-mara-anchor {
-  position: absolute;
-}
+.asset-breaker-stage > .breaker-mara-anchor { position:absolute; }
 
 .pier-stage {
-  overflow: hidden;
-  background: linear-gradient(180deg,#121820 0%,#202a31 36%,#52615a 36.5%,#23383a 39%,#15292d 48%,#091317 100%);
+  overflow:hidden;
+  background:linear-gradient(180deg,#121820 0%,#202a31 36%,#52615a 36.5%,#23383a 39%,#15292d 48%,#091317 100%);
 }
-
 .pier-stage::before {
-  content: "";
-  position: absolute;
-  left: 12%;
-  right: 12%;
-  bottom: 0;
-  height: 24%;
-  border-top: 2px solid rgba(177,164,127,.7);
-  background:
-    repeating-linear-gradient(90deg,rgba(116,105,80,.35) 0 2px,transparent 2px 52px),
-    repeating-linear-gradient(0deg,#20282a 0 15px,#303436 16px,#1a2325 18px);
+  content:""; position:absolute; left:12%; right:12%; bottom:0; height:24%;
+  border-top:2px solid rgba(177,164,127,.7);
+  background:repeating-linear-gradient(90deg,rgba(116,105,80,.35) 0 2px,transparent 2px 52px),repeating-linear-gradient(0deg,#20282a 0 15px,#303436 16px,#1a2325 18px);
 }
-
 .pier-stage::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 43%;
-  height: 1px;
-  background: rgba(158,177,164,.55);
-  box-shadow: 0 12px 0 rgba(149,169,162,.13),0 30px 0 rgba(149,169,162,.1),0 58px 0 rgba(149,169,162,.08);
+  content:""; position:absolute; left:0; right:0; top:43%; height:1px;
+  background:rgba(158,177,164,.55);
+  box-shadow:0 12px 0 rgba(149,169,162,.13),0 30px 0 rgba(149,169,162,.1),0 58px 0 rgba(149,169,162,.08);
 }
-
 .pier-waterline {
-  position: absolute;
-  z-index: 1;
-  left: 0;
-  right: 0;
-  top: 43%;
-  height: 3px;
-  background: rgba(192,183,145,.48);
-  box-shadow: 0 1px 10px rgba(175,193,171,.28);
+  position:absolute; z-index:1; left:0; right:0; top:43%; height:3px;
+  background:rgba(192,183,145,.48); box-shadow:0 1px 10px rgba(175,193,171,.28);
 }
 
-/* Generic activity anchors.
-   These are visual positions only; they never gate gathering gameplay. */
 .activity-anchor {
-  position: absolute;
-  left: var(--activity-anchor-x);
-  top: var(--activity-anchor-y);
-  z-index: var(--activity-anchor-z);
-  width: min(18vw,180px);
-  transform: translate(-50%,-50%);
-  pointer-events: none;
+  position:absolute; left:var(--activity-anchor-x); top:var(--activity-anchor-y);
+  z-index:var(--activity-anchor-z); width:min(18vw,180px);
+  transform:translate(-50%,-50%); pointer-events:none;
 }
-
-.activity-anchor .mara-anchor {
-  position: relative;
-  width: 100%;
-  height: auto;
-  min-height: 120px;
-}
-
+.activity-anchor .mara-anchor { position:relative; width:100%; height:auto; min-height:120px; }
 .activity-anchor .asset-mara-sprite {
-  transform: scaleX(var(--activity-anchor-facing)) scale(var(--activity-anchor-scale));
-  transform-origin: 50% 100%;
+  transform:scaleX(var(--activity-anchor-facing)) scale(var(--activity-anchor-scale));
+  transform-origin:50% 100%;
 }
 
-/* Breaker Yard node owns its own geometry independently of actor anchors. */
 .asset-scrap-node.breaker-scrap-node {
-  position: absolute;
-  left: 50%;
-  bottom: 6%;
-  z-index: 7;
-  width: min(23vw,230px);
-  height: auto;
-  transform: translateX(4px);
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-  cursor: pointer;
+  position:absolute; left:50%; bottom:6%; z-index:7; width:min(23vw,230px); height:auto;
+  transform:translateX(4px); background:transparent; border:0; box-shadow:none; cursor:pointer;
 }
-
 .asset-scrap-node.breaker-scrap-node > img {
-  width: 100%;
-  height: auto;
-  display: block;
-  opacity: 1;
-  object-fit: contain;
-  image-rendering: pixelated;
-  transition: opacity .2s ease, filter .2s ease;
+  width:100%; height:auto; display:block; opacity:1; object-fit:contain;
+  image-rendering:pixelated; transition:opacity .2s ease,filter .2s ease;
 }
-
-.asset-scrap-node.breaker-scrap-node.depleted > img {
-  opacity: .62;
-  filter: grayscale(.48) brightness(.84) contrast(.9);
-}
-
-.asset-scrap-node.breaker-scrap-node.depleted {
-  cursor: default;
-}
-
+.asset-scrap-node.breaker-scrap-node.depleted > img { opacity:.62; filter:grayscale(.48) brightness(.84) contrast(.9); }
+.asset-scrap-node.breaker-scrap-node.depleted { cursor:default; }
 .asset-scrap-node.breaker-scrap-node .node-label {
-  position: absolute;
-  top: -25px;
-  left: 50%;
-  z-index: 10;
-  transform: translateX(-50%);
-  width: max-content;
-  max-width: 100%;
-  padding: 4px 8px;
-  border: 1px solid rgba(209,96,134,.55);
-  border-radius: 1px;
-  background: rgba(7,9,12,.9);
-  color: #ffd1df;
-  font-family: "Arial Narrow","Bahnschrift Condensed","Roboto Condensed",sans-serif;
-  font-size: 9px;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: .16em;
-  text-align: center;
-  text-transform: uppercase;
-  white-space: nowrap;
-  text-shadow: 0 0 7px rgba(209,96,134,.45);
+  position:absolute; top:-25px; left:50%; z-index:10; transform:translateX(-50%);
+  width:max-content; max-width:100%; padding:4px 8px; border:1px solid rgba(209,96,134,.55);
+  border-radius:1px; background:rgba(7,9,12,.9); color:#ffd1df;
+  font-family:"Arial Narrow","Bahnschrift Condensed","Roboto Condensed",sans-serif;
+  font-size:9px; font-weight:800; line-height:1; letter-spacing:.16em; text-align:center;
+  text-transform:uppercase; white-space:nowrap; text-shadow:0 0 7px rgba(209,96,134,.45);
 }
 
-.breaker-mara-anchor {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: none;
-}
-
+.breaker-mara-anchor { opacity:1; visibility:visible; pointer-events:none; }
 .breaker-mara-anchor .mara-nameplate {
-  position: absolute;
-  top: -25px;
-  left: 50%;
-  z-index: 2;
-  transform: translateX(-50%);
-  width: max-content;
-  max-width: 92%;
-  padding: 4px 8px;
-  border: 1px solid rgba(103,193,213,.55);
-  border-radius: 1px;
-  background: rgba(7,9,12,.9);
-  color: #dff9ff;
-  font-family: "Arial Narrow","Bahnschrift Condensed","Roboto Condensed",sans-serif;
-  font-size: 9px;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: .14em;
-  text-align: center;
-  text-transform: uppercase;
-  white-space: nowrap;
-  text-shadow: 0 0 7px rgba(103,193,213,.42);
+  position:absolute; top:-25px; left:50%; z-index:2; transform:translateX(-50%);
+  width:max-content; max-width:92%; padding:4px 8px; border:1px solid rgba(103,193,213,.55);
+  border-radius:1px; background:rgba(7,9,12,.9); color:#dff9ff;
+  font-family:"Arial Narrow","Bahnschrift Condensed","Roboto Condensed",sans-serif;
+  font-size:9px; font-weight:800; line-height:1; letter-spacing:.14em; text-align:center;
+  text-transform:uppercase; white-space:nowrap; text-shadow:0 0 7px rgba(103,193,213,.42);
 }
 
 .asset-mara-sprite {
-  width: 100%;
-  aspect-ratio: 1/1;
-  background-image: var(--asset-mara-salvage);
-  background-repeat: no-repeat;
-  background-size: 300% 100%;
-  background-position: 0 0;
-  image-rendering: pixelated;
+  width:100%; aspect-ratio:1/1; background-image:var(--asset-mara-salvage);
+  background-repeat:no-repeat; background-size:300% 100%; background-position:0 0;
+  image-rendering:pixelated;
 }
+.asset-mara-sprite.salvaging { animation:asset-salvage-frames 1.2s steps(3,jump-none) infinite; }
+@keyframes asset-salvage-frames { from { background-position:0 0; } to { background-position:100% 0; } }
 
-.asset-mara-sprite.salvaging {
-  animation: asset-salvage-frames 1.2s steps(3,jump-none) infinite;
-}
-
-@keyframes asset-salvage-frames {
-  from { background-position: 0 0; }
-  to { background-position: 100% 0; }
-}
-
-/* XP remains node/activity presentation rather than anchor occupancy, so a
-   collection popup still works even when an actor cannot be visually placed. */
 .breaker-xp-layer {
-  position: absolute;
-  left: 46%;
-  bottom: 58%;
-  z-index: 12;
-  width: 1px;
-  height: 1px;
-  pointer-events: none;
+  position:absolute; left:46%; bottom:58%; z-index:12; width:1px; height:1px; pointer-events:none;
 }
-
 .breaker-xp-layer .xp-popup {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: max-content;
-  padding: 3px 6px;
-  border: 1px solid rgba(202,160,97,.62);
-  border-radius: 1px;
-  background: rgba(7,9,12,.88);
-  color: #ffd28e;
-  font-family: "Arial Narrow","Bahnschrift Condensed","Roboto Condensed",sans-serif;
-  font-size: 9px;
-  font-weight: 900;
-  line-height: 1;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-  text-shadow: 0 0 7px rgba(202,160,97,.48);
-  white-space: nowrap;
-  animation: breaker-xp-rise .9s ease-out forwards;
+  position:absolute; left:0; bottom:0; width:max-content; padding:3px 6px;
+  border:1px solid rgba(202,160,97,.62); border-radius:1px; background:rgba(7,9,12,.88);
+  color:#ffd28e; font-family:"Arial Narrow","Bahnschrift Condensed","Roboto Condensed",sans-serif;
+  font-size:9px; font-weight:900; line-height:1; letter-spacing:.12em; text-transform:uppercase;
+  text-shadow:0 0 7px rgba(202,160,97,.48); white-space:nowrap;
+  animation:breaker-xp-rise .9s ease-out forwards;
 }
-
 @keyframes breaker-xp-rise {
-  0%   { opacity: 0; transform: translate(-50%,8px); }
-  12%  { opacity: 1; transform: translate(-50%,2px); }
-  68%  { opacity: 1; }
-  100% { opacity: 0; transform: translate(-50%,-34px); }
+  0% { opacity:0; transform:translate(-50%,8px); }
+  12% { opacity:1; transform:translate(-50%,2px); }
+  68% { opacity:1; }
+  100% { opacity:0; transform:translate(-50%,-34px); }
 }
 
-/* Breaker Yard World tab: the node itself carries the Tier 1 Scrap tag.
-   Detailed pulls/requirements/yields belong in Salvaging skill information. */
-.active-panel:has([data-action="start-salvaging"]) .gather-summary,
-.active-panel:has([data-action="start-salvaging"]) .asset-resource-grid {
-  display: none;
-}
-
-/* Asset/resource cards */
 .asset-item-grid,
-.asset-resource-grid {
-  display: grid;
-  gap: 10px;
-  margin-top: 14px;
-}
-
-.asset-item-grid { grid-template-columns: 1fr; }
-.asset-resource-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+.asset-resource-grid { display:grid; gap:10px; margin-top:14px; }
+.asset-item-grid { grid-template-columns:1fr; }
+.asset-resource-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
 
 .asset-item-card,
 .asset-resource-card {
-  display: grid;
-  grid-template-columns: 62px minmax(0,1fr);
-  align-items: center;
-  gap: 10px;
-  border: 1px solid #303437;
-  background: rgba(255,255,255,.03);
-  border-radius: 10px;
-  padding: 10px;
+  display:grid; grid-template-columns:62px minmax(0,1fr); align-items:center; gap:10px;
+  border:1px solid #303437; background:rgba(255,255,255,.03); border-radius:10px; padding:10px;
 }
-
 .asset-item-card img,
-.asset-resource-card img {
-  width: 62px;
-  height: 62px;
-  object-fit: contain;
-  image-rendering: pixelated;
-}
-
+.asset-resource-card img { width:62px; height:62px; object-fit:contain; image-rendering:pixelated; }
 .asset-item-card span,
-.asset-resource-card span {
-  display: block;
-  color: #858784;
-  font-size: 11px;
-  margin-bottom: 5px;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-}
-
+.asset-resource-card span { display:block; color:#858784; font-size:11px; margin-bottom:5px; letter-spacing:.08em; text-transform:uppercase; }
 .asset-item-card strong,
-.asset-resource-card strong {
-  display: block;
-  font-size: 14px;
-  color: #d9d9d6;
-  line-height: 1.2;
-  margin-bottom: 4px;
-}
-
+.asset-resource-card strong { display:block; font-size:14px; color:#d9d9d6; line-height:1.2; margin-bottom:4px; }
 .asset-item-card small,
-.asset-resource-card small {
-  display: block;
-  color: #858784;
-  font-size: 11px;
-  line-height: 1.35;
-}
+.asset-resource-card small { display:block; color:#858784; font-size:11px; line-height:1.35; }
 
-.gather-summary {
-  display: grid;
-  grid-template-columns: repeat(2,minmax(0,1fr));
-  gap: 6px;
-  margin-top: 8px;
-}
-
+.gather-summary { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; margin-top:8px; }
 .summary-card,
-.tool-card {
-  border: 1px solid #303437;
-  background: rgba(255,255,255,.03);
-  border-radius: 10px;
-  padding: 10px;
-}
-
-.summary-card {
-  padding: 7px;
-  border-radius: 0;
-}
-
-.asset-resource-grid { display: none; }
-.tool-card { display: none !important; }
-
-.tool-card {
-  grid-template-columns: 72px minmax(0,1fr);
-  align-items: center;
-  gap: 10px;
-  margin-top: 14px;
-}
-
-.tool-icon {
-  width: 62px;
-  height: 62px;
-  object-fit: contain;
-  image-rendering: pixelated;
-}
+.tool-card { border:1px solid #303437; background:rgba(255,255,255,.03); border-radius:10px; padding:10px; }
+.summary-card { padding:7px; border-radius:0; }
+.asset-resource-grid { display:none; }
+.tool-card { display:none !important; }
+.tool-card { grid-template-columns:72px minmax(0,1fr); align-items:center; gap:10px; margin-top:14px; }
+.tool-icon { width:62px; height:62px; object-fit:contain; image-rendering:pixelated; }
 
 .node-reset {
-  width: 100%;
-  margin-top: 7px;
-  padding: 7px 9px;
-  border: 1px solid #4a4640;
-  background: rgba(255,255,255,.03);
-  color: #f1b625;
-  text-align: left;
-  cursor: pointer;
+  width:100%; margin-top:7px; padding:7px 9px; border:1px solid #4a4640;
+  background:rgba(255,255,255,.03); color:#f1b625; text-align:left; cursor:pointer;
 }
-
-
