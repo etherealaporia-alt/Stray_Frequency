@@ -4,8 +4,7 @@ import {
   INVENTORY_SLOT_COUNT,
   MAX_SKILL_LEVEL,
   MOBILE_INVENTORY_PAGE_COUNT,
-  MOBILE_INVENTORY_PAGE_SIZE,
-  SALVAGE_YIELD_SUMMARY
+  MOBILE_INVENTORY_PAGE_SIZE
 } from '../core/constants';
 import { gameState } from '../core/state';
 import type {
@@ -34,25 +33,19 @@ function inventorySlotMarkup(entry: InventoryEntry, index: number): string {
   if (!entry) {
     return `<button class="inventory-tile empty" type="button" data-inventory-index="${index}" aria-label="Empty inventory slot"></button>`;
   }
-
   const item = ITEM_DEFINITIONS[entry.item];
   return `<button class="inventory-tile" type="button" data-inventory-index="${index}" data-use-item="${item.usable ? 'true' : 'false'}" data-double-use-item="${entry.item === 'portable_induction_pad' ? 'true' : 'false'}" data-tooltip="${escapeHtml(`${item.name} — ${item.description}`)}" aria-label="${escapeHtml(item.name)}"><img src="${item.asset}" alt="" />${entry.quantity > 1 ? `<span class="item-quantity">${entry.quantity}</span>` : ''}</button>`;
 }
 
 function equipmentSlotMarkup(slot: EquipmentSlot, label: string): string {
   const key = gameState.equipment[slot];
-  if (!key) {
-    return `<button class="equipment-slot empty" type="button" data-equipment-slot="${slot}"><span>${label}</span><small>EMPTY</small></button>`;
-  }
-
+  if (!key) return `<button class="equipment-slot empty" type="button" data-equipment-slot="${slot}"><span>${label}</span><small>EMPTY</small></button>`;
   const item = ITEM_DEFINITIONS[key];
   return `<button class="equipment-slot" type="button" data-equipment-slot="${slot}" data-tooltip="${escapeHtml(`${item.name} — ${item.description}`)}"><span>${label}</span><img src="${item.asset}" alt="${escapeHtml(item.name)}" /><small>${escapeHtml(item.name)}</small></button>`;
 }
 
 function actionPresentation(action: RoomAction): { disabled: boolean; detail: string } {
-  if (action.type === 'start-salvaging') {
-    return getSalvageActionPresentation(gameState, action.detail);
-  }
+  if (action.type === 'start-salvaging') return getSalvageActionPresentation(gameState, action.detail);
   if (action.type === 'start-fishing-shrimp' || action.type === 'start-fishing-sardine') {
     const method: FishingMethod = action.type === 'start-fishing-shrimp' ? 'shrimp' : 'sardine';
     return getFishingActionPresentation(gameState, method, action.detail);
@@ -118,25 +111,6 @@ function worldPanelMarkup(): string {
     <h3>${room.name}</h3>
     <p>${room.description}</p>
     ${worldActionsMarkup(room.actions)}
-
-    <div class="gather-summary">
-      <div class="summary-card"><span>Gathering node</span><strong>Tier 1 Scrap</strong></div>
-      <div class="summary-card"><span>Pulls left</span><strong>${gameState.salvage.remainingTicks}</strong></div>
-      <div class="summary-card"><span>Requires</span><strong>Salvaging ${gameState.salvage.requirement}</strong></div>
-      <div class="summary-card"><span>Yield rule</span><strong>${SALVAGE_YIELD_SUMMARY}</strong></div>
-    </div>
-
-    <div class="asset-resource-grid">
-      <div class="asset-resource-card">
-        <img src="${ITEM_DEFINITIONS.metal_scrap.asset}" alt="Tier 1 Metal Scrap" />
-        <div><strong>Tier 1 Metal Scrap</strong><small>${ITEM_DEFINITIONS.metal_scrap.panelDescription ?? ITEM_DEFINITIONS.metal_scrap.description}</small><em>Owned: ${gameState.inventoryTotals['Tier 1 Metal Scrap']}</em></div>
-      </div>
-      <div class="asset-resource-card">
-        <img src="${ITEM_DEFINITIONS.composite_scrap.asset}" alt="Tier 1 Composite Scrap" />
-        <div><strong>Tier 1 Composite Scrap</strong><small>${ITEM_DEFINITIONS.composite_scrap.panelDescription ?? ITEM_DEFINITIONS.composite_scrap.description}</small><em>Owned: ${gameState.inventoryTotals['Tier 1 Composite Scrap']}</em></div>
-      </div>
-    </div>
-
     <button class="node-reset" type="button" data-action="reset-node">Reset demo node</button>
   `;
 }
@@ -204,7 +178,6 @@ function mapPanelMarkup(): string {
 export function renderPanel(): HTMLElement | null {
   const target = document.querySelector<HTMLElement>('#active-panel');
   if (!target) return null;
-
   const content = {
     world: worldPanelMarkup(),
     inventory: inventoryPanelMarkup(),
