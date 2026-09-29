@@ -114,8 +114,13 @@ function renderSceneAndPanel(): void {
 function salvageChanged(event: SalvageEvent): void {
   if (event === 'started' || event === 'inventory-full' || event === 'replenished' || event === 'reset') {
     renderAll();
-  } else if (event === 'tick') {
+  } else if (event === 'depleted') {
     renderSceneAndPanel();
+  } else if (event === 'tick') {
+    // Keep the scene DOM stable between successful pulls so each XP popup can
+    // complete its animation. The node only needs a scene rerender on depletion.
+    renderPanelAndBind();
+    renderLog();
   }
 }
 
