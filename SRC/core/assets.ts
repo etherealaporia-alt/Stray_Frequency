@@ -1,8 +1,7 @@
 const baseUrl = import.meta.env.BASE_URL;
 
-/** Resolve a path from Vite's configured deployment base (currently /Stray_Frequency/). */
 export function assetUrl(publicRelativePath: string): string {
-  return `${baseUrl}${publicRelativePath.replace(/^\/+/, '')}`;
+  return `${baseUrl}${publicRelativePath.replace(/^\\/+/, '')}`;
 }
 
 export const ASSETS = {
@@ -45,20 +44,6 @@ export const ASSETS = {
       pier: assetUrl('environments/south-dock/pier.png')
     }
   }
-} as const;
-
-export const LEGACY_UNRESOLVED_ASSETS = {
-  maraValePortrait: assetUrl('assets/mara-vale.png'),
-  glassmarketScene: assetUrl('assets/glassmarket.png')
-} as const;
-
-export const LEGACY_VISUAL_EQUIVALENTS = {
-  poweredSalvageBar: ASSETS.items.tools.breaker,
-  portableInductionPad: ASSETS.items.tools.breaker,
-  metalScrap: ASSETS.items.resources.scrap,
-  compositeScrap: ASSETS.items.resources.synthetics,
-  copperCoils: ASSETS.items.resources.synthetics,
-  cookedShrimp: ASSETS.items.resources.synthetics
 } as const;
 
 export const CORE_ASSET_URLS = [
@@ -104,10 +89,6 @@ function preloadImage(url: string): Promise<void> {
   return request;
 }
 
-/**
- * Warm every currently known scene, gathering, animation and item image before
- * the game shell is rendered. Failed/missing prototype assets do not block play.
- */
 export async function preloadCoreAssets(): Promise<void> {
   await Promise.all([...new Set(CORE_ASSET_URLS)].map(preloadImage));
 }

@@ -15,7 +15,6 @@ export const SALVAGE_REQUIREMENT = 1;
 export const SALVAGE_XP_PER_TICK = 3;
 export const SALVAGE_METAL_CUTOFF = 0.3;
 export const SALVAGE_COMPOSITE_CUTOFF = 0.6;
-export const SALVAGE_YIELD_SUMMARY = '30% metal / 30% composite / 40% copper coils';
 export const FISHING_XP_PER_TICK = 3;
 export const COOKING_XP_PER_ITEM = 3;
 export const COOKING_TICKS_PER_ITEM = 3;
