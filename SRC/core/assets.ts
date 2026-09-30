@@ -15,7 +15,16 @@ export const ASSETS = {
     }
   },
   characters: {
-    maraPortrait: assetUrl('environments/south-dock/mara-character-portrait.png')
+    maraPortrait: assetUrl('environments/south-dock/mara-character-portrait.png'),
+    bodies: {
+      femaleBase01: assetUrl('characters/bodies/female-base-01.png')
+    },
+    hair: {
+      mara: assetUrl('characters/hair/mara-hair.png')
+    },
+    clothing: {
+      maraOutfit: assetUrl('characters/clothing/mara-outfit.png')
+    }
   },
   items: {
     food: {
@@ -48,6 +57,9 @@ export const ASSETS = {
 
 export const CORE_ASSET_URLS = [
   ASSETS.characters.maraPortrait,
+  ASSETS.characters.bodies.femaleBase01,
+  ASSETS.characters.hair.mara,
+  ASSETS.characters.clothing.maraOutfit,
   ASSETS.environments.southDock.glassmarket,
   ASSETS.environments.southDock.breakerYard12,
   ASSETS.environments.southDock.pier,

@@ -1,5 +1,11 @@
 export type BodyType = 'male' | 'female';
 
+export interface CharacterAppearance {
+  body: string;
+  hair?: string;
+  clothing?: string;
+}
+
 export type SkillKey =
   | 'firearms'
   | 'close_combat'
