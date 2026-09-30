@@ -8,6 +8,7 @@ import type {
   SaveProgress,
   TrackedInventoryName
 } from '../core/types';
+import { SOUTH_DOCK_FISHING_AREA, type FishingCatch } from '../data/fishing-areas';
 import { addInventoryItem } from './inventory';
 import { grantSkillXp } from './skills';
 
@@ -23,8 +24,6 @@ export interface FishingHooks {
 export interface FishingRequirement {
   item: Extract<ItemKey, 'fishing_net' | 'fishing_rod'>;
   itemName: 'Fishing Net' | 'Fishing Rod';
-  catchItem: Extract<ItemKey, 'uncooked_shrimp' | 'sardine'>;
-  catchName: Extract<TrackedInventoryName, 'Uncooked Shrimp' | 'Sardine'>;
 }
 
 export interface FishingAvailability {
@@ -48,33 +47,27 @@ function writeLog(state: GameState, hooks: FishingHooks, message: string): void 
 }
 
 export function getFishingRequirement(method: FishingMethod): FishingRequirement {
-  return method === 'shrimp'
-    ? {
-        item: 'fishing_net',
-        itemName: 'Fishing Net',
-        catchItem: 'uncooked_shrimp',
-        catchName: 'Uncooked Shrimp'
-      }
-    : {
-        item: 'fishing_rod',
-        itemName: 'Fishing Rod',
-        catchItem: 'sardine',
-        catchName: 'Sardine'
-      };
+  return method === 'net'
+    ? { item: 'fishing_net', itemName: 'Fishing Net' }
+    : { item: 'fishing_rod', itemName: 'Fishing Rod' };
 }
 
-export function getFishingAvailability(
-  state: GameState,
-  method: FishingMethod
-): FishingAvailability {
-  if (state.roomId !== 'south-dock-pier') return { available: false, reason: 'wrong-room' };
+function chooseCatch(method: FishingMethod): FishingCatch {
+  const table = SOUTH_DOCK_FISHING_AREA.catches[method];
+  const totalWeight = table.reduce((sum, entry) => sum + entry.weight, 0);
+  let roll = Math.random() * totalWeight;
+  for (const entry of table) {
+    roll -= entry.weight;
+    if (roll <= 0) return entry;
+  }
+  return table[table.length - 1]!;
+}
+
+export function getFishingAvailability(state: GameState, method: FishingMethod): FishingAvailability {
+  if (state.roomId !== SOUTH_DOCK_FISHING_AREA.roomId) return { available: false, reason: 'wrong-room' };
   if (state.fishing.active) return { available: false, reason: 'active' };
   if (state.salvage.active || state.cooking.active) {
-    return {
-      available: false,
-      reason: 'other-activity',
-      message: 'Finish the current activity before fishing.'
-    };
+    return { available: false, reason: 'other-activity', message: 'Finish the current activity before fishing.' };
   }
   const requirement = getFishingRequirement(method);
   if (state.equipment.main_hand !== requirement.item) {
@@ -92,9 +85,7 @@ export function getFishingActionPresentation(
   method: FishingMethod,
   defaultDetail: string
 ): FishingActionPresentation {
-  if (state.fishing.active) {
-    return { disabled: true, detail: `${characterName(state)} is already fishing` };
-  }
+  if (state.fishing.active) return { disabled: true, detail: `${characterName(state)} is already fishing` };
   if (state.salvage.active || state.cooking.active) {
     return { disabled: true, detail: 'Finish the current activity before fishing' };
   }
@@ -120,16 +111,9 @@ export function startFishing(
 
   state.fishing.active = true;
   state.fishing.method = method;
-  writeLog(
-    state,
-    hooks,
-    `${characterName(state)} starts ${method === 'shrimp' ? 'netting shrimp' : 'fishing for sardines'} at South Dock Pier.`
-  );
+  writeLog(state, hooks, `${characterName(state)} starts fishing the South Dock water with a ${method}.`);
   hooks.changed?.('started');
-  state.fishing.intervalId = globalThis.setInterval(
-    () => runFishingTick(state, hooks),
-    ACTIVITY_TICK_MS
-  );
+  state.fishing.intervalId = globalThis.setInterval(() => runFishingTick(state, hooks), ACTIVITY_TICK_MS);
   return { started: true, method };
 }
 
@@ -149,23 +133,19 @@ export function runFishingTick(state: GameState, hooks: FishingHooks = {}): Item
   const method = state.fishing.method;
   if (!state.fishing.active || !method) return null;
 
-  const requirement = getFishingRequirement(method);
-  if (!addInventoryItem(state, requirement.catchItem, 1, { save: hooks.save })) {
+  const caught = chooseCatch(method);
+  if (!addInventoryItem(state, caught.item, 1, { save: hooks.save })) {
     stopFishing(state, hooks);
     writeLog(state, hooks, 'Inventory full. Fishing stops.');
     hooks.changed?.('inventory-full');
     return null;
   }
 
-  state.inventoryTotals[requirement.catchName] =
-    (state.inventoryTotals[requirement.catchName] ?? 0) + 1;
+  state.inventoryTotals[caught.name as TrackedInventoryName] =
+    (state.inventoryTotals[caught.name as TrackedInventoryName] ?? 0) + 1;
   grantSkillXp(state, 'fishing', FISHING_XP_PER_TICK, { save: hooks.save });
-  writeLog(
-    state,
-    hooks,
-    `${requirement.catchName} collected. +${FISHING_XP_PER_TICK} Fishing XP.`
-  );
+  writeLog(state, hooks, `${caught.name} collected. +${FISHING_XP_PER_TICK} Fishing XP.`);
   hooks.changed?.('tick');
-  hooks.popup?.(`+1 ${requirement.catchName}`);
-  return requirement.catchItem;
+  hooks.popup?.(`+1 ${caught.name}`);
+  return caught.item;
 }
