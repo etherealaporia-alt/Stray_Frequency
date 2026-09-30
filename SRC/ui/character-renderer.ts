@@ -1,4 +1,4 @@
-import type { CharacterAppearance } from '../core/types';
+import type { CharacterAppearance, CharacterLayerSet } from '../core/types';
 import { escapeHtml } from './html';
 
 export interface CharacterRendererOptions {
@@ -11,23 +11,28 @@ function layerMarkup(kind: string, asset?: string): string {
   return `<img class="character-render-layer character-render-layer-${kind}" src="${escapeHtml(asset)}" alt="" aria-hidden="true" />`;
 }
 
-/**
- * Composes registered character layers on one shared square canvas.
- *
- * All source layers occupy the same coordinate space. CSS scales the complete
- * canvas as a unit, preserving registration between body, hair and clothing.
- */
+function normalizeLayers(value?: string | CharacterLayerSet): CharacterLayerSet {
+  if (!value) return {};
+  return typeof value === 'string' ? { main: value } : value;
+}
+
 export function characterRendererMarkup(
   appearance: CharacterAppearance,
   options: CharacterRendererOptions = {}
 ): string {
   const className = options.className ? ` ${escapeHtml(options.className)}` : '';
   const ariaLabel = escapeHtml(options.ariaLabel ?? 'Character appearance preview');
+  const hair = normalizeLayers(appearance.hair);
+  const clothing = normalizeLayers(appearance.clothing);
 
   return `
     <div class="character-renderer${className}" role="img" aria-label="${ariaLabel}">
+      ${layerMarkup('clothing-back', clothing.back)}
+      ${layerMarkup('hair-back', hair.back)}
       ${layerMarkup('body', appearance.body)}
-      ${layerMarkup('hair', appearance.hair)}
-      ${layerMarkup('clothing', appearance.clothing)}
+      ${layerMarkup('hair-main', hair.main)}
+      ${layerMarkup('clothing-main', clothing.main)}
+      ${layerMarkup('clothing-front', clothing.front)}
+      ${layerMarkup('hair-front', hair.front)}
     </div>`;
 }
