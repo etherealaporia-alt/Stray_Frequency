@@ -1,6 +1,6 @@
-import { LEGACY_UNRESOLVED_ASSETS } from '../core/assets';
 import { gameState } from '../core/state';
 import type { BodyType } from '../core/types';
+import { CHARACTER_APPEARANCES } from '../data/character-appearances';
 import { loadCharacterProgress } from '../services/persistence';
 import {
   type AuthenticatedUser,
@@ -13,6 +13,7 @@ import {
   subscribeToAuthChanges
 } from '../services/supabase';
 import { roomFromCharacterLocation } from '../systems/navigation';
+import { characterRendererMarkup } from './character-renderer';
 import { escapeHtml } from './html';
 import { startGame } from './interactions';
 
@@ -120,9 +121,12 @@ function renderCharacterCreation(app: HTMLDivElement, message = ''): void {
         <h1>Who answers the frequency?</h1>
         <div class="creator-grid">
           <div class="creator-preview">
-            <img src="${LEGACY_UNRESOLVED_ASSETS.maraValePortrait}" alt="Temporary character placeholder portrait" />
-            <strong>PLACEHOLDER VISUAL</strong>
-            <small>Mara's artwork is standing in until modular character assets are ready. This does not make Mara your character.</small>
+            ${characterRendererMarkup(CHARACTER_APPEARANCES.maraPrototype, {
+              className: 'creator-character-preview',
+              ariaLabel: 'Modular Mara appearance prototype'
+            })}
+            <strong>MODULAR APPEARANCE TEST</strong>
+            <small>Body, hair and clothing are separate registered assets composited by the character renderer. Character customisation is not persisted yet.</small>
           </div>
           <form id="character-form" class="gateway-form">
             <label>CHARACTER NAME<input id="character-name" type="text" required minlength="3" maxlength="24" autocomplete="off" /></label>
@@ -131,7 +135,7 @@ function renderCharacterCreation(app: HTMLDivElement, message = ''): void {
               <label class="creator-choice"><input type="radio" name="body-type" value="female" checked /> FEMALE</label>
               <label class="creator-choice"><input type="radio" name="body-type" value="male" /> MALE</label>
             </fieldset>
-            <div class="creator-disabled"><span>APPEARANCE</span><strong>COMING LATER</strong><small>Hair, face, clothing and visual customisation will plug into this stage.</small></div>
+            <div class="creator-disabled"><span>APPEARANCE</span><strong>MODULAR PIPELINE PROTOTYPE</strong><small>The preview now proves the layer pipeline. Selection and persistence come after layer registration is visually verified.</small></div>
             <button class="gateway-primary" type="submit">SKIP APPEARANCE & ENTER CITY</button>
             <button class="gateway-secondary" id="creator-signout" type="button">LOG OUT</button>
           </form>
