@@ -86,7 +86,7 @@ function mapPanelMarkup(): string { return `<div class="panel-kicker">CITY MAP</
 
 export function renderPanel(): HTMLElement | null {
   const target = document.querySelector<HTMLElement>('#active-panel'); if (!target) return null;
-  const content = { world: worldPanelMarkup(), inventory: inventoryPanelMarkup(), equipment: equipmentPanelMarkup(), skills: skillsPanelMarkup(), journal: journalMarkup, comms: commsMarkup, map: mapPanelMarkup };
+  const content = { world: worldPanelMarkup(), inventory: inventoryPanelMarkup(), equipment: equipmentPanelMarkup(), skills: skillsPanelMarkup(), journal: journalMarkup, comms: commsMarkup, map: mapPanelMarkup() };
   target.innerHTML = content[gameState.panel]; return target;
 }
 export function openSkillDetails(skillKey: SkillKey): void {
