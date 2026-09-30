@@ -1,9 +1,15 @@
 export type BodyType = 'male' | 'female';
 
+export interface CharacterLayerSet {
+  back?: string;
+  main?: string;
+  front?: string;
+}
+
 export interface CharacterAppearance {
   body: string;
-  hair?: string;
-  clothing?: string;
+  hair?: string | CharacterLayerSet;
+  clothing?: string | CharacterLayerSet;
 }
 
 export type SkillKey =
@@ -17,7 +23,6 @@ export type SkillKey =
   | 'cooking';
 
 export type Panel = 'world' | 'inventory' | 'equipment' | 'skills' | 'journal' | 'comms' | 'map';
-
 export type RoomId = 'glassmarket' | 'breaker-yard' | 'south-dock-pier';
 
 export type ActionType =
@@ -52,22 +57,14 @@ export type TrackedInventoryName =
   | 'Cooked Shrimp'
   | 'Copper Coils';
 
-export interface CharacterSkill {
-  skill_key: SkillKey;
-  level: number;
-  xp: number;
-}
+export interface CharacterSkill { skill_key: SkillKey; level: number; xp: number; }
 
 export interface StoredCharacterProgress {
   version: 1;
   inventory: InventoryEntry[];
   equipment: Record<EquipmentSlot, ItemKey | null>;
   skills: CharacterSkill[];
-  cooking?: {
-    active: boolean;
-    ticksRemaining: number;
-    inventoryIndex: number | null;
-  };
+  cooking?: { active: boolean; ticksRemaining: number; inventoryIndex: number | null; };
 }
 
 export interface Character {
@@ -83,34 +80,16 @@ export interface Character {
   progress?: StoredCharacterProgress | null;
 }
 
-export interface RoomAction {
-  label: string;
-  detail: string;
-  type: ActionType;
-}
-
+export interface RoomAction { label: string; detail: string; type: ActionType; }
 export interface Room {
-  id: RoomId;
-  district: string;
-  name: string;
-  slogan: string;
-  description: string;
-  sceneImage?: string;
-  actions: RoomAction[];
+  id: RoomId; district: string; name: string; slogan: string; description: string;
+  sceneImage?: string; actions: RoomAction[];
 }
 
 export interface ItemDefinition {
-  key: ItemKey;
-  name: string;
-  description: string;
-  panelDescription?: string;
-  asset: string;
-  stackable: boolean;
-  usable?: boolean;
-  equipmentSlot?: EquipmentSlot;
-  defense?: number;
-  toolType?: 'salvage';
-  toolTier?: number;
+  key: ItemKey; name: string; description: string; panelDescription?: string;
+  asset: string; stackable: boolean; usable?: boolean; equipmentSlot?: EquipmentSlot;
+  defense?: number; toolType?: 'salvage'; toolTier?: number;
 }
 
 export type InventoryItem = { item: ItemKey; quantity: number };
@@ -118,44 +97,20 @@ export type InventoryEntry = InventoryItem | null;
 export type InventoryTotals = Record<TrackedInventoryName, number>;
 
 export interface SalvageState {
-  active: boolean;
-  intervalId: number | null;
-  xpPerTick: number;
-  requirement: number;
-  remainingTicks: number;
-  maxTicks: number;
-  resetTimeoutId: number | null;
+  active: boolean; intervalId: number | null; xpPerTick: number; requirement: number;
+  remainingTicks: number; maxTicks: number; resetTimeoutId: number | null;
 }
 
 export type FishingMethod = 'net' | 'rod';
 export type WaterType = 'freshwater' | 'saltwater';
-
-export interface FishingState {
-  active: boolean;
-  method: FishingMethod | null;
-  intervalId: number | null;
-}
-
-export interface CookingState {
-  active: boolean;
-  intervalId: number | null;
-  ticksRemaining: number;
-  inventoryIndex: number | null;
-}
+export interface FishingState { active: boolean; method: FishingMethod | null; intervalId: number | null; }
+export interface CookingState { active: boolean; intervalId: number | null; ticksRemaining: number; inventoryIndex: number | null; }
 
 export interface GameState {
-  character: Character | null;
-  skills: CharacterSkill[];
-  panel: Panel;
-  roomId: RoomId;
-  logs: string[];
-  inventorySlots: InventoryEntry[];
-  equipment: Record<EquipmentSlot, ItemKey | null>;
-  inventoryTotals: InventoryTotals;
-  mobileInventoryPage: number;
-  salvage: SalvageState;
-  fishing: FishingState;
-  cooking: CookingState;
+  character: Character | null; skills: CharacterSkill[]; panel: Panel; roomId: RoomId;
+  logs: string[]; inventorySlots: InventoryEntry[]; equipment: Record<EquipmentSlot, ItemKey | null>;
+  inventoryTotals: InventoryTotals; mobileInventoryPage: number; salvage: SalvageState;
+  fishing: FishingState; cooking: CookingState;
 }
 
 export type SaveProgress = () => void | Promise<unknown>;

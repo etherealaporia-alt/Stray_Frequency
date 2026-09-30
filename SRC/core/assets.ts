@@ -10,20 +10,15 @@ export const ASSETS = {
       maraNet: assetUrl('animations/fishing/mara-net.png'),
       maraRod: assetUrl('animations/fishing/mara-rod.png')
     },
-    salvaging: {
-      maraBreaker: assetUrl('animations/salvaging/mara-breaker.png')
-    }
+    salvaging: { maraBreaker: assetUrl('animations/salvaging/mara-breaker.png') }
   },
   characters: {
     maraPortrait: assetUrl('environments/south-dock/mara-character-portrait.png'),
-    bodies: {
-      femaleBase01: assetUrl('characters/bodies/female-base-01.png')
-    },
-    hair: {
-      mara: assetUrl('characters/hair/mara-hair.png')
-    },
+    bodies: { femaleBase01: assetUrl('characters/bodies/female-base-01.png') },
+    hair: { mara: assetUrl('characters/hair/mara-hair.png') },
     clothing: {
-      maraOutfit: assetUrl('characters/clothing/mara-outfit.png')
+      maraOutfit: assetUrl('characters/clothing/mara-outfit.png'),
+      maraOutfitFront: assetUrl('characters/clothing/mara-outfit-front.png')
     }
   },
   items: {
@@ -60,6 +55,7 @@ export const CORE_ASSET_URLS = [
   ASSETS.characters.bodies.femaleBase01,
   ASSETS.characters.hair.mara,
   ASSETS.characters.clothing.maraOutfit,
+  ASSETS.characters.clothing.maraOutfitFront,
   ASSETS.environments.southDock.glassmarket,
   ASSETS.environments.southDock.breakerYard12,
   ASSETS.environments.southDock.pier,
