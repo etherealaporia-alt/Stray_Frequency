@@ -1,5 +1,5 @@
 import { gameState } from '../core/state';
-import type { BodyType } from '../core/types';
+import type { BodyType, CharacterAppearance } from '../core/types';
 import { CHARACTER_APPEARANCES } from '../data/character-appearances';
 import { loadCharacterProgress } from '../services/persistence';
 import {
@@ -112,66 +112,135 @@ function renderAuth(app: HTMLDivElement, message = ''): void {
   });
 }
 
-function renderCharacterCreation(app: HTMLDivElement, message = ''): void {
-  app.innerHTML = `
+function workshopMarkup(
+  appearance: CharacterAppearance,
+  mode: 'creation' | 'workshop',
+  characterName = ''
+): string {
+  const existing = mode === 'workshop';
+  return `
     <main class="gateway-shell">
       <section class="creator-card panel">
         <div class="gateway-brand"><span>STRAY</span> <b>FREQUENCY</b></div>
-        <div class="panel-kicker">CHARACTER CREATION // PROTOTYPE</div>
-        <h1>Who answers the frequency?</h1>
+        <div class="panel-kicker">${existing ? 'APPEARANCE WORKSHOP // PREVIEW' : 'CHARACTER CREATION // PROTOTYPE'}</div>
+        <h1>${existing ? 'Character appearance workshop' : 'Who answers the frequency?'}</h1>
         <div class="creator-grid">
           <div class="creator-preview">
-            ${characterRendererMarkup(CHARACTER_APPEARANCES.maraPrototype, {
+            ${characterRendererMarkup(appearance, {
               className: 'creator-character-preview',
-              ariaLabel: 'Modular Mara appearance prototype'
+              ariaLabel: existing ? `${characterName} appearance preview` : 'Character appearance preview'
             })}
-            <strong>MODULAR APPEARANCE TEST</strong>
-            <small>Body, hair and clothing are separate registered assets composited by the character renderer. Character customisation is not persisted yet.</small>
+            <strong>LIVE LAYER COMPOSITE</strong>
+            <small>Body, hair and clothing are separate registered assets sharing one canvas. This pass previews the real renderer; appearance persistence waits for the database field.</small>
           </div>
-          <form id="character-form" class="gateway-form">
-            <label>CHARACTER NAME<input id="character-name" type="text" required minlength="3" maxlength="24" autocomplete="off" /></label>
+          <div class="gateway-form">
+            ${existing
+              ? `<div class="workshop-character-name"><span>CHARACTER</span><strong>${escapeHtml(characterName)}</strong></div>`
+              : `<label>CHARACTER NAME<input id="character-name" type="text" required minlength="3" maxlength="24" autocomplete="off" /></label>`}
             <fieldset>
-              <legend>BODY TYPE</legend>
+              <legend>BODY</legend>
               <label class="creator-choice"><input type="radio" name="body-type" value="female" checked /> FEMALE</label>
-              <label class="creator-choice"><input type="radio" name="body-type" value="male" /> MALE</label>
+              <label class="creator-choice creator-choice-unavailable"><input type="radio" name="body-type" value="male" disabled /> MALE <small>ASSET PENDING</small></label>
             </fieldset>
-            <div class="creator-disabled"><span>APPEARANCE</span><strong>MODULAR PIPELINE PROTOTYPE</strong><small>The preview now proves the layer pipeline. Selection and persistence come after layer registration is visually verified.</small></div>
-            <button class="gateway-primary" type="submit">SKIP APPEARANCE & ENTER CITY</button>
+            <fieldset>
+              <legend>HAIR</legend>
+              <label class="creator-choice"><input type="radio" name="hair-style" value="mara" checked /> MARA UNDERCUT</label>
+              <label class="creator-choice"><input type="radio" name="hair-style" value="none" /> NONE</label>
+            </fieldset>
+            <fieldset>
+              <legend>CLOTHING</legend>
+              <label class="creator-choice"><input type="radio" name="clothing-style" value="mara" checked /> MARA OUTFIT</label>
+              <label class="creator-choice"><input type="radio" name="clothing-style" value="none" /> BASE LAYER</label>
+            </fieldset>
+            ${existing
+              ? `<div class="workshop-notice"><strong>PREVIEW ONLY</strong><small>No character data is changed yet. Your existing progress remains untouched.</small></div>
+                 <button class="gateway-primary" id="workshop-return" type="button">RETURN TO CITY</button>`
+              : `<button class="gateway-primary" id="create-character" type="button">CREATE CHARACTER & ENTER CITY</button>`}
             <button class="gateway-secondary" id="creator-signout" type="button">LOG OUT</button>
-          </form>
+          </div>
         </div>
-        <p id="gateway-message" class="gateway-message">${escapeHtml(message)}</p>
+        <p id="gateway-message" class="gateway-message"></p>
       </section>
     </main>`;
+}
 
+function selectedAppearance(): CharacterAppearance {
+  const hair = document.querySelector<HTMLInputElement>('input[name="hair-style"]:checked')?.value;
+  const clothing = document.querySelector<HTMLInputElement>('input[name="clothing-style"]:checked')?.value;
+  return {
+    body: CHARACTER_APPEARANCES.maraPrototype.body,
+    hair: hair === 'none' ? undefined : CHARACTER_APPEARANCES.maraPrototype.hair,
+    clothing: clothing === 'none' ? undefined : CHARACTER_APPEARANCES.maraPrototype.clothing
+  };
+}
+
+function refreshWorkshopPreview(): void {
+  const host = document.querySelector<HTMLElement>('.creator-character-preview');
+  if (!host) return;
+  const replacement = document.createElement('div');
+  replacement.innerHTML = characterRendererMarkup(selectedAppearance(), {
+    className: 'creator-character-preview',
+    ariaLabel: 'Character appearance preview'
+  });
+  host.replaceWith(replacement.firstElementChild!);
+}
+
+function bindWorkshopControls(): void {
+  document.querySelectorAll<HTMLInputElement>('input[name="hair-style"], input[name="clothing-style"]').forEach((input) => {
+    input.addEventListener('change', refreshWorkshopPreview);
+  });
   document.querySelector<HTMLButtonElement>('#creator-signout')?.addEventListener('click', async () => {
     await logoutAccount();
   });
+}
 
-  document.querySelector<HTMLFormElement>('#character-form')?.addEventListener('submit', async (event) => {
-    event.preventDefault();
+function renderCharacterCreation(app: HTMLDivElement): void {
+  app.innerHTML = workshopMarkup(CHARACTER_APPEARANCES.maraPrototype, 'creation');
+  bindWorkshopControls();
+
+  document.querySelector<HTMLButtonElement>('#create-character')?.addEventListener('click', async () => {
     if (!currentUser) return;
+    const nameInput = document.querySelector<HTMLInputElement>('#character-name')!;
+    const name = nameInput.value.trim();
+    const messageNode = document.querySelector<HTMLElement>('#gateway-message')!;
+    if (name.length < 3) {
+      messageNode.textContent = 'Character name must be at least 3 characters.';
+      nameInput.focus();
+      return;
+    }
 
-    const name = document.querySelector<HTMLInputElement>('#character-name')!.value.trim();
-    const bodyType = document.querySelector<HTMLInputElement>('input[name="body-type"]:checked')?.value as BodyType;
-    const messageNode = document.querySelector<HTMLElement>('#gateway-message');
-    if (messageNode) messageNode.textContent = 'Registering character…';
-
+    messageNode.textContent = 'Registering character…';
     const { data, error } = await createCharacter({
       account_id: currentUser.id,
       name,
-      body_type: bodyType,
+      body_type: 'female' as BodyType,
       appearance_skipped: true
     });
 
     if (error) {
-      if (messageNode) messageNode.textContent = error.message;
+      messageNode.textContent = error.message;
       return;
     }
 
     gameState.character = data!;
     await loadCharacterProgress();
     gameState.roomId = roomFromCharacterLocation(gameState.character.location_id);
+    startGame(app);
+  });
+}
+
+function renderAppearanceWorkshop(app: HTMLDivElement): void {
+  const character = gameState.character;
+  if (!character) {
+    void routeAuthenticatedUser(app);
+    return;
+  }
+
+  app.innerHTML = workshopMarkup(CHARACTER_APPEARANCES.maraPrototype, 'workshop', character.name);
+  bindWorkshopControls();
+
+  document.querySelector<HTMLButtonElement>('#workshop-return')?.addEventListener('click', () => {
+    history.replaceState(null, '', `${location.pathname}${location.search}`);
     startGame(app);
   });
 }
@@ -186,9 +255,7 @@ async function routeAuthenticatedUser(app: HTMLDivElement): Promise<void> {
 
   if (error) {
     app.innerHTML = `<main class="gateway-shell"><section class="gateway-card panel"><div class="gateway-brand"><span>STRAY</span> <b>FREQUENCY</b></div><p class="gateway-message">Character lookup failed: ${escapeHtml(error.message)}</p><button id="retry-auth" class="gateway-primary" type="button">RETRY</button></section></main>`;
-    document.querySelector<HTMLButtonElement>('#retry-auth')?.addEventListener('click', () => {
-      void routeAuthenticatedUser(app);
-    });
+    document.querySelector<HTMLButtonElement>('#retry-auth')?.addEventListener('click', () => void routeAuthenticatedUser(app));
     return;
   }
 
@@ -200,6 +267,12 @@ async function routeAuthenticatedUser(app: HTMLDivElement): Promise<void> {
   gameState.character = data;
   await loadCharacterProgress();
   gameState.roomId = roomFromCharacterLocation(gameState.character.location_id);
+
+  if (location.hash === '#appearance-workshop') {
+    renderAppearanceWorkshop(app);
+    return;
+  }
+
   startGame(app);
 }
 
