@@ -25,8 +25,8 @@ export type ActionType =
   | 'goto-south-dock-pier'
   | 'goto-glassmarket'
   | 'start-salvaging'
-  | 'start-fishing-shrimp'
-  | 'start-fishing-sardine'
+  | 'start-fishing-net'
+  | 'start-fishing-rod'
   | 'reset-node'
   | 'inspect-board';
 
@@ -127,7 +127,8 @@ export interface SalvageState {
   resetTimeoutId: number | null;
 }
 
-export type FishingMethod = 'shrimp' | 'sardine';
+export type FishingMethod = 'net' | 'rod';
+export type WaterType = 'freshwater' | 'saltwater';
 
 export interface FishingState {
   active: boolean;
@@ -150,11 +151,6 @@ export interface GameState {
   logs: string[];
   inventorySlots: InventoryEntry[];
   equipment: Record<EquipmentSlot, ItemKey | null>;
-  /**
-   * Compatibility projection retained from the monolith. Inventory slots remain
-   * the ownership source of truth; these totals deliberately count inventory
-   * entries only (not equipped items) because that is what the existing UI did.
-   */
   inventoryTotals: InventoryTotals;
   mobileInventoryPage: number;
   salvage: SalvageState;
