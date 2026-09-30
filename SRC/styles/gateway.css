@@ -146,13 +146,28 @@
   gap: 8px;
 }
 
-.creator-preview img {
+.character-renderer {
+  position: relative;
   width: 100%;
-  aspect-ratio: 1/1;
-  object-fit: cover;
-  object-position: top left;
-  image-rendering: pixelated;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: #050708;
 }
+
+.character-render-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+.character-render-layer-body { z-index: 1; }
+.character-render-layer-hair { z-index: 2; }
+.character-render-layer-clothing { z-index: 3; }
 
 .creator-preview strong {
   color: var(--amber);
