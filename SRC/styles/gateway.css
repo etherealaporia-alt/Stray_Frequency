@@ -15,7 +15,7 @@
 .character-render-layer-body{z-index:3}
 .character-render-layer-hair-main{z-index:4;transform:translate(2%,-5%)}
 .character-render-layer-clothing-main{z-index:5;transform:translate(-1.5%,1%) scaleX(1.035)}
-.character-render-layer-clothing-front{z-index:6;transform:translate(-1.5%,1%) scaleX(1.035)}
+.character-render-layer-clothing-front{z-index:6;transform:translate(-1.5%,1%) scale(.86)}
 .character-render-layer-hair-front{z-index:7}
 .creator-preview strong{color:var(--amber);font-size:11px;letter-spacing:.1em}.creator-preview small{color:var(--muted);line-height:1.4}.creator-select-label{display:grid!important;gap:7px!important;color:var(--amber)!important;font-size:11px!important;letter-spacing:.1em}
 .workshop-character-name,.workshop-notice{border:1px solid #3b4043;padding:13px;display:grid;gap:4px}.workshop-character-name span,.workshop-notice strong{color:var(--amber);font-size:10px;letter-spacing:.1em}.workshop-character-name strong{color:var(--text);font-size:18px}.workshop-notice small{color:var(--muted);line-height:1.4}
