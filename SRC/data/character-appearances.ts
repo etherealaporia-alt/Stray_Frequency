@@ -6,7 +6,7 @@ export const CHARACTER_APPEARANCES = {
     body: ASSETS.characters.bodies.femaleBase01,
     hair: { main: ASSETS.characters.hair.mara },
     clothing: {
-      back: ASSETS.characters.clothing.maraOutfit,
+      back: ASSETS.characters.clothing.maraOutfitBack,
       front: ASSETS.characters.clothing.maraOutfitFront
     }
   }
