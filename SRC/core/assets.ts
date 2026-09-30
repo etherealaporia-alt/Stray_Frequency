@@ -18,6 +18,7 @@ export const ASSETS = {
     hair: { mara: assetUrl('characters/hair/mara-hair.png') },
     clothing: {
       maraOutfit: assetUrl('characters/clothing/mara-outfit.png'),
+      maraOutfitBack: assetUrl('characters/clothing/mara-outfit-back.png'),
       maraOutfitFront: assetUrl('characters/clothing/mara-outfit-front.png')
     }
   },
@@ -55,6 +56,7 @@ export const CORE_ASSET_URLS = [
   ASSETS.characters.bodies.femaleBase01,
   ASSETS.characters.hair.mara,
   ASSETS.characters.clothing.maraOutfit,
+  ASSETS.characters.clothing.maraOutfitBack,
   ASSETS.characters.clothing.maraOutfitFront,
   ASSETS.environments.southDock.glassmarket,
   ASSETS.environments.southDock.breakerYard12,
