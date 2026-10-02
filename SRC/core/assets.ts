@@ -14,7 +14,7 @@ export const ASSETS = {
   },
   characters: {
     maraPortrait: assetUrl('environments/south-dock/mara-character-portrait.png'),
-    bodies: { femaleBase01: assetUrl('characters/bodies/female-base-01.png') },
+    bodies: { femaleBase01: assetUrl('characters/bodies/character-base-type-01.png') },
     hair: { mara: assetUrl('characters/hair/mara-hair.png') },
     clothing: {
       maraOutfit: assetUrl('characters/clothing/mara-outfit.png'),
