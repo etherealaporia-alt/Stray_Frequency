@@ -31,9 +31,38 @@ function bindLayoutEditor():void {
   editing(false);
 }
 
+function bindViewportDiagnostic():void {
+  const output=document.querySelector<HTMLElement>('#viewport-diagnostic');
+  if(!output)return;
+  const yes=(query:string)=>matchMedia(query).matches?'YES':'NO';
+  const render=()=>{
+    const vv=window.visualViewport;
+    output.textContent=[
+      `inner: ${window.innerWidth} × ${window.innerHeight}`,
+      `visual: ${vv?`${Math.round(vv.width)} × ${Math.round(vv.height)}`:'unavailable'}`,
+      `screen: ${screen.width} × ${screen.height}`,
+      `DPR: ${window.devicePixelRatio}`,
+      `landscape: ${yes('(orientation: landscape)')}`,
+      `pointer coarse: ${yes('(any-pointer: coarse)')}`,
+      `pointer fine: ${yes('(any-pointer: fine)')}`,
+      `hover: ${yes('(any-hover: hover)')}`,
+      `≤950w: ${yes('(max-width: 950px)')}`,
+      `≤820w: ${yes('(max-width: 820px)')}`,
+      `≤700h: ${yes('(max-height: 700px)')}`,
+      `≤520h: ${yes('(max-height: 520px)')}`,
+      `dynamic rule: ${yes('(orientation: landscape) and (max-height: 700px) and (any-pointer: coarse)')}`
+    ].join('\n');
+  };
+  render();
+  window.addEventListener('resize',render);
+  window.addEventListener('orientationchange',render);
+  window.visualViewport?.addEventListener('resize',render);
+}
+
 export function renderShell(app:HTMLDivElement):void {
   for(const [property,value] of Object.entries(ASSET_CSS_VARIABLES)) app.style.setProperty(property,value);
   app.innerHTML=`
+    <div id="viewport-diagnostic" style="position:fixed;top:4px;left:4px;z-index:10000;max-width:290px;padding:7px 9px;background:rgba(0,0,0,.92);border:1px solid #caa061;color:#fff;font:11px/1.35 monospace;white-space:pre;pointer-events:none"></div>
     <div class="game-shell">
       <main class="play-grid">
         <section class="world-column">
@@ -78,6 +107,7 @@ export function renderShell(app:HTMLDivElement):void {
     <dialog class="skill-details-dialog" id="skill-details-dialog" aria-labelledby="skill-details-title"></dialog>
     <dialog class="vendor-dialog" id="vendor-dialog" aria-labelledby="vendor-dialog-title"></dialog>`;
   bindLayoutEditor();
+  bindViewportDiagnostic();
 }
 export function updateShell():void {
   const room=getRoom(gameState.roomId), district=document.querySelector<HTMLElement>('#district-name'), breadcrumbs=document.querySelector<HTMLElement>('#breadcrumbs'), title=document.querySelector<HTMLElement>('#location-title'), slogan=document.querySelector<HTMLElement>('#location-slogan');
