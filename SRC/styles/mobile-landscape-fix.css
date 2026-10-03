@@ -1,6 +1,6 @@
 /* STRAY FREQUENCY — COMPACT LANDSCAPE SHELL
    Live compact-landscape composition:
-   left = character -> scene -> chat
+   left = character -> compact scene -> expanded chat
    right = all eight tabs -> active panel
 */
 
@@ -9,6 +9,7 @@
     display:grid !important;
     grid-template-columns:minmax(0,1.45fr) minmax(300px,.8fr) !important;
     gap:5px !important;
+    align-items:start !important;
   }
 
   .world-column {
@@ -16,7 +17,7 @@
     grid-row:1 !important;
     order:initial !important;
     display:grid !important;
-    grid-template-rows:auto auto 120px !important;
+    grid-template-rows:76px 190px minmax(180px,1fr) !important;
     align-content:start !important;
     gap:5px !important;
     min-width:0 !important;
@@ -119,20 +120,69 @@
 
   .location-card {
     min-width:0 !important;
+    height:190px !important;
+    min-height:190px !important;
+    display:grid !important;
+    grid-template-rows:54px minmax(0,1fr) !important;
+    overflow:hidden !important;
   }
 
   .location-heading {
-    min-height:42px !important;
+    min-height:0 !important;
+    height:54px !important;
     padding:4px 8px !important;
+    overflow:hidden !important;
   }
 
-  .location-heading h1 { font-size:18px !important; }
-  .scene-wrap { aspect-ratio:2.35/1 !important; }
+  .breadcrumbs { font-size:8px !important; }
+
+  .location-heading h1 {
+    margin-top:2px !important;
+    font-size:17px !important;
+    line-height:1 !important;
+  }
+
+  .location-heading p {
+    margin-top:2px !important;
+    font-size:7px !important;
+    line-height:1 !important;
+  }
+
+  .scene-wrap {
+    width:100% !important;
+    height:136px !important;
+    min-height:0 !important;
+    aspect-ratio:auto !important;
+    overflow:hidden !important;
+  }
+
+  .scene-wrap > img,
+  .scene-wrap .scene-background,
+  .scene-wrap .location-background {
+    width:100% !important;
+    height:100% !important;
+    object-fit:cover !important;
+  }
 
   .chat {
-    height:120px !important;
-    min-height:120px !important;
-    grid-template-rows:24px 1fr 30px !important;
+    height:100% !important;
+    min-height:180px !important;
+    grid-template-rows:28px minmax(90px,1fr) 38px !important;
+  }
+
+  .chat-tabs button {
+    padding:4px 13px 6px !important;
+    font-size:9px !important;
+  }
+
+  .log {
+    min-height:90px !important;
+    overflow-y:auto !important;
+  }
+
+  .chat-input input {
+    height:32px !important;
+    font-size:11px !important;
   }
 
   .sidebar {
