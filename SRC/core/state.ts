@@ -87,28 +87,6 @@ export function characterName(state: GameState = gameState): string {
   return state.character?.name ?? 'Contractor';
 }
 
-export function isDeveloperAccount(state: GameState = gameState): boolean {
-  return Boolean(state.character?.progress?.developer);
-}
-
-export function setDeveloperAccount(state: GameState = gameState): boolean {
-  if (!state.character) return false;
-  const progress = state.character.progress ?? {
-    version: 1,
-    inventory: state.inventorySlots.map((entry) => entry ? { ...entry } : null),
-    equipment: { ...state.equipment },
-    skills: state.skills.map((skill) => ({ ...skill })),
-    cooking: {
-      active: state.cooking.active,
-      ticksRemaining: state.cooking.ticksRemaining,
-      inventoryIndex: state.cooking.inventoryIndex
-    }
-  };
-  progress.developer = true;
-  state.character.progress = progress;
-  return true;
-}
-
 export function appendLog(state: GameState, message: string, timestamp = LOG_TIMESTAMP): void {
   state.logs.push(`[${timestamp}]  ${message}`);
   if (state.logs.length > LOG_LIMIT) state.logs.shift();

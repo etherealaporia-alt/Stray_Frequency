@@ -70,7 +70,6 @@ export interface StoredCharacterProgress {
   skills: CharacterSkill[];
   credits?: number;
   cooking?: { active: boolean; ticksRemaining: number; inventoryIndex: number | null; };
-  developer?: boolean;
 }
 
 export interface Character {
