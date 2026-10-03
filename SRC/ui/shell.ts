@@ -66,7 +66,8 @@ export function renderShell(app:HTMLDivElement):void {
       </div>
       <button type="button" class="global-bar__edit-layout" id="edit-layout-button" aria-pressed="false">EDIT LAYOUT</button>
     </div>
-    <dialog class="skill-details-dialog" id="skill-details-dialog" aria-labelledby="skill-details-title"></dialog>`;
+    <dialog class="skill-details-dialog" id="skill-details-dialog" aria-labelledby="skill-details-title"></dialog>
+    <dialog class="vendor-dialog" id="vendor-dialog" aria-labelledby="vendor-dialog-title"></dialog>`;
   bindLayoutEditor();
 }
 export function updateShell():void {

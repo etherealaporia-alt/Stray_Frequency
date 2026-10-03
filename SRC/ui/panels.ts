@@ -41,6 +41,7 @@ function actionIcon(action: RoomAction): string {
   if (action.type === 'start-fishing-net' || action.type === 'start-fishing-rod') return '≈';
   if (action.type === 'goto-breaker-yard' || action.type === 'goto-south-dock-pier') return '↗';
   if (action.type === 'goto-glassmarket') return '↙';
+  if (action.type === 'open-vendor') return '◎';
   return '⌕';
 }
 function worldActionsMarkup(actions: RoomAction[]): string {

@@ -11,6 +11,7 @@ export const ROOMS: Record<RoomId, Room> = {
       'Rainwater drips from the glass canopy as crowds flow through. Street vendors, travellers and fixers jostle beneath a sky of neon. A signed underpass leads toward the local breaker yard.',
     sceneImage: ASSETS.environments.southDock.glassmarket,
     actions: [
+      { label: 'Speak with the Salvage Broker', detail: 'Open the current market vendor roster', type: 'open-vendor' },
       { label: 'Head to Breaker Yard 12', detail: 'Take the service underpass behind the market', type: 'goto-breaker-yard' },
       { label: 'Head to South Dock Pier', detail: 'Follow the waterfront route to the pier', type: 'goto-south-dock-pier' },
       { label: 'Inspect the departures board', detail: 'A harmless local interaction', type: 'inspect-board' }

@@ -33,7 +33,10 @@ export type ActionType =
   | 'start-fishing-net'
   | 'start-fishing-rod'
   | 'reset-node'
-  | 'inspect-board';
+  | 'inspect-board'
+  | 'open-vendor'
+  | 'buy-powered-salvage-bar'
+  | 'sell-metal-scrap';
 
 export type EquipmentSlot = 'main_hand' | 'off_hand' | 'head' | 'torso' | 'legs' | 'boots';
 

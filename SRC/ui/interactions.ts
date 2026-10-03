@@ -10,6 +10,7 @@ import { type FishingEvent, startFishing, stopFishing } from '../systems/fishing
 import { moveInventoryItem } from '../systems/inventory';
 import { inspectDeparturesBoard, isNavigationAction, navigate } from '../systems/navigation';
 import { type SalvageEvent, resetSalvageNode, startSalvaging, stopSalvaging } from '../systems/salvage';
+import { buyPoweredSalvageBar, sellMetalScrap, vendorTradeSummary } from '../systems/vendor';
 import { refreshCharacterHealth, refreshCharacterStats } from './character-card';
 import { renderLog } from './log';
 import { bindItemInteraction } from './mobile-input';
@@ -129,6 +130,62 @@ function startFishingWithEquippedTool(): void {
   startFishing(gameState, method, fishingHooks());
 }
 
+function openVendorDialog(): void {
+  const dialog = document.querySelector<HTMLDialogElement>('#vendor-dialog');
+  if (!dialog) return;
+
+  const summary = vendorTradeSummary(gameState);
+  dialog.innerHTML = `
+    <header class="vendor-header">
+      <div>
+        <div class="panel-kicker">GLASSMARKET MERCHANT</div>
+        <h2 id="vendor-dialog-title">Marrow Kest</h2>
+      </div>
+      <button class="skill-details-close" type="button" data-close-vendor aria-label="Close vendor dialog">×</button>
+    </header>
+    <p class="vendor-summary">Paid salvage work, cut-rate tools, and a few side jobs for travellers.</p>
+    <div class="vendor-grid">
+      <div class="vendor-card">
+        <strong>Powered Salvage Bar</strong>
+        <span>100 credits</span>
+        <button type="button" data-vendor-action="buy-powered-salvage-bar" ${summary.canBuy ? '' : 'disabled'}>Buy</button>
+      </div>
+      <div class="vendor-card">
+        <strong>Tier 1 Metal Scrap</strong>
+        <span>5 credits each</span>
+        <button type="button" data-vendor-action="sell-metal-scrap" ${summary.scrap > 0 ? '' : 'disabled'}>Sell 1</button>
+      </div>
+    </div>
+    <div class="vendor-footer">
+      <small>Available credits: ${summary.credits}</small>
+      <small>Scrap on hand: ${summary.scrap}</small>
+    </div>
+  `;
+
+  dialog.showModal();
+  dialog.querySelector<HTMLButtonElement>('[data-close-vendor]')?.focus();
+}
+
+function executeVendorAction(action: ActionType): void {
+  if (action === 'buy-powered-salvage-bar') {
+    const result = buyPoweredSalvageBar(gameState, { save: saveProgress });
+    addLog(result.message);
+    openVendorDialog();
+    renderPanelAndBind();
+    refreshCharacterStats();
+    return;
+  }
+
+  if (action === 'sell-metal-scrap') {
+    const result = sellMetalScrap(gameState, 1, { save: saveProgress });
+    addLog(result.message);
+    openVendorDialog();
+    renderPanelAndBind();
+    refreshCharacterStats();
+    return;
+  }
+}
+
 function handleAction(action: ActionType): void {
   if (isNavigationAction(action)) {
     navigate(gameState, action, {
@@ -140,11 +197,16 @@ function handleAction(action: ActionType): void {
     return;
   }
   switch (action) {
+    case 'open-vendor': openVendorDialog(); return;
     case 'start-salvaging': startSalvaging(gameState, salvageHooks()); return;
     case 'start-fishing-net': startFishing(gameState, 'net', fishingHooks()); return;
     case 'start-fishing-rod': startFishing(gameState, 'rod', fishingHooks()); return;
     case 'reset-node': resetSalvageNode(gameState, salvageHooks()); return;
     case 'inspect-board': inspectDeparturesBoard(gameState, addLog); return;
+    case 'buy-powered-salvage-bar':
+    case 'sell-metal-scrap':
+      executeVendorAction(action);
+      return;
   }
 }
 
@@ -171,6 +233,14 @@ function bindStaticInteractions(): void {
   });
   document.querySelector<HTMLDialogElement>('#skill-details-dialog')?.addEventListener('click', (event) => {
     if ((event.target as HTMLElement).closest('[data-close-skill-details]')) (event.currentTarget as HTMLDialogElement).close();
+  });
+  document.querySelector<HTMLDialogElement>('#vendor-dialog')?.addEventListener('click', (event) => {
+    const closeTarget = (event.target as HTMLElement).closest('[data-close-vendor]');
+    if (closeTarget) (event.currentTarget as HTMLDialogElement).close();
+    const vendorAction = (event.target as HTMLElement).closest<HTMLElement>('[data-vendor-action]');
+    if (vendorAction?.dataset.vendorAction) {
+      handleAction(vendorAction.dataset.vendorAction as ActionType);
+    }
   });
 
   const sceneWrap = document.querySelector<HTMLElement>('#scene-wrap');
