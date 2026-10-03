@@ -7,6 +7,7 @@ import { characterCardMarkup } from './character-card';
 import { applyUILayout, loadUILayout, resetUILayout, saveUILayout, type UILayout } from './layout';
 
 const PANEL_ICONS: Record<Panel,string>={world:'◎',inventory:'▣',equipment:'♙',skills:'▥',journal:'▤',comms:'◌',map:'◆',nearby:'♟'};
+const ALL_PANELS:Panel[]=['world','inventory','equipment','skills','journal','comms','map','nearby'];
 const PRIMARY_PANELS:Panel[]=['world','inventory','equipment','skills','journal'];
 const SECONDARY_PANELS:Panel[]=['comms','map','nearby'];
 const COMPACT_LANDSCAPE='(orientation: landscape) and (max-height: 700px) and (any-pointer: coarse)';
@@ -37,15 +38,26 @@ function bindResponsiveShell():void {
   const query=matchMedia(COMPACT_LANDSCAPE);
   const arrange=()=>{
     const card=document.querySelector<HTMLElement>('.character-card');
-    const world=document.querySelector<HTMLElement>('.world-column');
     const sidebar=document.querySelector<HTMLElement>('.sidebar');
     const tabs=sidebar?.querySelector<HTMLElement>('.tab-stack');
-    if(!card||!world||!sidebar||!tabs)return;
+    const top=sidebar?.querySelector<HTMLElement>('.rune-menu-top');
+    const bottom=sidebar?.querySelector<HTMLElement>('.rune-menu-bottom');
+    const logout=document.querySelector<HTMLButtonElement>('#logout-button');
+    const bar=document.querySelector<HTMLElement>('.global-bar');
+    const edit=document.querySelector<HTMLElement>('#edit-layout-button');
+    if(!card||!sidebar||!tabs||!top||!bottom||!logout||!bar||!edit)return;
 
     if(query.matches){
-      if(card.parentElement!==world) world.prepend(card);
-    }else if(card.parentElement!==sidebar){
-      sidebar.insertBefore(card,tabs);
+      if(card.parentElement!==sidebar) sidebar.insertBefore(card,tabs);
+      const buttons=ALL_PANELS.map(panel=>document.querySelector<HTMLButtonElement>(`[data-panel="${panel}"]`)).filter((button):button is HTMLButtonElement=>Boolean(button));
+      buttons.slice(0,4).forEach(button=>top.append(button));
+      buttons.slice(4).forEach(button=>bottom.append(button));
+      if(logout.parentElement!==bar) bar.insertBefore(logout,edit);
+    }else{
+      const buttons=ALL_PANELS.map(panel=>document.querySelector<HTMLButtonElement>(`[data-panel="${panel}"]`)).filter((button):button is HTMLButtonElement=>Boolean(button));
+      PRIMARY_PANELS.forEach(panel=>{const button=buttons.find(item=>item.dataset.panel===panel);if(button)top.append(button);});
+      SECONDARY_PANELS.forEach(panel=>{const button=buttons.find(item=>item.dataset.panel===panel);if(button)bottom.append(button);});
+      if(logout.parentElement!==card) card.append(logout);
     }
   };
   arrange();
