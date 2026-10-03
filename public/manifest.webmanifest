@@ -1,0 +1,12 @@
+{
+  "id": "/Stray_Frequency/",
+  "name": "Stray Frequency",
+  "short_name": "Stray Frequency",
+  "description": "Stray Frequency",
+  "start_url": "/Stray_Frequency/",
+  "scope": "/Stray_Frequency/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#090b0d",
+  "theme_color": "#090b0d"
+}
