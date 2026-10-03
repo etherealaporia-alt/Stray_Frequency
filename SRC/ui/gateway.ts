@@ -21,8 +21,9 @@ function renderAuth(app: HTMLDivElement, message = ''): void {
       <div class="gateway-tabs"><button id="login-tab" class="active" type="button">LOG IN</button><button id="register-tab" type="button">CREATE ACCOUNT</button></div>
       <form id="auth-form" class="gateway-form">
         <label>EMAIL<input id="auth-email" type="email" autocomplete="email" required /></label>
-        <label>PASSWORD<input id="auth-password" type="password" autocomplete="current-password" minlength="6" required /></label>
-        <label id="confirm-password-row" hidden>CONFIRM PASSWORD<input id="auth-confirm-password" type="password" autocomplete="new-password" minlength="6" /></label>
+        <label>PASSWORD<input id="auth-password" type="password" autocomplete="current-password" required /></label>
+        <label id="confirm-password-row" hidden>CONFIRM PASSWORD<input id="auth-confirm-password" type="password" autocomplete="new-password" /></label>
+        <p id="password-requirement" class="gateway-message" hidden>Minimum 12 characters.</p>
         <label class="password-toggle"><input id="show-password" type="checkbox" /><span>SHOW PASSWORD</span></label>
         <button id="auth-submit" class="gateway-primary" type="submit">LOG IN</button>
       </form><p id="auth-message" class="gateway-message">${escapeHtml(message)}</p>
@@ -35,6 +36,7 @@ function renderAuth(app: HTMLDivElement, message = ''): void {
   const password = document.querySelector<HTMLInputElement>('#auth-password')!;
   const confirmRow = document.querySelector<HTMLElement>('#confirm-password-row')!;
   const confirmPassword = document.querySelector<HTMLInputElement>('#auth-confirm-password')!;
+  const passwordRequirement = document.querySelector<HTMLElement>('#password-requirement')!;
   const showPassword = document.querySelector<HTMLInputElement>('#show-password')!;
   const messageNode = document.querySelector<HTMLElement>('#auth-message')!;
 
@@ -45,8 +47,11 @@ function renderAuth(app: HTMLDivElement, message = ''): void {
     registerTab.classList.toggle('active', registering);
     submit.textContent = registering ? 'CREATE ACCOUNT' : 'LOG IN';
     confirmRow.hidden = !registering;
+    passwordRequirement.hidden = !registering;
     confirmPassword.required = registering;
     password.autocomplete = registering ? 'new-password' : 'current-password';
+    password.minLength = registering ? 12 : 0;
+    confirmPassword.minLength = registering ? 12 : 0;
     confirmPassword.value = '';
     messageNode.textContent = '';
   };
@@ -55,31 +60,48 @@ function renderAuth(app: HTMLDivElement, message = ''): void {
   registerTab.addEventListener('click', () => setMode('register'));
   showPassword.addEventListener('change', () => {
     const type = showPassword.checked ? 'text' : 'password';
-    password.type = type; confirmPassword.type = type;
+    password.type = type;
+    confirmPassword.type = type;
   });
 
   document.querySelector<HTMLFormElement>('#auth-form')!.addEventListener('submit', async (event) => {
     event.preventDefault();
     const email = document.querySelector<HTMLInputElement>('#auth-email')!.value.trim();
     const passwordValue = password.value;
+
+    if (mode === 'register' && passwordValue.length < 12) {
+      messageNode.textContent = 'Password must be at least 12 characters.';
+      password.focus();
+      return;
+    }
+
     if (mode === 'register' && passwordValue !== confirmPassword.value) {
       messageNode.textContent = 'Passwords do not match. Check both entries and try again.';
-      confirmPassword.focus(); return;
+      confirmPassword.focus();
+      return;
     }
+
     submit.disabled = true;
     messageNode.textContent = mode === 'register' ? 'Creating account…' : 'Signing in…';
+
     if (mode === 'register') {
       const { data, error } = await registerAccount(email, passwordValue);
       if (error) { messageNode.textContent = error.message; submit.disabled = false; return; }
       if (!data.session) {
-        setMode('login'); messageNode.textContent = 'Account created. Check your email to verify it, then log in.';
-        submit.disabled = false; return;
+        setMode('login');
+        messageNode.textContent = 'Account created. Check your email to verify it, then log in.';
+        submit.disabled = false;
+        return;
       }
-      currentUser = data.user; await routeAuthenticatedUser(app); return;
+      currentUser = data.user;
+      await routeAuthenticatedUser(app);
+      return;
     }
+
     const { data, error } = await loginAccount(email, passwordValue);
     if (error) { messageNode.textContent = error.message; submit.disabled = false; return; }
-    currentUser = data.user; await routeAuthenticatedUser(app);
+    currentUser = data.user;
+    await routeAuthenticatedUser(app);
   });
 }
 
@@ -167,7 +189,8 @@ async function routeAuthenticatedUser(app: HTMLDivElement): Promise<void> {
   const { data, error } = await findCharacterByAccount(currentUser.id);
   if (error) {
     app.innerHTML = `<main class="gateway-shell"><section class="gateway-card panel"><div class="gateway-brand"><span>STRAY</span> <b>FREQUENCY</b></div><p class="gateway-message">Character lookup failed: ${escapeHtml(error.message)}</p><button id="retry-auth" class="gateway-primary" type="button">RETRY</button></section></main>`;
-    document.querySelector<HTMLButtonElement>('#retry-auth')?.addEventListener('click', () => void routeAuthenticatedUser(app)); return;
+    document.querySelector<HTMLButtonElement>('#retry-auth')?.addEventListener('click', () => void routeAuthenticatedUser(app));
+    return;
   }
   if (!data) { renderCharacterCreation(app); return; }
   gameState.character = data;
