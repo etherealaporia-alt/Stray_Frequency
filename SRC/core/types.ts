@@ -22,7 +22,7 @@ export type SkillKey =
   | 'fishing'
   | 'cooking';
 
-export type Panel = 'world' | 'inventory' | 'equipment' | 'skills' | 'journal' | 'comms' | 'map';
+export type Panel = 'world' | 'inventory' | 'equipment' | 'skills' | 'journal' | 'comms' | 'map' | 'nearby';
 export type RoomId = 'glassmarket' | 'breaker-yard' | 'south-dock-pier';
 
 export type ActionType =
