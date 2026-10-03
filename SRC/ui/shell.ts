@@ -78,6 +78,11 @@ export function renderShell(app: HTMLDivElement): void {
         </aside>
       </main>
     </div>
+
+    <div class="global-bar" role="toolbar" aria-label="Global controls">
+      <button type="button" class="global-bar__edit-layout" id="edit-layout-button">EDIT LAYOUT</button>
+    </div>
+
     <dialog class="skill-details-dialog" id="skill-details-dialog" aria-labelledby="skill-details-title"></dialog>
   `;
 }
