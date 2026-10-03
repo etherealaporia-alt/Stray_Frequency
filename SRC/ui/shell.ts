@@ -41,8 +41,12 @@ export function renderShell(app:HTMLDivElement):void {
             <div class="location-heading"><div><div class="breadcrumbs" id="breadcrumbs"></div><h1 id="location-title"></h1></div><p id="location-slogan"></p></div>
             <div class="scene-wrap" id="scene-wrap"></div>
           </article>
-          <section class="chat panel" aria-label="Room chat">
-            <div class="chat-tabs" role="tablist"><button class="active" type="button">ROOM</button><button type="button">GAME</button><button type="button">SYSTEM</button></div>
+          <section class="chat panel" aria-label="Chat and game log">
+            <div class="chat-tabs" role="tablist">
+              <button class="active" type="button" data-chat-channel="room">ROOM</button>
+              <button type="button" data-chat-channel="game">GAME</button>
+              <button type="button" data-chat-channel="system">SYSTEM</button>
+            </div>
             <div class="log" id="log" aria-live="polite"></div>
             <form id="chat-form" class="chat-input"><span>›</span><input id="chat-message" maxlength="500" autocomplete="off" placeholder="Say something to the room…" aria-label="Chat message" /><button type="submit">SEND</button></form>
           </section>

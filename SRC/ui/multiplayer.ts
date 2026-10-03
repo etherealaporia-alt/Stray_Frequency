@@ -1,5 +1,4 @@
 import { characterName, gameState } from '../core/state';
-import type { Panel } from '../core/types';
 import {
   fetchCurrentRoomChat,
   fetchCurrentRoomPlayers,
@@ -8,11 +7,11 @@ import {
   type RoomChatMessage,
   type RoomPlayer
 } from '../services/supabase';
+import { getActiveChatChannel, setActiveChatChannel, type ChatChannel } from './log';
 
 let messages: RoomChatMessage[] = [];
 let players: RoomPlayer[] = [];
 let subscribedRoom = '';
-let refreshTimer: number | null = null;
 
 function insertPlayerName(name: string): void {
   const input = document.querySelector<HTMLInputElement>('#chat-message');
@@ -57,7 +56,8 @@ function appendMessageText(host: HTMLElement, text: string): void {
   }
 }
 
-function renderChat(): void {
+export function renderRoomChat(): void {
+  if (getActiveChatChannel() !== 'room') return;
   const log = document.querySelector<HTMLDivElement>('#log');
   if (!log) return;
 
@@ -81,7 +81,7 @@ function renderChat(): void {
   log.scrollTop = log.scrollHeight;
 }
 
-function renderNearbyPanel(): void {
+export function renderNearbyPanel(): void {
   if (gameState.panel !== 'nearby') return;
   const host = document.querySelector<HTMLElement>('#active-panel');
   if (!host) return;
@@ -103,15 +103,12 @@ function renderNearbyPanel(): void {
   for (const player of players) {
     const row = document.createElement('div');
     row.className = 'nearby-player';
-
     const identity = document.createElement('div');
     identity.className = 'nearby-player-identity';
     identity.append(playerNameButton(player.character_name));
-
     const status = document.createElement('small');
     status.textContent = player.character_id === gameState.character?.id ? 'YOU · HERE' : 'HERE';
     identity.append(status);
-
     row.append(identity);
     list.append(row);
   }
@@ -119,21 +116,19 @@ function renderNearbyPanel(): void {
   host.replaceChildren(kicker, heading, summary, list);
 }
 
-async function refreshRoomData(): Promise<void> {
+export async function refreshRoomData(): Promise<void> {
   if (!gameState.character) return;
   const [chatResult, playersResult] = await Promise.all([
     fetchCurrentRoomChat(50),
     fetchCurrentRoomPlayers()
   ]);
-
   if (!chatResult.error) messages = [...chatResult.data].reverse();
   if (!playersResult.error) players = playersResult.data;
-
-  renderChat();
+  renderRoomChat();
   renderNearbyPanel();
 }
 
-async function ensureRoomSubscription(): Promise<void> {
+export async function syncMultiplayerRoom(): Promise<void> {
   if (!gameState.character) return;
   const room = gameState.roomId;
   if (room === subscribedRoom) return;
@@ -142,68 +137,71 @@ async function ensureRoomSubscription(): Promise<void> {
   await subscribeToRoomChat(room, () => { void refreshRoomData(); });
 }
 
-async function submitRoomChat(input: HTMLInputElement): Promise<void> {
-  const body = input.value.trim();
-  if (!body) return;
-  input.disabled = true;
-  const { error } = await sendRoomChatMessage(body);
-  input.disabled = false;
-  input.focus();
+export async function sendChat(body: string): Promise<boolean> {
+  const text = body.trim();
+  if (!text) return false;
+  const { error } = await sendRoomChatMessage(text);
   if (error) {
     console.warn('Room chat message rejected.', error);
-    return;
+    return false;
   }
-  input.value = '';
   await refreshRoomData();
+  return true;
 }
 
-function interceptChatSubmit(event: Event): void {
+export function bindMultiplayerUI(): void {
+  document.querySelectorAll<HTMLButtonElement>('.chat-tabs button[data-chat-channel]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const channel = button.dataset.chatChannel as ChatChannel;
+      setActiveChatChannel(channel);
+      document.querySelectorAll('.chat-tabs button[data-chat-channel]').forEach((item) => {
+        item.classList.toggle('active', item === button);
+      });
+      if (channel === 'room') renderRoomChat();
+    });
+  });
+}
+
+export function renderActiveChatChannel(): void {
+  if (getActiveChatChannel() === 'room') renderRoomChat();
+}
+
+document.addEventListener('submit', (event) => {
   const form = (event.target as HTMLElement | null)?.closest<HTMLFormElement>('#chat-form');
   if (!form) return;
   event.preventDefault();
   event.stopImmediatePropagation();
   const input = form.querySelector<HTMLInputElement>('#chat-message');
-  if (input) void submitRoomChat(input);
-}
-
-function handlePanelClick(event: Event): void {
-  const button = (event.target as HTMLElement | null)?.closest<HTMLButtonElement>('.rune-menu button[data-panel]');
-  if (!button?.dataset.panel) return;
-
-  if (button.dataset.panel === 'nearby') {
-    gameState.panel = 'nearby' as Panel;
-    document.querySelectorAll('.rune-menu button').forEach((item) => item.classList.toggle('active', item === button));
-    queueMicrotask(renderNearbyPanel);
-    return;
-  }
-
-  queueMicrotask(() => {
-    if (gameState.panel === 'nearby') gameState.panel = button.dataset.panel as Panel;
+  if (!input) return;
+  const value = input.value.trim();
+  if (!value) return;
+  input.disabled = true;
+  void sendChat(value).then((sent) => {
+    input.disabled = false;
+    if (sent) input.value = '';
+    input.focus();
   });
-}
+}, true);
 
-function heartbeat(): void {
-  if (!document.querySelector('#chat-form') || !gameState.character) return;
-  void ensureRoomSubscription();
-  if (gameState.panel === 'nearby') renderNearbyPanel();
-}
+document.addEventListener('click', (event) => {
+  const button = (event.target as HTMLElement | null)?.closest<HTMLButtonElement>('.rune-menu button[data-panel="nearby"]');
+  if (!button) return;
+  queueMicrotask(renderNearbyPanel);
+}, true);
 
-document.addEventListener('submit', interceptChatSubmit, true);
-document.addEventListener('click', handlePanelClick, true);
-
-const observer = new MutationObserver(() => {
-  if (document.querySelector('#chat-form') && gameState.character) {
-    void ensureRoomSubscription();
-    renderChat();
-    renderNearbyPanel();
-  }
+let boundShell: HTMLElement | null = null;
+const shellObserver = new MutationObserver(() => {
+  const shell = document.querySelector<HTMLElement>('.game-shell');
+  if (!shell || shell === boundShell || !gameState.character) return;
+  boundShell = shell;
+  bindMultiplayerUI();
+  void syncMultiplayerRoom();
+  renderActiveChatChannel();
 });
-observer.observe(document.documentElement, { childList: true, subtree: true });
+shellObserver.observe(document.documentElement, { childList: true, subtree: true });
 
-refreshTimer = window.setInterval(() => {
-  if (!gameState.character) return;
-  void ensureRoomSubscription();
+window.setInterval(() => {
+  if (!gameState.character || !document.querySelector('.game-shell')) return;
+  void syncMultiplayerRoom();
   void refreshRoomData();
 }, 5000);
-
-void refreshTimer;
