@@ -1,5 +1,5 @@
 import { MOBILE_INVENTORY_PAGE_COUNT } from '../core/constants';
-import { appendLog, characterName, gameState, isDeveloperAccount } from '../core/state';
+import { appendLog, characterName, gameState, isDeveloperAccount, setDeveloperAccount } from '../core/state';
 import type { ActionType, EquipmentSlot, FishingMethod, Panel, SkillKey } from '../core/types';
 import { ITEM_DEFINITIONS } from '../data/items';
 import { persistCharacterHealth, saveCharacterProgress } from '../services/persistence';
@@ -226,6 +226,15 @@ function bindStaticInteractions(): void {
   const developerMenu = document.querySelector<HTMLElement>('#developer-item-menu');
   if (developerButton && developerMenu) {
     developerButton.addEventListener('click', () => {
+      if (!isDeveloperAccount()) {
+        if (setDeveloperAccount(gameState)) {
+          renderAll();
+          return;
+        }
+        addLog('Developer mode is unavailable for this account.');
+        return;
+      }
+
       const nowOpen = !developerMenu.classList.contains('hidden');
       developerMenu.classList.toggle('hidden', nowOpen);
       developerButton.setAttribute('aria-expanded', String(!nowOpen));

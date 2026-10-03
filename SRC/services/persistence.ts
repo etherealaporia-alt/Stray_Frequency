@@ -1,6 +1,7 @@
 import { EQUIPMENT_SLOTS, MAX_SKILL_LEVEL } from '../core/constants';
 import {
   gameState,
+  isDeveloperAccount,
   recalculateInventoryTotals,
   resetCharacterProgress
 } from '../core/state';
@@ -34,7 +35,8 @@ function serializeCharacterProgress(state: GameState): StoredCharacterProgress {
       active: state.cooking.active,
       ticksRemaining: state.cooking.ticksRemaining,
       inventoryIndex: state.cooking.inventoryIndex
-    }
+    },
+    developer: Boolean(state.character?.progress?.developer || isDeveloperAccount(state))
   };
 }
 
@@ -65,23 +67,26 @@ function firstEmptyInventorySlot(state: GameState): number {
   );
 }
 
-function ensureBjornTestArmor(state: GameState): void {
-  if (state.character?.name !== 'BjornThorson') return;
-  if (state.inventorySlots.some((entry) => entry?.item === 't1_light_armor')) return;
-  if (Object.values(state.equipment).includes('t1_light_armor')) return;
-
-  const emptyIndex = firstEmptyInventorySlot(state);
-  if (emptyIndex >= 0) {
-    state.inventorySlots[emptyIndex] = { item: 't1_light_armor', quantity: 1 };
-  }
-}
-
 function applyCharacterProgress(value: unknown, state: GameState): boolean {
   if (!value || typeof value !== 'object') return false;
   const progress = value as Partial<StoredCharacterProgress>;
   if (progress.version !== 1) return false;
 
   resetCharacterProgress(state);
+  if (progress.developer === true) {
+    state.character!.progress = {
+      version: 1,
+      inventory: state.inventorySlots.map((entry) => entry ? { ...entry } : null),
+      equipment: { ...state.equipment },
+      skills: state.skills.map((skill) => ({ ...skill })),
+      cooking: {
+        active: state.cooking.active,
+        ticksRemaining: state.cooking.ticksRemaining,
+        inventoryIndex: state.cooking.inventoryIndex
+      },
+      developer: true
+    };
+  }
 
   if (Array.isArray(progress.inventory)) {
     state.inventorySlots.fill(null);
@@ -232,7 +237,6 @@ export async function loadCharacterProgress(state: GameState = gameState): Promi
   }
 
   if (!restored) resetCharacterProgress(state);
-  ensureBjornTestArmor(state);
   if (!error && data?.progress && restored) {
     state.character!.progress = data.progress as StoredCharacterProgress;
     try {
