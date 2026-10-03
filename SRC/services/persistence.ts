@@ -15,7 +15,6 @@ import { ITEM_DEFINITIONS, itemName } from '../data/items';
 import { isSkillKey, xpForNextSkillLevel } from '../data/skills';
 import {
   fetchCharacterProgress,
-  updateCharacterCredits,
   updateCharacterHealth,
   updateCharacterProgress
 } from './supabase';
@@ -32,6 +31,7 @@ function serializeCharacterProgress(state: GameState): StoredCharacterProgress {
     inventory: state.inventorySlots.map((entry) => entry ? { ...entry } : null),
     equipment: { ...state.equipment },
     skills: state.skills.map((skill) => ({ ...skill })),
+    credits: state.character?.credits,
     cooking: {
       active: state.cooking.active,
       ticksRemaining: state.cooking.ticksRemaining,
@@ -87,6 +87,9 @@ function applyCharacterProgress(value: unknown, state: GameState): boolean {
       },
       developer: true
     };
+  }
+  if (typeof progress.credits === 'number' && Number.isSafeInteger(progress.credits) && progress.credits >= 0) {
+    state.character!.credits = progress.credits;
   }
 
   if (Array.isArray(progress.inventory)) {
@@ -270,19 +273,3 @@ export async function persistCharacterHealth(
   return !error;
 }
 
-export async function persistCharacterCredits(
-  credits: number,
-  state: GameState = gameState
-): Promise<boolean> {
-  const characterId = state.character?.id;
-  if (!characterId) return false;
-
-  const safeCredits = Number.isFinite(credits) && credits >= 0 ? Math.floor(credits) : 0;
-  const { error } = await updateCharacterCredits(characterId, safeCredits);
-
-  if (!error && state.character?.id === characterId) {
-    state.character.credits = safeCredits;
-  }
-
-  return !error;
-}

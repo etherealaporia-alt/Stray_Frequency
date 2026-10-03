@@ -68,6 +68,7 @@ export interface StoredCharacterProgress {
   inventory: InventoryEntry[];
   equipment: Record<EquipmentSlot, ItemKey | null>;
   skills: CharacterSkill[];
+  credits?: number;
   cooking?: { active: boolean; ticksRemaining: number; inventoryIndex: number | null; };
   developer?: boolean;
 }
