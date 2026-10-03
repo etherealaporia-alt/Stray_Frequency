@@ -1,6 +1,7 @@
 import {
   createClient,
   type AuthChangeEvent,
+  type RealtimeChannel,
   type Session,
   type User
 } from '@supabase/supabase-js';
@@ -17,7 +18,23 @@ export type GameAction =
   | 'salvage' | 'fish' | 'cook_shrimp' | 'eat_shrimp'
   | 'buy_salvage_bar' | 'sell_metal_scrap';
 
+export interface RoomChatMessage {
+  id: number;
+  character_id: string;
+  character_name: string;
+  room_id: string;
+  body: string;
+  created_at: string;
+}
+
+export interface RoomPlayer {
+  character_id: string;
+  character_name: string;
+  room_id: string;
+}
+
 let developerAccess = false;
+let roomChatChannel: RealtimeChannel | null = null;
 
 export function hasDeveloperAccess(): boolean { return developerAccess; }
 
@@ -54,6 +71,7 @@ export function loginAccount(email: string, password: string) {
 
 export function logoutAccount() {
   developerAccess = false;
+  void stopRoomChatSubscription();
   return supabase.auth.signOut();
 }
 
@@ -86,4 +104,37 @@ export function fetchGameSnapshot() {
 
 export function performGameAction(action: GameAction, payload: Record<string, unknown> = {}) {
   return supabase.rpc('game_action', { p_action: action, p_payload: payload });
+}
+
+export async function fetchCurrentRoomChat(limit = 50) {
+  const { data, error } = await supabase.rpc('current_room_chat', { p_limit: limit });
+  return { data: (data ?? []) as RoomChatMessage[], error };
+}
+
+export function sendRoomChatMessage(body: string) {
+  return supabase.rpc('send_room_chat_message', { p_body: body });
+}
+
+export async function fetchCurrentRoomPlayers() {
+  const { data, error } = await supabase.rpc('current_room_players');
+  return { data: (data ?? []) as RoomPlayer[], error };
+}
+
+export async function stopRoomChatSubscription(): Promise<void> {
+  if (!roomChatChannel) return;
+  const channel = roomChatChannel;
+  roomChatChannel = null;
+  await supabase.removeChannel(channel);
+}
+
+export async function subscribeToRoomChat(roomId: string, onChange: () => void): Promise<void> {
+  await stopRoomChatSubscription();
+  roomChatChannel = supabase
+    .channel(`room-chat:${roomId}`)
+    .on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'room_chat_messages', filter: `room_id=eq.${roomId}` },
+      () => onChange()
+    )
+    .subscribe();
 }
