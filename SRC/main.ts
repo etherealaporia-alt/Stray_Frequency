@@ -1,4 +1,5 @@
 import './styles/index.css';
+import './ui/multiplayer';
 import { preloadCoreAssets } from './core/assets';
 import { bootstrap } from './ui/gateway';
 
