@@ -9,7 +9,7 @@ import { escapeHtml } from './html';
 import { updateMinimap } from './minimap';
 
 function cookingMaraMarkup(): string {
-  return `<div class="mara-anchor asset-mara-anchor cooking-mara visible" id="cooking-mara-anchor"><div class="mara-nameplate">${characterName(gameState)}</div><div class="asset-mara-sprite salvaging cooking" aria-hidden="true"></div></div>`;
+  return `<div class="mara-anchor asset-mara-anchor cooking-mara visible" id="cooking-mara-anchor"><div class="mara-nameplate">${escapeHtml(characterName(gameState))}</div><div class="asset-mara-sprite salvaging cooking" aria-hidden="true"></div></div>`;
 }
 
 export function renderScene(): void {
@@ -38,11 +38,11 @@ export function renderScene(): void {
         <img src="${escapeHtml(room.sceneImage ?? '')}" alt="Pixel art view of Breaker Yard 12 beneath the overpass" class="scene scene-image" />
         <div class="scrap-node asset-scrap-node breaker-scrap-node gather-node ${depleted ? 'depleted' : ''}" id="scrap-node" data-node-action="start-salvaging" role="button" tabindex="0" aria-label="Tier 1 Scrap node. Double-click to salvage.">
           <div class="node-label">TIER 1 SCRAP</div>
-          <img src="${ASSETS.environments.nodes.salvage}" alt="Tier 1 Scrap salvage node" />
+          <img src="${escapeHtml(ASSETS.environments.nodes.salvage)}" alt="Tier 1 Scrap salvage node" />
         </div>
-        ${anchor ? `<div class="activity-anchor breaker-activity-anchor" data-activity-anchor="${anchor.id}" style="${activityAnchorStyle(anchor)}">
+        ${anchor ? `<div class="activity-anchor breaker-activity-anchor" data-activity-anchor="${escapeHtml(anchor.id)}" style="${escapeHtml(activityAnchorStyle(anchor))}">
           <div class="mara-anchor asset-mara-anchor breaker-mara-anchor visible" id="mara-anchor">
-            <div class="mara-nameplate">${characterName(gameState)}</div>
+            <div class="mara-nameplate">${escapeHtml(characterName(gameState))}</div>
             <div class="asset-mara-sprite salvaging" aria-hidden="true"></div>
           </div>
         </div>` : ''}
@@ -62,9 +62,9 @@ export function renderScene(): void {
       <div class="scene-stage pier-stage">
         <img src="${escapeHtml(room.sceneImage ?? '')}" alt="South Dock Pier" class="scene scene-image" />
         <div class="fishing-water-area gather-node" data-node-action="start-fishing-equipped" role="button" tabindex="0" aria-label="South Dock saltwater fishing area. Double-click to fish using the equipped net or rod."></div>
-        ${anchor && method ? `<div class="activity-anchor fishing-activity-anchor" data-activity-anchor="${anchor.id}" style="${activityAnchorStyle(anchor)}">
+        ${anchor && method ? `<div class="activity-anchor fishing-activity-anchor" data-activity-anchor="${escapeHtml(anchor.id)}" style="${escapeHtml(activityAnchorStyle(anchor))}">
           <div class="mara-anchor fishing-mara-anchor visible" id="mara-anchor">
-            <div class="mara-nameplate">${characterName(gameState)}</div>
+            <div class="mara-nameplate">${escapeHtml(characterName(gameState))}</div>
             <div class="fishing-mara-sprite ${method}" style="background-image:url('${escapeHtml(fishingSprite)}')" aria-hidden="true"></div>
           </div>
         </div>` : ''}

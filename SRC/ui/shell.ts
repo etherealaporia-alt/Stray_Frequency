@@ -78,6 +78,12 @@ export function renderShell(app:HTMLDivElement):void {
 export function updateShell():void {
   const room=getRoom(gameState.roomId), district=document.querySelector<HTMLElement>('#district-name'), breadcrumbs=document.querySelector<HTMLElement>('#breadcrumbs'), title=document.querySelector<HTMLElement>('#location-title'), slogan=document.querySelector<HTMLElement>('#location-slogan');
   if(district)district.textContent=room.district.toUpperCase();
-  if(breadcrumbs)breadcrumbs.innerHTML=`${room.district} <span>›</span> ${room.name}`;
+  if(breadcrumbs){
+    breadcrumbs.replaceChildren();
+    breadcrumbs.append(document.createTextNode(`${room.district} `));
+    const separator=document.createElement('span');
+    separator.textContent='›';
+    breadcrumbs.append(separator,document.createTextNode(` ${room.name}`));
+  }
   if(title)title.textContent=room.name; if(slogan)slogan.textContent=room.slogan;
 }
