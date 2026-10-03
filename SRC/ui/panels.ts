@@ -1,10 +1,6 @@
 import {
-  EQUIPMENT_SLOTS,
-  FISHING_XP_PER_TICK,
-  INVENTORY_SLOT_COUNT,
-  MAX_SKILL_LEVEL,
-  MOBILE_INVENTORY_PAGE_COUNT,
-  MOBILE_INVENTORY_PAGE_SIZE
+  EQUIPMENT_SLOTS, FISHING_XP_PER_TICK, INVENTORY_SLOT_COUNT, MAX_SKILL_LEVEL,
+  MOBILE_INVENTORY_PAGE_COUNT, MOBILE_INVENTORY_PAGE_SIZE
 } from '../core/constants';
 import { gameState } from '../core/state';
 import type { EquipmentSlot, FishingMethod, InventoryEntry, RoomAction, SkillKey } from '../core/types';
@@ -20,13 +16,13 @@ import { escapeHtml } from './html';
 function inventorySlotMarkup(entry: InventoryEntry, index: number): string {
   if (!entry) return `<button class="inventory-tile empty" type="button" data-inventory-index="${index}" aria-label="Empty inventory slot"></button>`;
   const item = ITEM_DEFINITIONS[entry.item];
-  return `<button class="inventory-tile" type="button" data-inventory-index="${index}" data-use-item="${item.usable ? 'true' : 'false'}" data-double-use-item="${entry.item === 'portable_induction_pad' ? 'true' : 'false'}" data-tooltip="${escapeHtml(`${item.name} — ${item.description}`)}" aria-label="${escapeHtml(item.name)}"><img src="${item.asset}" alt="" />${entry.quantity > 1 ? `<span class="item-quantity">${entry.quantity}</span>` : ''}</button>`;
+  return `<button class="inventory-tile" type="button" data-inventory-index="${index}" data-use-item="${item.usable ? 'true' : 'false'}" data-double-use-item="${entry.item === 'portable_induction_pad' ? 'true' : 'false'}" data-tooltip="${escapeHtml(`${item.name} — ${item.description}`)}" aria-label="${escapeHtml(item.name)}"><img src="${escapeHtml(item.asset)}" alt="" />${entry.quantity > 1 ? `<span class="item-quantity">${entry.quantity}</span>` : ''}</button>`;
 }
 function equipmentSlotMarkup(slot: EquipmentSlot, label: string): string {
   const key = gameState.equipment[slot];
-  if (!key) return `<button class="equipment-slot empty" type="button" data-equipment-slot="${slot}"><span>${label}</span><small>EMPTY</small></button>`;
+  if (!key) return `<button class="equipment-slot empty" type="button" data-equipment-slot="${escapeHtml(slot)}"><span>${escapeHtml(label)}</span><small>EMPTY</small></button>`;
   const item = ITEM_DEFINITIONS[key];
-  return `<button class="equipment-slot" type="button" data-equipment-slot="${slot}" data-tooltip="${escapeHtml(`${item.name} — ${item.description}`)}"><span>${label}</span><img src="${item.asset}" alt="${escapeHtml(item.name)}" /><small>${escapeHtml(item.name)}</small></button>`;
+  return `<button class="equipment-slot" type="button" data-equipment-slot="${escapeHtml(slot)}" data-tooltip="${escapeHtml(`${item.name} — ${item.description}`)}"><span>${escapeHtml(label)}</span><img src="${escapeHtml(item.asset)}" alt="${escapeHtml(item.name)}" /><small>${escapeHtml(item.name)}</small></button>`;
 }
 function actionPresentation(action: RoomAction): { disabled: boolean; detail: string } {
   if (action.type === 'start-salvaging') return getSalvageActionPresentation(gameState, action.detail);
@@ -47,14 +43,15 @@ function actionIcon(action: RoomAction): string {
 function worldActionsMarkup(actions: RoomAction[]): string {
   return `<div class="action-list">${actions.map((action) => {
     const p = actionPresentation(action);
-    return `<button type="button" data-action="${action.type}" ${p.disabled ? 'disabled' : ''}><span>${actionIcon(action)}</span>${action.label}<b>›</b></button>`;
+    return `<button type="button" data-action="${escapeHtml(action.type)}" ${p.disabled ? 'disabled' : ''}><span>${escapeHtml(actionIcon(action))}</span>${escapeHtml(action.label)}<b>›</b></button>`;
   }).join('')}</div>`;
 }
 function worldPanelMarkup(): string {
   const room = getRoom(gameState.roomId);
-  if (room.id === 'glassmarket') return `<div class="panel-kicker">CURRENT LOCATION</div><h3>${room.name}</h3><p>${room.description}</p><p class="world-note">The service underpass gives you a direct route to the local gathering area.</p>${worldActionsMarkup(room.actions)}`;
+  const name = escapeHtml(room.name), description = escapeHtml(room.description);
+  if (room.id === 'glassmarket') return `<div class="panel-kicker">CURRENT LOCATION</div><h3>${name}</h3><p>${description}</p><p class="world-note">The service underpass gives you a direct route to the local gathering area.</p>${worldActionsMarkup(room.actions)}`;
   if (room.id === 'south-dock-pier') return `
-    <div class="panel-kicker">CURRENT LOCATION</div><h3>${room.name}</h3><p>${room.description}</p>
+    <div class="panel-kicker">CURRENT LOCATION</div><h3>${name}</h3><p>${description}</p>
     ${worldActionsMarkup(room.actions)}
     <div class="gather-summary">
       <div class="summary-card"><span>Water</span><strong>Saltwater harbour</strong></div>
@@ -62,7 +59,7 @@ function worldPanelMarkup(): string {
       <div class="summary-card"><span>Rod</span><strong>Sardines</strong></div>
       <div class="summary-card"><span>Catch XP</span><strong>+${FISHING_XP_PER_TICK} Fishing XP</strong></div>
     </div>`;
-  return `<div class="panel-kicker">CURRENT LOCATION</div><h3>${room.name}</h3><p>${room.description}</p>${worldActionsMarkup(room.actions)}<button class="node-reset" type="button" data-action="reset-node">Reset demo node</button>`;
+  return `<div class="panel-kicker">CURRENT LOCATION</div><h3>${name}</h3><p>${description}</p>${worldActionsMarkup(room.actions)}<button class="node-reset" type="button" data-action="reset-node">Reset demo node</button>`;
 }
 function inventoryPanelMarkup(): string {
   const mobileInventory = window.matchMedia('(max-width: 820px)').matches;
@@ -78,7 +75,7 @@ function skillsPanelMarkup(): string {
     const skill = gameState.skills.find((entry) => entry.skill_key === key);
     const level = skill?.level ?? 1; const xp = skill?.xp ?? 0; const next = xpForNextSkillLevel(level);
     const tip = level >= MAX_SKILL_LEVEL ? `${name} — Level ${level}/${MAX_SKILL_LEVEL} — MAX LEVEL` : `${name} — Level ${level}/${MAX_SKILL_LEVEL} — XP ${xp} / ${next} to next level`;
-    return `<button type="button" class="skill-tile" data-skill="${key}" data-tooltip="${escapeHtml(tip)}" aria-haspopup="dialog" aria-controls="skill-details-dialog"><span class="skill-icon">${icon}</span><span class="skill-name">${name}</span><strong>${level}<small>/${MAX_SKILL_LEVEL}</small></strong></button>`;
+    return `<button type="button" class="skill-tile" data-skill="${escapeHtml(key)}" data-tooltip="${escapeHtml(tip)}" aria-haspopup="dialog" aria-controls="skill-details-dialog"><span class="skill-icon">${escapeHtml(icon)}</span><span class="skill-name">${escapeHtml(name)}</span><strong>${level}<small>/${MAX_SKILL_LEVEL}</small></strong></button>`;
   }).join('')}</div>`;
 }
 const journalMarkup = `<div class="panel-kicker">JOURNAL</div><h3>Stories & Jobs</h3><button class="journal-entry"><strong>Breaker Yard 12</strong><span>A direct gathering room linked from Glassmarket. Good for testing salvage nodes and asset placement.</span></button><button class="journal-entry"><strong>South Dock Routine</strong><span>Travel between hubs and work local nodes without breaking the UI shell.</span></button><button class="journal-entry muted-entry"><strong>Prototype Goal</strong><span>Collect scrap, prove the core loop, then layer in production.</span></button>`;
