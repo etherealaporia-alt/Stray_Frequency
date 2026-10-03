@@ -15,7 +15,7 @@ export function characterCardMarkup(): string {
         <div class="quick-stats" aria-label="Quick stats">
           <div><span class="stat-icon hp">♥</span><strong id="character-health">${gameState.character?.health ?? 10}/${gameState.character?.max_health ?? 10}</strong><small>HP</small></div>
           <div><span class="stat-icon focus">◆</span><strong id="derived-defense">${derivedDefense(gameState)}</strong><small>Defense</small></div>
-          <div><span class="stat-icon credits">¢</span><strong>${gameState.character?.credits ?? 0}</strong><small>Credits</small></div>
+          <div><span class="stat-icon credits">€</span><strong id="character-credits">${gameState.character?.credits ?? 0}</strong><small>Credits</small></div>
         </div>
         <button id="logout-button" class="sf-logout character-logout" type="button">LOG OUT</button>
       </section>`;
@@ -24,6 +24,9 @@ export function characterCardMarkup(): string {
 export function refreshCharacterStats(): void {
   const defense = document.querySelector<HTMLElement>('#derived-defense');
   if (defense) defense.textContent = String(derivedDefense(gameState));
+
+  const credits = document.querySelector<HTMLElement>('#character-credits');
+  if (credits) credits.textContent = String(gameState.character?.credits ?? 0);
 }
 
 export function refreshCharacterHealth(): void {
