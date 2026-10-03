@@ -6,9 +6,9 @@ import { hasDeveloperAccess } from '../services/supabase';
 import { characterCardMarkup } from './character-card';
 import { applyUILayout, loadUILayout, resetUILayout, saveUILayout, type UILayout } from './layout';
 
-const PANEL_ICONS: Record<Panel,string>={world:'◎',inventory:'▣',equipment:'♙',skills:'▥',journal:'▤',comms:'◌',map:'◆'};
+const PANEL_ICONS: Record<Panel,string>={world:'◎',inventory:'▣',equipment:'♙',skills:'▥',journal:'▤',comms:'◌',map:'◆',nearby:'♟'};
 const PRIMARY_PANELS:Panel[]=['world','inventory','equipment','skills','journal'];
-const SECONDARY_PANELS:Panel[]=['comms','map'];
+const SECONDARY_PANELS:Panel[]=['comms','map','nearby'];
 function menuMarkup(panels:Panel[]):string { return panels.map(panel=>`
     <button type="button" data-panel="${panel}" class="${panel==='world'?'active':''}">
       <span class="menu-icon">${PANEL_ICONS[panel]}</span><small>${panel.toUpperCase()}</small>
@@ -41,10 +41,10 @@ export function renderShell(app:HTMLDivElement):void {
             <div class="location-heading"><div><div class="breadcrumbs" id="breadcrumbs"></div><h1 id="location-title"></h1></div><p id="location-slogan"></p></div>
             <div class="scene-wrap" id="scene-wrap"></div>
           </article>
-          <section class="chat panel" aria-label="Game log">
-            <div class="chat-tabs" role="tablist"><button class="active" type="button">ALL</button><button type="button">GAME</button><button type="button">SYSTEM</button></div>
+          <section class="chat panel" aria-label="Room chat">
+            <div class="chat-tabs" role="tablist"><button class="active" type="button">ROOM</button><button type="button">GAME</button><button type="button">SYSTEM</button></div>
             <div class="log" id="log" aria-live="polite"></div>
-            <form id="chat-form" class="chat-input"><span>›</span><input id="chat-message" maxlength="120" autocomplete="off" placeholder="Type a command or message…" aria-label="Chat message" /><button type="submit">SEND</button></form>
+            <form id="chat-form" class="chat-input"><span>›</span><input id="chat-message" maxlength="500" autocomplete="off" placeholder="Say something to the room…" aria-label="Chat message" /><button type="submit">SEND</button></form>
           </section>
         </section>
         <aside class="sidebar">
