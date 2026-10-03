@@ -1,0 +1,88 @@
+/* STRAY FREQUENCY — ROOM MULTIPLAYER */
+
+.player-name {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--cyan);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.player-name:hover,
+.player-name:focus-visible {
+  color: var(--amber);
+  text-decoration: underline;
+  outline: none;
+}
+
+.room-chat-line time {
+  color: var(--muted);
+}
+
+.chat-name-highlight {
+  padding: 0 2px;
+  background: var(--accent-soft);
+  color: var(--text);
+  border-bottom: 1px solid var(--pink);
+}
+
+.nearby-summary {
+  margin: -5px 0 12px !important;
+  color: var(--muted) !important;
+  font-size: 11px !important;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.nearby-player-list {
+  display: grid;
+  gap: 6px;
+  border-top: 1px solid var(--line);
+  padding-top: 8px;
+}
+
+.nearby-player {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  padding: 7px 9px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.025);
+}
+
+.nearby-player-identity {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.nearby-player-identity small {
+  color: var(--muted);
+  font-size: 8px;
+  letter-spacing: .1em;
+}
+
+@media (min-width:951px) {
+  .rune-menu-bottom {
+    grid-template-columns: repeat(3,minmax(0,1fr)) !important;
+  }
+}
+
+@media (max-width:820px) and (orientation:portrait) {
+  .sidebar {
+    grid-template-columns: repeat(8,minmax(0,1fr)) !important;
+  }
+
+  .rune-menu-bottom button:nth-child(1) { grid-column:6; }
+  .rune-menu-bottom button:nth-child(2) { grid-column:7; }
+  .rune-menu-bottom button:nth-child(3) { grid-column:8; }
+}
+
+@media (max-width:950px) and (orientation:landscape) and (max-height:520px) {
+  .rune-menu-bottom {
+    grid-template-columns: repeat(3,minmax(0,1fr)) !important;
+  }
+}
