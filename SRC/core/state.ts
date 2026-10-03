@@ -87,6 +87,10 @@ export function characterName(state: GameState = gameState): string {
   return state.character?.name ?? 'Contractor';
 }
 
+export function isDeveloperAccount(state: GameState = gameState): boolean {
+  return state.character?.name === 'BjornThorson';
+}
+
 export function appendLog(state: GameState, message: string, timestamp = LOG_TIMESTAMP): void {
   state.logs.push(`[${timestamp}]  ${message}`);
   if (state.logs.length > LOG_LIMIT) state.logs.shift();

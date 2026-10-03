@@ -1,8 +1,14 @@
 /* STRAY FREQUENCY — GLOBAL BAR + CONSTRAINED LAYOUT EDITOR */
 :root{--global-bar-height:34px}
 .global-bar{position:fixed;left:0;right:0;bottom:0;z-index:100;height:var(--global-bar-height);box-sizing:border-box;display:flex;align-items:center;justify-content:flex-end;gap:6px;padding:3px 8px;border-top:1px solid var(--line);background:#0b0e10}
-.global-bar__edit-layout,.layout-edit-controls button{width:auto;min-height:0;height:26px;padding:0 10px;border:1px solid #4a4640;border-radius:0;background:#111518;color:#c2c3c0;font-size:8px;letter-spacing:.08em;cursor:pointer}
-.global-bar__edit-layout:hover,.layout-edit-controls button:hover{border-color:var(--amber);color:var(--amber)}
+.global-bar__edit-layout,.layout-edit-controls button,.global-bar__developer-button{width:auto;min-height:0;height:26px;padding:0 10px;border:1px solid #4a4640;border-radius:0;background:#111518;color:#c2c3c0;font-size:8px;letter-spacing:.08em;cursor:pointer}
+.global-bar__edit-layout:hover,.layout-edit-controls button:hover,.global-bar__developer-button:hover{border-color:var(--amber);color:var(--amber)}
+.developer-menu-wrap{position:relative;display:flex;align-items:center}
+.developer-item-menu{position:absolute;right:0;bottom:calc(100% + 8px);width:min(360px,calc(100vw - 28px));max-height:360px;overflow:auto;padding:8px;border:1px solid var(--line);background:#090d10;box-shadow:0 10px 24px rgba(0,0,0,.45)}
+.developer-item-menu.hidden{display:none}
+.developer-item-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:6px}
+.developer-item{padding:8px 10px;border:1px solid var(--line);background:#111518;color:var(--text);text-align:left;font-size:11px;letter-spacing:.04em;cursor:pointer}
+.developer-item:hover{border-color:var(--amber);color:var(--amber)}
 .layout-edit-controls{min-width:0;display:flex;align-items:center;justify-content:flex-end;gap:4px;overflow-x:auto;scrollbar-width:none}
 .layout-edit-controls::-webkit-scrollbar{display:none}.layout-edit-controls[hidden]{display:none}
 .layout-editing .global-bar{border-color:var(--amber)}.layout-editing .global-bar__edit-layout{border-color:var(--amber);color:var(--amber)}

@@ -1,5 +1,5 @@
 import { MOBILE_INVENTORY_PAGE_COUNT } from '../core/constants';
-import { appendLog, characterName, gameState } from '../core/state';
+import { appendLog, characterName, gameState, isDeveloperAccount } from '../core/state';
 import type { ActionType, EquipmentSlot, FishingMethod, Panel, SkillKey } from '../core/types';
 import { ITEM_DEFINITIONS } from '../data/items';
 import { persistCharacterHealth, saveCharacterProgress } from '../services/persistence';
@@ -7,7 +7,7 @@ import { logoutAccount } from '../services/supabase';
 import { type CookingEvent, cancelCooking, pauseCooking, startCooking, startCookingTimer, useCookedShrimp } from '../systems/cooking';
 import { equipFromInventory, unequipToInventory } from '../systems/equipment';
 import { type FishingEvent, startFishing, stopFishing } from '../systems/fishing';
-import { moveInventoryItem } from '../systems/inventory';
+import { addInventoryItem, moveInventoryItem } from '../systems/inventory';
 import { inspectDeparturesBoard, isNavigationAction, navigate } from '../systems/navigation';
 import { type SalvageEvent, resetSalvageNode, startSalvaging, stopSalvaging } from '../systems/salvage';
 import { buyPoweredSalvageBar, sellMetalScrap, vendorTradeSummary } from '../systems/vendor';
@@ -62,7 +62,18 @@ function renderPanelAndBind(): void {
   });
 }
 
-export function renderAll(): void { updateShell(); renderScene(); renderPanelAndBind(); renderLog(); }
+function renderDeveloperItemMenu(): void {
+  if (!isDeveloperAccount()) return;
+  const menu = document.querySelector<HTMLElement>('#developer-item-menu');
+  if (!menu) return;
+  const items = Object.values(ITEM_DEFINITIONS);
+  menu.innerHTML = items.map((item) => {
+    const label = item.name.replace(/"/g, '&quot;');
+    return `<button type="button" class="developer-item" data-dev-item="${item.key}" title="${item.description}" aria-label="${label}">${item.name}</button>`;
+  }).join('');
+}
+
+export function renderAll(): void { updateShell(); renderScene(); renderPanelAndBind(); renderLog(); renderDeveloperItemMenu(); }
 function systemChanged(): void { renderAll(); }
 function renderSceneAndPanel(): void { renderScene(); renderPanelAndBind(); renderLog(); }
 
@@ -211,6 +222,30 @@ function handleAction(action: ActionType): void {
 }
 
 function bindStaticInteractions(): void {
+  const developerButton = document.querySelector<HTMLButtonElement>('#developer-item-button');
+  const developerMenu = document.querySelector<HTMLElement>('#developer-item-menu');
+  if (developerButton && developerMenu) {
+    developerButton.addEventListener('click', () => {
+      const nowOpen = !developerMenu.classList.contains('hidden');
+      developerMenu.classList.toggle('hidden', nowOpen);
+      developerButton.setAttribute('aria-expanded', String(!nowOpen));
+      renderDeveloperItemMenu();
+    });
+    developerMenu.addEventListener('dblclick', (event) => {
+      const target = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-dev-item]');
+      if (!target?.dataset.devItem) return;
+      const itemKey = target.dataset.devItem as keyof typeof ITEM_DEFINITIONS;
+      const added = addInventoryItem(gameState, itemKey, 1, { save: saveProgress });
+      if (!added) {
+        addLog('Inventory full. No room for that item.');
+        return;
+      }
+      addLog(`Added ${ITEM_DEFINITIONS[itemKey].name} to inventory.`);
+      renderPanelAndBind();
+      refreshCharacterStats();
+    });
+  }
+
   document.querySelectorAll<HTMLButtonElement>('.rune-menu button').forEach((button) => {
     button.addEventListener('click', () => {
       gameState.panel = button.dataset.panel as Panel;
