@@ -1,11 +1,12 @@
-/* STRAY FREQUENCY — MOBILE LANDSCAPE SHELL REPAIR
-   Landscape uses the same interaction-first principle as portrait:
-   right column = character -> all tabs -> active panel
-   left column = scene -> chat.
-   Desktop and portrait are untouched.
+/* STRAY FREQUENCY — COMPACT LANDSCAPE SHELL
+   Selected by the live viewport shape and input characteristics rather than
+   a named device width. This responds automatically to rotation, browser
+   chrome and other viewport changes.
+
+   Compact landscape = landscape + short live viewport + touch/coarse pointer.
 */
 
-@media (max-width:950px) and (orientation:landscape) and (max-height:700px) {
+@media (orientation:landscape) and (max-height:700px) and (any-pointer:coarse) {
   .play-grid {
     display:grid !important;
     grid-template-columns:minmax(0,1.45fr) minmax(300px,.8fr) !important;
@@ -96,10 +97,7 @@
     font-size:7px !important;
   }
 
-  .tab-stack {
-    display:contents !important;
-  }
-
+  .tab-stack,
   .rune-menu-top,
   .rune-menu-bottom {
     display:contents !important;
@@ -134,9 +132,7 @@
     line-height:1.05 !important;
   }
 
-  .menu-icon {
-    font-size:17px !important;
-  }
+  .menu-icon { font-size:17px !important; }
 
   .active-panel {
     grid-column:1/-1 !important;
@@ -163,13 +159,8 @@
     font-size:9px !important;
   }
 
-  .active-panel h3 {
-    margin-top:3px !important;
-  }
-
-  .active-panel p {
-    margin-top:5px !important;
-  }
+  .active-panel h3 { margin-top:3px !important; }
+  .active-panel p { margin-top:5px !important; }
 
   .inventory-tiles {
     grid-template-columns:repeat(6,1fr) !important;
@@ -185,7 +176,5 @@
     align-items:center !important;
   }
 
-  .mobile-inventory-pages span {
-    text-align:center !important;
-  }
+  .mobile-inventory-pages span { text-align:center !important; }
 }
