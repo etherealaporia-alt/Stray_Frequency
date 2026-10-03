@@ -50,7 +50,8 @@ export type ItemKey =
   | 'copper_coils'
   | 'portable_induction_pad'
   | 'fishing_net'
-  | 'fishing_rod';
+  | 'fishing_rod'
+  | 't1_light_armor';
 
 export type TrackedInventoryName =
   | 'Tier 1 Metal Scrap'

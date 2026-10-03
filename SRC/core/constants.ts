@@ -33,7 +33,8 @@ export const STARTER_INVENTORY: ReadonlyArray<readonly [number, InventoryItem]> 
   [0, { item: 'salvage_bar', quantity: 1 }],
   [1, { item: 'portable_induction_pad', quantity: 1 }],
   [2, { item: 'fishing_rod', quantity: 1 }],
-  [3, { item: 'fishing_net', quantity: 1 }]
+  [3, { item: 'fishing_net', quantity: 1 }],
+  [4, { item: 't1_light_armor', quantity: 1 }]
 ];
 
 export const INITIAL_LOGS = [

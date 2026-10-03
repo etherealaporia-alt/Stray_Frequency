@@ -80,6 +80,15 @@ export const ITEM_DEFINITIONS: Record<ItemKey, ItemDefinition> = {
     asset: ASSETS.items.tools.fishingRod,
     stackable: false,
     equipmentSlot: 'main_hand'
+  },
+  t1_light_armor: {
+    key: 't1_light_armor',
+    name: 'T1 Light Armour',
+    description: 'A lightweight torso shell that keeps the body protected without slowing movement.',
+    asset: ASSETS.items.resources.synthetics,
+    stackable: false,
+    equipmentSlot: 'torso',
+    defense: 7
   }
 };
 
