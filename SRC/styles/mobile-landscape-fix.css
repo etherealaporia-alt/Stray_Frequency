@@ -1,64 +1,79 @@
-/* STRAY FREQUENCY — COMPACT LANDSCAPE HUD v3 */
-#app, #app * {
-  -webkit-user-select:none;
-  user-select:none;
-}
-#app input, #app textarea {
-  -webkit-user-select:text;
-  user-select:text;
-}
-
+/* STRAY FREQUENCY — COMPACT LANDSCAPE HUD v4
+   Fullscreen scene + explicit overlay HUD. */
+#app,#app *{-webkit-user-select:none;user-select:none}
+#app input,#app textarea{-webkit-user-select:text;user-select:text}
 .compact-hud{display:none}
 
-@media (orientation:landscape) and (max-height:700px) and (any-pointer:coarse) {
-  html,body,#app{width:100%;height:100%;min-height:0;overflow:hidden!important}
-  #app{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;padding:0!important;margin:0!important;overflow:hidden!important}
+@media (orientation:landscape) and (max-height:700px) and (any-pointer:coarse){
+  html,body{width:100%;height:100%;margin:0!important;padding:0!important;overflow:hidden!important;background:#000!important}
+  #app{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;min-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}
 
   .game-shell,.play-grid,.world-column,.location-card,.scene-wrap{
     position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;
-    max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;overflow:hidden!important
+    min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;
+    margin:0!important;padding:0!important;gap:0!important;overflow:hidden!important
   }
-  .game-shell{z-index:0!important}.play-grid,.world-column{display:block!important}
-  .location-card{border:0!important;border-radius:0!important}.scene-wrap{aspect-ratio:auto!important}
+  .game-shell{z-index:0!important}
+  .play-grid,.world-column{display:block!important}
+  .location-card{border:0!important;border-radius:0!important}
+  .scene-wrap{aspect-ratio:auto!important}
   .location-heading{position:fixed!important;z-index:20!important;top:0!important;left:0!important;right:0!important;padding:8px 10px 22px!important;pointer-events:none!important;background:linear-gradient(to bottom,rgba(5,7,9,.82),rgba(5,7,9,.38) 55%,transparent)!important}
-  .breadcrumbs{font-size:7px!important}.location-heading h1{margin:2px 0 0!important;font-size:16px!important;line-height:1!important;text-shadow:0 1px 3px #000!important}.location-heading p{display:none!important}
+  .breadcrumbs{font-size:7px!important}
+  .location-heading h1{margin:2px 0 0!important;font-size:16px!important;line-height:1!important;text-shadow:0 1px 3px #000!important}
+  .location-heading p{display:none!important}
 
   .sidebar{display:none!important}
-  .compact-hud{display:block!important;position:fixed!important;inset:0!important;z-index:60!important;pointer-events:none!important}
-  .compact-hud-tabs,.compact-hud-status,.compact-hud-chat{position:fixed!important;pointer-events:auto!important;box-sizing:border-box!important}
+
+  /* Critical v4 fix: v3 inherited aria-hidden=true from the empty mount container.
+     The compact HUD is now explicitly exposed and its three mounts are real overlay boxes. */
+  .compact-hud{display:block!important;position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;z-index:60!important;pointer-events:none!important;visibility:visible!important}
+  .compact-hud-tabs,.compact-hud-status,.compact-hud-chat{
+    display:block!important;position:fixed!important;box-sizing:border-box!important;
+    visibility:visible!important;opacity:1!important;pointer-events:auto!important
+  }
   .compact-hud-tabs{z-index:65!important;width:310px!important;height:304px!important}
   .compact-hud-status{z-index:70!important;width:190px!important;height:42px!important}
   .compact-hud-chat{z-index:55!important;width:min(56vw,500px)!important;height:120px!important}
 
-  .compact-hud-status>.character-card{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;min-height:0!important;padding:3px 5px!important;display:block!important;background:rgba(8,11,13,.78)!important;backdrop-filter:blur(3px);overflow:hidden!important}
+  .compact-hud-status>.character-card{display:block!important;position:absolute!important;inset:0!important;width:190px!important;height:42px!important;min-width:0!important;min-height:0!important;margin:0!important;padding:3px 5px!important;background:rgba(8,11,13,.78)!important;backdrop-filter:blur(3px);overflow:hidden!important}
   .compact-hud-status .portrait,.compact-hud-status .character-copy,.compact-hud-status .character-logout{display:none!important}
   .compact-hud-status .quick-stats{width:100%!important;height:100%!important;margin:0!important;padding:0!important;border:0!important;display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:2px!important}
   .compact-hud-status .quick-stats div{display:grid!important;grid-template-columns:14px 1fr!important;grid-template-rows:auto auto!important;align-content:center!important;min-width:0!important}
-  .compact-hud-status .quick-stats strong{font-size:10px!important;line-height:1!important}.compact-hud-status .quick-stats small{grid-column:2!important;font-size:5px!important}.compact-hud-status .stat-icon{grid-row:1/span 2!important;font-size:10px!important}
+  .compact-hud-status .quick-stats strong{font-size:10px!important;line-height:1!important}
+  .compact-hud-status .quick-stats small{grid-column:2!important;font-size:5px!important}
+  .compact-hud-status .stat-icon{grid-row:1/span 2!important;font-size:10px!important}
 
-  .compact-hud-tabs>.tab-stack{position:absolute!important;inset:0!important;width:310px!important;height:304px!important;display:grid!important;grid-template-columns:262px 48px!important;grid-template-rows:304px!important;gap:0!important;overflow:visible!important}
-  .compact-hud-tabs .rune-menu-top{grid-column:2!important;grid-row:1!important;width:48px!important;height:304px!important;display:grid!important;grid-template-columns:48px!important;grid-template-rows:repeat(8,38px)!important;border-radius:0!important;background:rgba(8,11,13,.82)!important;backdrop-filter:blur(3px)}
+  .compact-hud-tabs>.tab-stack{display:grid!important;position:absolute!important;inset:0!important;width:310px!important;height:304px!important;min-width:0!important;min-height:0!important;margin:0!important;grid-template-columns:262px 48px!important;grid-template-rows:304px!important;gap:0!important;overflow:visible!important}
+  .compact-hud-tabs .rune-menu-top{display:grid!important;grid-column:2!important;grid-row:1!important;width:48px!important;height:304px!important;grid-template-columns:48px!important;grid-template-rows:repeat(8,38px)!important;padding:0!important;margin:0!important;border-radius:0!important;overflow:hidden!important;background:rgba(8,11,13,.82)!important;backdrop-filter:blur(3px)}
   .compact-hud-tabs .rune-menu-bottom{display:none!important}
-  .compact-hud-tabs .rune-menu-top button{width:48px!important;height:38px!important;min-width:48px!important;padding:2px!important;border:0!important;border-bottom:1px solid #35383b!important;background:rgba(14,17,19,.84)!important}
-  .compact-hud-tabs .rune-menu-top button:last-child{border-bottom:0!important}.compact-hud-tabs .menu-icon{font-size:15px!important}.compact-hud-tabs .rune-menu small{display:none!important}
-  .compact-hud-tabs .active-panel{grid-column:1!important;grid-row:1!important;width:262px!important;height:260px!important;min-height:0!important;max-height:260px!important;margin:0!important;padding:8px!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain!important;scrollbar-width:auto!important;scrollbar-color:#777 #15191c!important;border-radius:0!important;background:rgba(8,11,13,.80)!important;backdrop-filter:blur(3px)}
+  .compact-hud-tabs .rune-menu-top button{display:flex!important;width:48px!important;height:38px!important;min-width:48px!important;min-height:38px!important;padding:2px!important;margin:0!important;border:0!important;border-bottom:1px solid #35383b!important;background:rgba(14,17,19,.84)!important}
+  .compact-hud-tabs .rune-menu-top button:last-child{border-bottom:0!important}
+  .compact-hud-tabs .menu-icon{font-size:15px!important}
+  .compact-hud-tabs .rune-menu small{display:none!important}
+  .compact-hud-tabs .active-panel{display:block!important;grid-column:1!important;grid-row:1!important;width:262px!important;height:260px!important;min-height:0!important;max-height:260px!important;margin:0!important;padding:8px!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain!important;scrollbar-width:auto!important;scrollbar-color:#777 #15191c!important;border-radius:0!important;background:rgba(8,11,13,.80)!important;backdrop-filter:blur(3px)}
   .compact-hud-tabs .active-panel[hidden]{display:none!important}
-  .compact-hud-tabs .active-panel::-webkit-scrollbar{width:14px!important}.compact-hud-tabs .active-panel::-webkit-scrollbar-track{background:#15191c!important}.compact-hud-tabs .active-panel::-webkit-scrollbar-thumb{background:#777!important;border:2px solid #15191c!important}
-  .compact-hud-tabs .active-panel h3{margin-top:2px!important;font-size:14px!important}.compact-hud-tabs .active-panel p{margin-top:4px!important;font-size:8px!important}
+  .compact-hud-tabs .active-panel::-webkit-scrollbar{width:14px!important}
+  .compact-hud-tabs .active-panel::-webkit-scrollbar-track{background:#15191c!important}
+  .compact-hud-tabs .active-panel::-webkit-scrollbar-thumb{background:#777!important;border:2px solid #15191c!important}
 
   .inventory-tiles{grid-template-columns:repeat(6,38px)!important;grid-auto-rows:38px!important;grid-template-rows:none!important;width:max-content!important;height:auto!important;gap:4px!important;align-content:start!important}
   .inventory-tile{width:38px!important;height:38px!important;min-width:38px!important;min-height:38px!important;padding:2px!important;touch-action:pan-y!important}
-  .inventory-tile img{max-width:30px!important;max-height:30px!important}.mobile-inventory-pages{display:none!important}.inventory-hint{display:none!important}
+  .inventory-tile img{max-width:30px!important;max-height:30px!important}
+  .mobile-inventory-pages,.inventory-hint{display:none!important}
 
-  .compact-hud-chat>.chat{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;min-height:0!important;display:grid!important;grid-template-rows:24px minmax(0,1fr) 32px!important;overflow:visible!important;background:rgba(8,11,13,.62)!important;backdrop-filter:blur(2px)}
-  .chat-tabs button{padding:2px 11px 3px!important;font-size:8px!important}.log{min-height:0!important;overflow-y:auto!important}.log-line{font-size:9px!important;line-height:1.25!important}.chat-input input{height:28px!important;font-size:10px!important}.chat-input button{font-size:8px!important}
-  .chat-collapse{position:absolute;right:3px;top:2px;z-index:3;width:24px;height:20px;padding:0;border:1px solid var(--line);background:#111518;color:#aaa}
+  .compact-hud-chat>.chat{display:grid!important;position:absolute!important;inset:0!important;width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;margin:0!important;grid-template-rows:24px minmax(0,1fr) 32px!important;overflow:hidden!important;background:rgba(8,11,13,.62)!important;backdrop-filter:blur(2px)}
+  .chat-tabs button{padding:2px 11px 3px!important;font-size:8px!important}
+  .log{min-height:0!important;overflow-y:auto!important}
+  .log-line{font-size:9px!important;line-height:1.25!important}
+  .chat-input input{height:28px!important;font-size:10px!important}
+  .chat-input button{font-size:8px!important}
+  .chat-collapse{position:absolute!important;right:3px!important;top:2px!important;z-index:3!important;width:24px!important;height:20px!important;padding:0!important;border:1px solid var(--line)!important;background:#111518!important;color:#aaa!important}
   .compact-hud-chat:has(.chat-collapsed){width:150px!important;height:28px!important}
-  .chat.chat-collapsed{width:100%!important;height:100%!important;grid-template-rows:1fr!important}.chat.chat-collapsed .log,.chat.chat-collapsed .chat-input{display:none!important}.chat.chat-collapsed .chat-tabs button:not(.active){display:none!important}
+  .chat.chat-collapsed{width:100%!important;height:100%!important;grid-template-rows:1fr!important}
+  .chat.chat-collapsed .log,.chat.chat-collapsed .chat-input{display:none!important}
+  .chat.chat-collapsed .chat-tabs button:not(.active){display:none!important}
 
-  .layout-editing .compact-hud-tabs,.layout-editing .compact-hud-status,.layout-editing .compact-hud-chat{
-    outline:2px solid var(--amber)!important;touch-action:none!important;cursor:move!important
-  }
+  .layout-editing .compact-hud-tabs,.layout-editing .compact-hud-status,.layout-editing .compact-hud-chat{outline:2px solid var(--amber)!important;touch-action:none!important;cursor:move!important}
   .layout-editing .compact-hud-tabs *,.layout-editing .compact-hud-status *,.layout-editing .compact-hud-chat *{pointer-events:none!important}
   .layout-editing .scene-wrap{pointer-events:none!important}
   .layout-editing,.layout-editing *{-webkit-user-select:none!important;user-select:none!important}
