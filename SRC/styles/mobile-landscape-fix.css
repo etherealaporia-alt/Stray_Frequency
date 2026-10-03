@@ -1,369 +1,46 @@
-/* STRAY FREQUENCY — FIXED COMPACT LANDSCAPE GAME UI
-   World top-left, chat bottom-left.
-   Status top-right, four tabs above and four below the active panel.
-   Location text overlays the scene. Outer page never scrolls.
+/* STRAY FREQUENCY — COMPACT LANDSCAPE HUD
+   Dedicated handheld presentation. The scene is the fixed canvas; HUD modules float above it.
 */
-
 @media (orientation:landscape) and (max-height:700px) and (any-pointer:coarse) {
-  html,body {
-    width:100% !important;
-    height:100% !important;
-    min-height:0 !important;
-    overflow:hidden !important;
-  }
+  html,body,#app{width:100%;height:100%;min-height:0;overflow:hidden!important}
+  #app{height:100dvh!important;padding:0!important}
+  .game-shell,.play-grid,.world-column,.location-card,.scene-wrap{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;margin:0!important;padding:0!important;overflow:hidden!important}
+  .play-grid,.world-column{display:block!important}
+  .location-card{border:0!important;border-radius:0!important}
+  .scene-wrap{aspect-ratio:auto!important}
+  .location-heading{position:absolute!important;z-index:20!important;top:0!important;left:0!important;right:0!important;padding:8px 10px 22px!important;pointer-events:none!important;background:linear-gradient(to bottom,rgba(5,7,9,.82),rgba(5,7,9,.38) 55%,transparent)!important}
+  .breadcrumbs{font-size:7px!important}.location-heading h1{margin:2px 0 0!important;font-size:16px!important;line-height:1!important;text-shadow:0 1px 3px #000!important}.location-heading p{display:none!important}
 
-  #app {
-    width:100% !important;
-    height:100dvh !important;
-    min-height:0 !important;
-    padding:0 0 var(--global-bar-height) !important;
-    overflow:hidden !important;
-    box-sizing:border-box !important;
-  }
+  .sidebar{position:static!important;width:0!important;height:0!important;display:block!important;overflow:visible!important}
+  .sidebar>.character-card{position:fixed!important;z-index:70!important;left:calc(var(--hud-x, .70) * 100vw)!important;top:calc(var(--hud-y, .01) * 100vh)!important;width:190px!important;height:42px!important;min-height:0!important;padding:3px 5px!important;display:block!important;background:rgba(8,11,13,.78)!important;backdrop-filter:blur(3px);overflow:visible!important}
+  .sidebar>.character-card .portrait,.sidebar>.character-card .character-copy{display:none!important}
+  .sidebar>.character-card .quick-stats{width:100%!important;height:100%!important;margin:0!important;padding:0!important;border:0!important;display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:2px!important}
+  .sidebar>.character-card .quick-stats div{display:grid!important;grid-template-columns:14px 1fr!important;grid-template-rows:auto auto!important;align-content:center!important;min-width:0!important}
+  .sidebar>.character-card .quick-stats strong{font-size:10px!important;line-height:1!important}.sidebar>.character-card .quick-stats small{grid-column:2!important;font-size:5px!important}.sidebar>.character-card .stat-icon{grid-row:1/span 2!important;font-size:10px!important}
+  .character-logout{position:fixed!important;right:96px!important;bottom:4px!important;width:auto!important;height:26px!important;padding:0 8px!important;font-size:7px!important}
 
-  #app[data-bar-position="top"] {
-    padding:var(--global-bar-height) 0 0 !important;
-  }
+  .tab-stack{position:fixed!important;z-index:65!important;left:calc(var(--hud-x, .68) * 100vw)!important;top:calc(var(--hud-y, .08) * 100vh)!important;width:310px!important;height:auto!important;display:grid!important;grid-template-columns:minmax(0,1fr) 48px!important;grid-template-rows:auto!important;gap:0!important;overflow:visible!important}
+  .rune-menu-top{grid-column:2!important;grid-row:1!important;width:48px!important;height:auto!important;display:grid!important;grid-template-columns:1fr!important;grid-auto-rows:38px!important;border-radius:0!important;background:rgba(8,11,13,.82)!important;backdrop-filter:blur(3px)}
+  .rune-menu-bottom{display:none!important}
+  .rune-menu-top button{width:48px!important;height:38px!important;min-width:0!important;padding:2px!important;border:0!important;border-bottom:1px solid #35383b!important;background:rgba(14,17,19,.84)!important}
+  .rune-menu-top button:last-child{border-bottom:0!important}.menu-icon{font-size:15px!important}.rune-menu small{display:none!important}
+  .active-panel{grid-column:1!important;grid-row:1!important;width:262px!important;height:260px!important;min-height:0!important;max-height:260px!important;margin:0!important;padding:8px!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain!important;scrollbar-width:auto!important;scrollbar-color:#777 #15191c!important;border-radius:0!important;background:rgba(8,11,13,.80)!important;backdrop-filter:blur(3px)}
+  .active-panel[hidden]{display:none!important}.active-panel::-webkit-scrollbar{width:14px!important}.active-panel::-webkit-scrollbar-track{background:#15191c!important}.active-panel::-webkit-scrollbar-thumb{background:#777!important;border:2px solid #15191c!important}
+  .active-panel h3{margin-top:2px!important;font-size:14px!important}.active-panel p{margin-top:4px!important;font-size:8px!important}.panel-kicker{font-size:7px!important}.active-panel .action-list{gap:3px!important;margin-top:5px!important}.active-panel .action-list button{min-height:32px!important;padding:5px 7px!important;font-size:8px!important}
 
-  .game-shell {
-    width:100% !important;
-    height:100% !important;
-    min-height:0 !important;
-    margin:0 !important;
-    padding:3px !important;
-    overflow:hidden !important;
-    box-sizing:border-box !important;
-  }
+  .inventory-tiles{grid-template-columns:repeat(6,38px)!important;grid-auto-rows:38px!important;grid-template-rows:none!important;width:max-content!important;height:auto!important;gap:4px!important;align-content:start!important}
+  .inventory-tile{width:38px!important;height:38px!important;min-width:38px!important;min-height:38px!important;padding:2px!important;touch-action:pan-y!important}
+  .inventory-tile img{max-width:30px!important;max-height:30px!important}.mobile-inventory-pages{display:none!important}.inventory-hint{display:none!important}
 
-  .play-grid {
-    width:100% !important;
-    height:100% !important;
-    min-height:0 !important;
-    display:grid !important;
-    grid-template-columns:minmax(0,1.55fr) minmax(300px,.9fr) !important;
-    grid-template-rows:minmax(0,1fr) !important;
-    gap:4px !important;
-    overflow:hidden !important;
-  }
+  .chat{position:fixed!important;z-index:55!important;left:calc(var(--hud-x, .02) * 100vw)!important;top:calc(var(--hud-y, .58) * 100vh)!important;width:min(56vw,500px)!important;height:120px!important;min-height:0!important;display:grid!important;grid-template-rows:24px minmax(0,1fr) 32px!important;overflow:visible!important;background:rgba(8,11,13,.62)!important;backdrop-filter:blur(2px)}
+  .chat-tabs button{padding:2px 11px 3px!important;font-size:8px!important}.log{min-height:0!important;overflow-y:auto!important}.log-line{font-size:9px!important;line-height:1.25!important}.chat-input input{height:28px!important;font-size:10px!important}.chat-input button{font-size:8px!important}
+  .chat-collapse{position:absolute;right:3px;top:2px;z-index:3;width:24px;height:20px;padding:0;border:1px solid var(--line);background:#111518;color:#aaa}.chat.chat-collapsed{width:150px!important;height:28px!important;grid-template-rows:1fr!important}.chat.chat-collapsed .log,.chat.chat-collapsed .chat-input{display:none!important}.chat.chat-collapsed .chat-tabs button:not(.active){display:none!important}
 
-  .world-column {
-    grid-column:1 !important;
-    grid-row:1 !important;
-    min-width:0 !important;
-    min-height:0 !important;
-    height:100% !important;
-    display:grid !important;
-    grid-template-rows:minmax(0,1.55fr) minmax(96px,.85fr) !important;
-    gap:4px !important;
-    overflow:hidden !important;
-  }
+  .hud-drag-handle{display:none;position:absolute;z-index:120;width:28px;height:22px;padding:0;border:1px solid var(--amber);background:#111518;color:var(--amber);touch-action:none;cursor:move}.layout-editing .hud-drag-handle{display:block!important}.tabs-handle{right:50px;top:-24px}.status-handle{right:0;top:-24px}.chat-handle{left:2px;top:-24px}
+  .layout-editing .tab-stack,.layout-editing .character-card,.layout-editing .chat{outline:1px dashed var(--amber)!important}.layout-editing .scene-wrap{pointer-events:none!important}
 
-  .location-card {
-    position:relative !important;
-    min-width:0 !important;
-    min-height:0 !important;
-    height:100% !important;
-    display:block !important;
-    overflow:hidden !important;
-  }
-
-  .scene-wrap {
-    position:absolute !important;
-    inset:0 !important;
-    width:100% !important;
-    height:100% !important;
-    min-height:0 !important;
-    aspect-ratio:auto !important;
-    overflow:hidden !important;
-  }
-
-  .location-heading {
-    position:absolute !important;
-    z-index:20 !important;
-    top:0 !important;
-    left:0 !important;
-    right:0 !important;
-    height:auto !important;
-    min-height:0 !important;
-    padding:6px 9px 18px !important;
-    display:block !important;
-    pointer-events:none !important;
-    background:linear-gradient(to bottom,rgba(5,7,9,.92) 0%,rgba(5,7,9,.68) 52%,rgba(5,7,9,0) 100%) !important;
-  }
-
-  .breadcrumbs {
-    font-size:7px !important;
-    line-height:1 !important;
-  }
-
-  .location-heading h1 {
-    margin:2px 0 0 !important;
-    max-width:85% !important;
-    font-size:16px !important;
-    line-height:1 !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-    text-shadow:0 1px 3px #000 !important;
-  }
-
-  .location-heading p {
-    display:none !important;
-  }
-
-  .chat {
-    min-height:0 !important;
-    height:100% !important;
-    display:grid !important;
-    grid-template-rows:23px minmax(0,1fr) 31px !important;
-    overflow:hidden !important;
-  }
-
-  .chat-tabs button {
-    padding:2px 11px 3px !important;
-    font-size:8px !important;
-  }
-
-  .log {
-    min-height:0 !important;
-    overflow-y:auto !important;
-  }
-
-  .log-line {
-    font-size:9px !important;
-    line-height:1.25 !important;
-  }
-
-  .chat-input {
-    min-height:0 !important;
-  }
-
-  .chat-input input {
-    height:27px !important;
-    font-size:10px !important;
-  }
-
-  .chat-input button {
-    font-size:8px !important;
-  }
-
-  .sidebar {
-    grid-column:2 !important;
-    grid-row:1 !important;
-    min-width:0 !important;
-    min-height:0 !important;
-    height:100% !important;
-    display:grid !important;
-    grid-template-rows:58px minmax(0,1fr) !important;
-    gap:4px !important;
-    overflow:hidden !important;
-  }
-
-  .sidebar > .character-card {
-    position:relative !important;
-    width:100% !important;
-    height:58px !important;
-    min-height:58px !important;
-    margin:0 !important;
-    padding:4px 5px !important;
-    display:grid !important;
-    grid-template-columns:48px minmax(0,1fr) minmax(125px,.9fr) !important;
-    grid-template-rows:1fr !important;
-    gap:6px !important;
-    align-items:center !important;
-    overflow:hidden !important;
-  }
-
-  .sidebar > .character-card .portrait {
-    grid-column:1 !important;
-    grid-row:1 !important;
-    width:48px !important;
-    height:48px !important;
-  }
-
-  .sidebar > .character-card .character-copy {
-    grid-column:2 !important;
-    grid-row:1 !important;
-    min-width:0 !important;
-    padding:0 !important;
-    align-self:center !important;
-  }
-
-  .sidebar > .character-card .eyebrow {
-    font-size:6px !important;
-  }
-
-  .sidebar > .character-card .character-copy h2 {
-    margin:1px 0 0 !important;
-    font-size:12px !important;
-    line-height:1 !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-  }
-
-  .sidebar > .character-card .character-copy p {
-    margin:2px 0 0 !important;
-    font-size:7px !important;
-    line-height:1 !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-  }
-
-  .sidebar > .character-card .quick-stats {
-    grid-column:3 !important;
-    grid-row:1 !important;
-    width:100% !important;
-    height:100% !important;
-    margin:0 !important;
-    padding:0 0 0 5px !important;
-    border-left:1px solid var(--line) !important;
-    display:grid !important;
-    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
-    gap:2px !important;
-  }
-
-  .sidebar > .character-card .quick-stats div {
-    min-width:0 !important;
-    display:grid !important;
-    grid-template-columns:12px minmax(0,1fr) !important;
-    grid-template-rows:auto auto !important;
-    align-content:center !important;
-  }
-
-  .sidebar > .character-card .quick-stats strong {
-    font-size:10px !important;
-    line-height:1 !important;
-  }
-
-  .sidebar > .character-card .quick-stats small {
-    grid-column:2 !important;
-    font-size:5px !important;
-    line-height:1 !important;
-  }
-
-  .sidebar > .character-card .stat-icon {
-    grid-row:1 / span 2 !important;
-    font-size:10px !important;
-  }
-
-  .tab-stack {
-    min-height:0 !important;
-    height:100% !important;
-    display:grid !important;
-    grid-template-rows:42px minmax(0,1fr) 42px !important;
-    gap:0 !important;
-    overflow:hidden !important;
-  }
-
-  .rune-menu-top,
-  .rune-menu-bottom {
-    position:static !important;
-    width:100% !important;
-    min-height:0 !important;
-    height:42px !important;
-    margin:0 !important;
-    display:grid !important;
-    grid-template-columns:repeat(4,minmax(0,1fr)) !important;
-    overflow:hidden !important;
-    border-radius:0 !important;
-  }
-
-  .rune-menu-top button,
-  .rune-menu-bottom button {
-    display:flex !important;
-    height:42px !important;
-    min-width:0 !important;
-    padding:2px !important;
-    border:0 !important;
-    border-right:1px solid #35383b !important;
-  }
-
-  .rune-menu-top button:last-child,
-  .rune-menu-bottom button:last-child {
-    border-right:0 !important;
-  }
-
-  .menu-icon {
-    font-size:15px !important;
-  }
-
-  .rune-menu small {
-    display:block !important;
-    font-size:5px !important;
-    line-height:1 !important;
-  }
-
-  .active-panel {
-    position:static !important;
-    width:100% !important;
-    height:100% !important;
-    min-height:0 !important;
-    max-height:none !important;
-    margin:0 !important;
-    padding:6px !important;
-    overflow-x:hidden !important;
-    overflow-y:auto !important;
-    overscroll-behavior:contain !important;
-    border-radius:0 !important;
-  }
-
-  .active-panel .action-list {
-    gap:2px !important;
-    margin-top:4px !important;
-  }
-
-  .active-panel .action-list button {
-    min-height:30px !important;
-    padding:4px 6px !important;
-    font-size:8px !important;
-  }
-
-  .active-panel h3 {
-    margin-top:2px !important;
-    font-size:14px !important;
-  }
-
-  .active-panel p {
-    margin-top:4px !important;
-    font-size:8px !important;
-  }
-
-  .panel-kicker {
-    font-size:7px !important;
-  }
-
-  .inventory-tiles {
-    grid-template-columns:repeat(6,1fr) !important;
-    grid-template-rows:repeat(2,1fr) !important;
-    width:100% !important;
-    height:125px !important;
-    aspect-ratio:auto !important;
-  }
-
-  .mobile-inventory-pages {
-    display:grid !important;
-    grid-template-columns:30px 1fr 30px !important;
-    align-items:center !important;
-  }
-
-  .mobile-inventory-pages span {
-    text-align:center !important;
-  }
-
-  .character-logout {
-    position:static !important;
-    width:auto !important;
-    height:26px !important;
-    min-height:0 !important;
-    margin:0 !important;
-    padding:0 9px !important;
-    flex:0 0 auto !important;
-    font-size:7px !important;
-  }
-
-  .global-bar {
-    overflow:hidden !important;
-  }
+  .global-bar{height:34px!important;background:rgba(8,11,13,.82)!important;backdrop-filter:blur(3px)}
+  #app[data-compact-bar="top"] .global-bar{top:0!important;bottom:auto!important;border-top:0!important;border-bottom:1px solid var(--line)!important}
+  #app[data-compact-bar="bottom"] .global-bar{top:auto!important;bottom:0!important}
+  .layout-edit-controls button:not([data-layout-action="bar"]):not([data-layout-action="reset"]){display:none!important}
 }
