@@ -1,0 +1,71 @@
+/* STRAY FREQUENCY — GLOBAL BAR
+   Viewport-level UI region. Its eventual role is deliberately undefined.
+   The bar consumes screen space; it does not overlay gameplay.
+*/
+
+:root {
+  --global-bar-height: 34px;
+}
+
+.global-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  height: var(--global-bar-height);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 3px 8px;
+  border-top: 1px solid var(--line);
+  background: #0b0e10;
+}
+
+.global-bar__edit-layout {
+  width: auto;
+  min-height: 0;
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid #4a4640;
+  border-radius: 0;
+  background: #111518;
+  color: #c2c3c0;
+  font-size: 8px;
+  letter-spacing: .08em;
+  cursor: pointer;
+}
+
+.global-bar__edit-layout:hover {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+
+/* Desktop is viewport-locked. Reserve the bar's height and leave the
+   established chat track unchanged, so the scene absorbs the reduction. */
+@media (min-width:951px) {
+  #app {
+    height: calc(100dvh - var(--global-bar-height));
+  }
+
+  .game-shell {
+    height: calc(100dvh - var(--global-bar-height));
+  }
+}
+
+/* Short-landscape handhelds keep their established 120px chat height.
+   The bar remains outside the game composition rather than covering it. */
+@media (max-width:950px) and (orientation:landscape) and (max-height:520px) {
+  #app {
+    padding-bottom: var(--global-bar-height);
+  }
+}
+
+/* Portrait remains document-flow based; reserve enough space that the fixed
+   bar cannot cover the final controls/content at the bottom of the page. */
+@media (max-width:820px) and (orientation:portrait) {
+  #app {
+    padding-bottom: calc(20px + var(--global-bar-height));
+  }
+}
