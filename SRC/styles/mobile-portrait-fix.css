@@ -1,0 +1,153 @@
+/* STRAY FREQUENCY — MOBILE PORTRAIT SHELL REPAIR
+   Portrait keeps the gameplay-first order:
+   scene -> chat -> tabs/panel -> character card.
+   The character card is compact and self-contained instead of inheriting
+   the old masthead-era grid assumptions.
+*/
+
+@media (max-width:820px) and (orientation:portrait) {
+  .sidebar {
+    grid-template-columns: repeat(8,minmax(0,1fr)) !important;
+  }
+
+  .rune-menu-top button:nth-child(1) { grid-column:1; }
+  .rune-menu-top button:nth-child(2) { grid-column:2; }
+  .rune-menu-top button:nth-child(3) { grid-column:3; }
+  .rune-menu-top button:nth-child(4) { grid-column:4; }
+  .rune-menu-top button:nth-child(5) { grid-column:5; }
+  .rune-menu-bottom button:nth-child(1) { grid-column:6; }
+  .rune-menu-bottom button:nth-child(2) { grid-column:7; }
+  .rune-menu-bottom button:nth-child(3) { grid-column:8; }
+
+  .sidebar > .character-card {
+    grid-column:1/-1 !important;
+    grid-row:3 !important;
+    order:initial !important;
+    width:100% !important;
+    min-height:0 !important;
+    height:auto !important;
+    margin-top:6px !important;
+    padding:8px !important;
+    display:grid !important;
+    grid-template-columns:64px minmax(0,1fr) auto !important;
+    grid-template-rows:auto auto !important;
+    column-gap:9px !important;
+    row-gap:6px !important;
+    align-items:center !important;
+    overflow:hidden !important;
+  }
+
+  .sidebar > .character-card .portrait {
+    grid-column:1 !important;
+    grid-row:1 !important;
+    width:64px !important;
+    height:64px !important;
+    align-self:start !important;
+  }
+
+  .sidebar > .character-card .character-copy {
+    grid-column:2 !important;
+    grid-row:1 !important;
+    min-width:0 !important;
+    padding:0 !important;
+    align-self:center !important;
+  }
+
+  .sidebar > .character-card .eyebrow {
+    font-size:7px !important;
+  }
+
+  .sidebar > .character-card .character-copy h2 {
+    margin-top:2px !important;
+    font-size:16px !important;
+    line-height:1 !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+  }
+
+  .sidebar > .character-card .character-copy p {
+    margin:4px 0 0 !important;
+    font-size:9px !important;
+    line-height:1.15 !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+  }
+
+  .sidebar > .character-card .character-logout {
+    position:static !important;
+    grid-column:3 !important;
+    grid-row:1 !important;
+    width:auto !important;
+    height:30px !important;
+    min-height:30px !important;
+    align-self:center !important;
+    justify-self:end !important;
+    padding:0 9px !important;
+    font-size:7px !important;
+    white-space:nowrap !important;
+  }
+
+  .sidebar > .character-card .quick-stats {
+    grid-column:1/-1 !important;
+    grid-row:2 !important;
+    width:100% !important;
+    margin:0 !important;
+    padding:6px 0 0 !important;
+    border-left:0 !important;
+    border-top:1px solid var(--line) !important;
+    display:grid !important;
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    gap:4px !important;
+  }
+
+  .sidebar > .character-card .quick-stats div {
+    min-width:0 !important;
+    display:grid !important;
+    grid-template-columns:18px minmax(0,1fr) !important;
+    grid-template-rows:auto auto !important;
+    justify-self:stretch !important;
+    align-items:center !important;
+  }
+
+  .sidebar > .character-card .quick-stats strong {
+    font-size:13px !important;
+    line-height:1 !important;
+  }
+
+  .sidebar > .character-card .quick-stats small {
+    grid-column:2 !important;
+    font-size:7px !important;
+    line-height:1 !important;
+  }
+
+  .sidebar > .character-card .stat-icon {
+    grid-row:1 / span 2 !important;
+    font-size:14px !important;
+  }
+
+  .active-panel {
+    grid-column:1/-1 !important;
+    grid-row:2 !important;
+  }
+}
+
+@media (max-width:420px) and (orientation:portrait) {
+  .sidebar > .character-card {
+    grid-template-columns:56px minmax(0,1fr) auto !important;
+  }
+
+  .sidebar > .character-card .portrait {
+    width:56px !important;
+    height:56px !important;
+  }
+
+  .sidebar > .character-card .character-copy h2 {
+    font-size:14px !important;
+  }
+
+  .sidebar > .character-card .character-logout {
+    padding:0 7px !important;
+  }
+}
