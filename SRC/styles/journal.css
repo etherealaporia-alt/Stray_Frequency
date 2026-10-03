@@ -1,0 +1,25 @@
+/* STRAY FREQUENCY — JOURNAL
+   Source of truth: uploaded last stable build.
+*/
+
+.journal-entry {
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.03);
+  border-radius: 12px;
+  display: grid;
+  grid-template-columns: minmax(0,1fr);
+  gap: 4px;
+  padding: 8px 4px;
+}
+
+.journal-entry span,
+.footnote {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.muted-entry {
+  opacity: .76;
+}

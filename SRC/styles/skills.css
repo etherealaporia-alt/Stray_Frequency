@@ -1,0 +1,121 @@
+/* STRAY FREQUENCY — SKILLS
+   Source of truth: uploaded last stable build.
+   Feature presentation only; responsive adaptations live in responsive.css.
+*/
+
+.skill-list {
+  display: grid;
+  gap: 5px;
+  margin-top: 14px;
+}
+
+.skill-list > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 40px;
+  gap: 4px 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.03);
+  font-size: 11px;
+}
+
+.skill-list span {
+  font-size: .92rem;
+}
+
+.skill-list i {
+  grid-column: 1 / -1;
+  display: block;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.07);
+  overflow: hidden;
+}
+
+.skill-list em {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--amber));
+}
+
+/* Later stable skills presentation. */
+.skill-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  grid-template-rows: repeat(4,1fr);
+  gap: 7px;
+  height: 270px;
+}
+
+.skill-tile {
+  position: relative;
+  display: grid;
+  grid-template-columns: 38px minmax(0,1fr) auto;
+  align-items: center;
+  gap: 7px;
+  padding: 7px;
+  border: 1px solid #393d40;
+  background: #111518;
+  color: #ddd;
+  text-align: left;
+}
+
+.skill-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #4b4e50;
+  background: #0b0e10;
+  color: var(--amber);
+  font-size: 19px;
+}
+
+.skill-name {
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.skill-tile strong { font-size: 15px; }
+
+.skill-tile strong small {
+  color: #777;
+  font-size: 8px;
+}
+
+.skill-tile[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  z-index: 60;
+  left: 50%;
+  bottom: calc(100% + 5px);
+  transform: translateX(-50%);
+  width: 230px;
+  padding: 7px;
+  background: #080a0c;
+  border: 1px solid #625a4d;
+  color: #ddd;
+  font-size: 10px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.skill-tile:nth-child(odd)[data-tooltip]::after {
+  left: 0;
+  transform: none;
+}
+
+.skill-tile:nth-child(even)[data-tooltip]::after {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+.skill-tile:hover::after {
+  opacity: 1;
+  visibility: visible;
+}

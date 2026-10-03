@@ -1,14 +1,34 @@
-Upload this replacement file:
-SRC/
-└── main.ts
+The current public/ asset hierarchy is authoritative.
 
-The code expects these images in your existing assets folder:
-assets/
-├── mara-vale.png
-├── glassmarket.png
-├── neon_salvage_yard_under_the_overpass.png
-├── neon_cyberpunk_scrap_pile.png
-├── cyberpunk_salvage_swing_sprite_sheet.png
-├── cyberpunk_salvage_crowbar_tool.png
-├── cyberpunk_scrap_metal_pile.png
-└── neon_cyberpunk_scrapyard_heap.png
+public/
+  animations/
+    fishing/
+      mara-net.png
+      mara-rod.png
+    salvaging/
+      mara-breaker.png
+  assets/
+    items/
+      food/
+        sardine.png
+        shrimp.png
+      resources/
+        scrap.png
+        synthetics.png
+      tools/
+        breaker.png
+        fishing-net.png
+        fishing-rod.png
+  environments/
+    nodes/
+      salvage-node.png
+      sardine-node.png
+      scrap-node.png
+      shrimp-node.png
+    south-dock/
+      breakers-yard-12.png
+      pier.png
+
+Do not move, rename, flatten, or delete these files as incidental feature work.
+Application code must reference named URLs from SRC/core/assets.ts.
+See docs/ASSET-GUIDE.md for deployment guidance and known asset issues.

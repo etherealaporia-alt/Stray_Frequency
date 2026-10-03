@@ -1,0 +1,89 @@
+import {
+  createClient,
+  type AuthChangeEvent,
+  type Session,
+  type User
+} from '@supabase/supabase-js';
+import type { BodyType, Character } from '../core/types';
+
+const supabase = createClient(
+  'https://aikcmzqdzsbnknvcapvm.supabase.co',
+  'sb_publishable_lF1shaFKY_Mcl8e0p7amqQ_UcBL_yV9'
+);
+
+export type AuthenticatedUser = User;
+export type GameAction =
+  | 'move_item' | 'equip' | 'unequip' | 'navigate'
+  | 'salvage' | 'fish' | 'cook_shrimp' | 'eat_shrimp'
+  | 'buy_salvage_bar' | 'sell_metal_scrap';
+
+let developerAccess = false;
+
+export function hasDeveloperAccess(): boolean { return developerAccess; }
+
+export async function refreshDeveloperAccess(): Promise<boolean> {
+  developerAccess = false;
+  const { data, error } = await supabase.rpc('is_developer');
+  if (error) {
+    console.warn('Could not verify developer access.', error);
+    return false;
+  }
+  developerAccess = data === true;
+  return developerAccess;
+}
+
+export function developerSpawnItem(itemKey: string) {
+  return supabase.rpc('developer_spawn_item', { p_item_key: itemKey });
+}
+
+export function getAuthSession() { return supabase.auth.getSession(); }
+
+export function subscribeToAuthChanges(
+  callback: (event: AuthChangeEvent, session: Session | null) => void
+) {
+  return supabase.auth.onAuthStateChange(callback);
+}
+
+export function registerAccount(email: string, password: string) {
+  return supabase.auth.signUp({ email, password });
+}
+
+export function loginAccount(email: string, password: string) {
+  return supabase.auth.signInWithPassword({ email, password });
+}
+
+export function logoutAccount() {
+  developerAccess = false;
+  return supabase.auth.signOut();
+}
+
+export async function findCharacterByAccount(accountId: string) {
+  const { data, error } = await supabase.from('characters')
+    .select('*')
+    .eq('account_id', accountId)
+    .maybeSingle();
+  return { data: data as Character | null, error };
+}
+
+export async function createCharacter(input: {
+  account_id: string;
+  name: string;
+  body_type: BodyType;
+  appearance_skipped: true;
+}) {
+  void input.account_id;
+  void input.appearance_skipped;
+  const { data, error } = await supabase.rpc('create_player_character', {
+    p_name: input.name,
+    p_body_type: input.body_type
+  });
+  return { data: data as Character | null, error };
+}
+
+export function fetchGameSnapshot() {
+  return supabase.rpc('game_snapshot');
+}
+
+export function performGameAction(action: GameAction, payload: Record<string, unknown> = {}) {
+  return supabase.rpc('game_action', { p_action: action, p_payload: payload });
+}

@@ -1,0 +1,145 @@
+/* STRAY FREQUENCY — FISHING
+   The water is the gathering node. Character positions are activity anchors.
+   Viewport-specific shell adaptations remain outside this module.
+*/
+
+.pier-stage > .scene-image {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.fishing-water-area {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 43%;
+  bottom: 0;
+  z-index: 1;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+}
+
+.fishing-water-area:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: -4px;
+}
+
+.fishing-activity-anchor {
+  pointer-events: none;
+}
+
+.fishing-mara-anchor {
+  position: relative;
+  width: 100%;
+  height: auto;
+  min-height: 120px;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: none;
+}
+
+.fishing-mara-anchor .mara-nameplate {
+  position: absolute;
+  top: -25px;
+  left: 50%;
+  z-index: 2;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 92%;
+  padding: 4px 8px;
+  border: 1px solid rgba(103,193,213,.55);
+  background: rgba(7,9,12,.9);
+  color: #dff9ff;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.fishing-mara-sprite {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  image-rendering: pixelated;
+  transform: scaleX(var(--activity-anchor-facing)) scale(var(--activity-anchor-scale));
+  transform-origin: 50% 100%;
+}
+
+.fishing-mara-sprite.net {
+  background-size: 500% 300%;
+  animation: fishing-net-frames 1.5s steps(1,end) infinite;
+}
+
+.fishing-mara-sprite.rod {
+  background-size: 400% 200%;
+  animation: fishing-rod-frames .96s steps(1,end) infinite;
+}
+
+.fishing-xp-layer {
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  z-index: 12;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.fishing-xp-layer .xp-popup {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: max-content;
+  padding: 3px 6px;
+  border: 1px solid rgba(202,160,97,.62);
+  background: rgba(7,9,12,.88);
+  color: #ffd28e;
+  font-size: 9px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  animation: fishing-xp-rise .9s ease-out forwards;
+}
+
+@keyframes fishing-xp-rise {
+  0% { opacity: 0; transform: translate(-50%,8px); }
+  12% { opacity: 1; transform: translate(-50%,2px); }
+  68% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%,-34px); }
+}
+
+@keyframes fishing-net-frames {
+  0%      { background-position:   0%   0%; }
+  6.666%  { background-position:  25%   0%; }
+  13.333% { background-position:  50%   0%; }
+  20%     { background-position:  75%   0%; }
+  26.666% { background-position: 100%   0%; }
+  33.333% { background-position:   0%  50%; }
+  40%     { background-position:  25%  50%; }
+  46.666% { background-position:  50%  50%; }
+  53.333% { background-position:  75%  50%; }
+  60%     { background-position: 100%  50%; }
+  66.666% { background-position:   0% 100%; }
+  73.333% { background-position:  25% 100%; }
+  80%     { background-position:  50% 100%; }
+  86.666% { background-position:  75% 100%; }
+  93.333%, 100% { background-position: 100% 100%; }
+}
+
+@keyframes fishing-rod-frames {
+  0%, 12.499% { background-position: 0% 0%; }
+  12.5%, 24.999% { background-position: 33.333% 0%; }
+  25%, 37.499% { background-position: 66.666% 0%; }
+  37.5%, 49.999% { background-position: 100% 0%; }
+  50%, 62.499% { background-position: 0% 100%; }
+  62.5%, 74.999% { background-position: 33.333% 100%; }
+  75%, 87.499% { background-position: 66.666% 100%; }
+  87.5%, 100% { background-position: 100% 100%; }
+}
