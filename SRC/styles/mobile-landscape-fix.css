@@ -2,10 +2,10 @@
    Landscape uses the same interaction-first principle as portrait:
    right column = character -> all tabs -> active panel
    left column = scene -> chat.
-   Desktop (>=951px) and portrait are untouched.
+   Desktop and portrait are untouched.
 */
 
-@media (max-width:950px) and (orientation:landscape) and (max-height:520px) {
+@media (max-width:950px) and (orientation:landscape) and (max-height:700px) {
   .play-grid {
     display:grid !important;
     grid-template-columns:minmax(0,1.45fr) minmax(300px,.8fr) !important;
