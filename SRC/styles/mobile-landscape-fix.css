@@ -1,9 +1,7 @@
 /* STRAY FREQUENCY — COMPACT LANDSCAPE SHELL
-   Selected by the live viewport shape and input characteristics rather than
-   a named device width. This responds automatically to rotation, browser
-   chrome and other viewport changes.
-
-   Compact landscape = landscape + short live viewport + touch/coarse pointer.
+   Live compact-landscape composition:
+   left = character -> scene -> chat
+   right = all eight tabs -> active panel
 */
 
 @media (orientation:landscape) and (max-height:700px) and (any-pointer:coarse) {
@@ -17,7 +15,124 @@
     grid-column:1 !important;
     grid-row:1 !important;
     order:initial !important;
+    display:grid !important;
+    grid-template-rows:auto auto 120px !important;
+    align-content:start !important;
     gap:5px !important;
+    min-width:0 !important;
+  }
+
+  .world-column > .character-card {
+    position:relative !important;
+    width:100% !important;
+    max-width:none !important;
+    min-height:0 !important;
+    height:76px !important;
+    margin:0 !important;
+    padding:5px 6px !important;
+    display:grid !important;
+    grid-template-columns:64px minmax(0,1fr) minmax(150px,.75fr) 58px !important;
+    grid-template-rows:1fr !important;
+    gap:7px !important;
+    align-items:center !important;
+    overflow:hidden !important;
+  }
+
+  .world-column > .character-card .portrait {
+    grid-column:1 !important;
+    grid-row:1 !important;
+    width:64px !important;
+    height:64px !important;
+  }
+
+  .world-column > .character-card .character-copy {
+    grid-column:2 !important;
+    grid-row:1 !important;
+    min-width:0 !important;
+    padding:0 !important;
+    align-self:center !important;
+  }
+
+  .world-column > .character-card .eyebrow { font-size:7px !important; }
+
+  .world-column > .character-card .character-copy h2 {
+    margin-top:1px !important;
+    font-size:14px !important;
+    line-height:1 !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+  }
+
+  .world-column > .character-card .character-copy p {
+    margin:3px 0 0 !important;
+    font-size:8px !important;
+    line-height:1.1 !important;
+  }
+
+  .world-column > .character-card .quick-stats {
+    grid-column:3 !important;
+    grid-row:1 !important;
+    width:100% !important;
+    margin:0 !important;
+    padding:0 !important;
+    border:0 !important;
+    display:grid !important;
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    gap:3px !important;
+  }
+
+  .world-column > .character-card .quick-stats div {
+    min-width:0 !important;
+    display:grid !important;
+    grid-template-columns:14px minmax(0,1fr) !important;
+    grid-template-rows:auto auto !important;
+    align-items:center !important;
+  }
+
+  .world-column > .character-card .quick-stats strong {
+    font-size:11px !important;
+    line-height:1 !important;
+  }
+
+  .world-column > .character-card .quick-stats small {
+    grid-column:2 !important;
+    font-size:6px !important;
+    line-height:1 !important;
+  }
+
+  .world-column > .character-card .stat-icon {
+    grid-row:1 / span 2 !important;
+    font-size:12px !important;
+  }
+
+  .world-column > .character-card .character-logout {
+    position:static !important;
+    grid-column:4 !important;
+    grid-row:1 !important;
+    width:100% !important;
+    height:100% !important;
+    min-height:0 !important;
+    padding:3px !important;
+    font-size:6px !important;
+  }
+
+  .location-card {
+    min-width:0 !important;
+  }
+
+  .location-heading {
+    min-height:42px !important;
+    padding:4px 8px !important;
+  }
+
+  .location-heading h1 { font-size:18px !important; }
+  .scene-wrap { aspect-ratio:2.35/1 !important; }
+
+  .chat {
+    height:120px !important;
+    min-height:120px !important;
+    grid-template-rows:24px 1fr 30px !important;
   }
 
   .sidebar {
@@ -26,75 +141,13 @@
     order:initial !important;
     display:grid !important;
     grid-template-columns:repeat(8,minmax(0,1fr)) !important;
-    grid-template-rows:auto 54px auto !important;
+    grid-template-rows:54px auto !important;
     align-self:start !important;
     width:100% !important;
     height:auto !important;
     min-height:0 !important;
     gap:0 !important;
     overflow:visible !important;
-  }
-
-  .sidebar > .character-card {
-    grid-column:1/-1 !important;
-    grid-row:1 !important;
-    width:100% !important;
-    min-height:0 !important;
-    height:auto !important;
-    margin:0 0 5px !important;
-    padding:6px !important;
-    display:grid !important;
-    grid-template-columns:82px minmax(0,1fr) 62px !important;
-    grid-template-rows:auto auto !important;
-    gap:5px 8px !important;
-    overflow:hidden !important;
-  }
-
-  .sidebar > .character-card .portrait {
-    grid-column:1 !important;
-    grid-row:1 !important;
-    width:82px !important;
-    height:82px !important;
-  }
-
-  .sidebar > .character-card .character-copy {
-    grid-column:2 !important;
-    grid-row:1 !important;
-    min-width:0 !important;
-    padding:0 !important;
-    align-self:center !important;
-  }
-
-  .sidebar > .character-card .character-copy h2 {
-    font-size:15px !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-  }
-
-  .sidebar > .character-card .quick-stats {
-    grid-column:1/-1 !important;
-    grid-row:2 !important;
-    width:100% !important;
-    margin:0 !important;
-    border-left:0 !important;
-    border-top:1px solid var(--line) !important;
-    padding:4px 0 0 !important;
-    display:grid !important;
-    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
-  }
-
-  .sidebar > .character-card .character-logout {
-    position:static !important;
-    grid-column:3 !important;
-    grid-row:1 !important;
-    align-self:stretch !important;
-    justify-self:stretch !important;
-    display:flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    padding:3px !important;
-    font-size:7px !important;
   }
 
   .tab-stack,
@@ -106,7 +159,7 @@
   .rune-menu-top button,
   .rune-menu-bottom button {
     display:flex !important;
-    grid-row:2 !important;
+    grid-row:1 !important;
     height:54px !important;
     min-width:0 !important;
     padding:5px 2px !important;
@@ -136,7 +189,7 @@
 
   .active-panel {
     grid-column:1/-1 !important;
-    grid-row:3 !important;
+    grid-row:2 !important;
     position:static !important;
     width:100% !important;
     height:auto !important;
@@ -148,17 +201,8 @@
     border-radius:0 0 7px 7px !important;
   }
 
-  .active-panel .action-list {
-    gap:2px !important;
-    margin-top:5px !important;
-  }
-
-  .active-panel .action-list button {
-    min-height:34px !important;
-    padding:5px 7px !important;
-    font-size:9px !important;
-  }
-
+  .active-panel .action-list { gap:2px !important; margin-top:5px !important; }
+  .active-panel .action-list button { min-height:34px !important; padding:5px 7px !important; font-size:9px !important; }
   .active-panel h3 { margin-top:3px !important; }
   .active-panel p { margin-top:5px !important; }
 
