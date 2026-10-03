@@ -65,6 +65,17 @@ function firstEmptyInventorySlot(state: GameState): number {
   );
 }
 
+function ensureBjornTestArmor(state: GameState): void {
+  if (state.character?.name !== 'BjornThorson') return;
+  if (state.inventorySlots.some((entry) => entry?.item === 't1_light_armor')) return;
+  if (Object.values(state.equipment).includes('t1_light_armor')) return;
+
+  const emptyIndex = firstEmptyInventorySlot(state);
+  if (emptyIndex >= 0) {
+    state.inventorySlots[emptyIndex] = { item: 't1_light_armor', quantity: 1 };
+  }
+}
+
 function applyCharacterProgress(value: unknown, state: GameState): boolean {
   if (!value || typeof value !== 'object') return false;
   const progress = value as Partial<StoredCharacterProgress>;
@@ -221,6 +232,7 @@ export async function loadCharacterProgress(state: GameState = gameState): Promi
   }
 
   if (!restored) resetCharacterProgress(state);
+  ensureBjornTestArmor(state);
   if (!error && data?.progress && restored) {
     state.character!.progress = data.progress as StoredCharacterProgress;
     try {
