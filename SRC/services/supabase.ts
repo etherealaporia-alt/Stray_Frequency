@@ -4,11 +4,7 @@ import {
   type Session,
   type User
 } from '@supabase/supabase-js';
-import type {
-  BodyType,
-  Character,
-  StoredCharacterProgress
-} from '../core/types';
+import type { BodyType, Character } from '../core/types';
 
 const supabase = createClient(
   'https://aikcmzqdzsbnknvcapvm.supabase.co',
@@ -16,12 +12,14 @@ const supabase = createClient(
 );
 
 export type AuthenticatedUser = User;
+export type GameAction =
+  | 'move_item' | 'equip' | 'unequip' | 'navigate'
+  | 'salvage' | 'fish' | 'cook_shrimp' | 'eat_shrimp'
+  | 'buy_salvage_bar' | 'sell_metal_scrap';
 
 let developerAccess = false;
 
-export function hasDeveloperAccess(): boolean {
-  return developerAccess;
-}
+export function hasDeveloperAccess(): boolean { return developerAccess; }
 
 export async function refreshDeveloperAccess(): Promise<boolean> {
   developerAccess = false;
@@ -38,9 +36,7 @@ export function developerSpawnItem(itemKey: string) {
   return supabase.rpc('developer_spawn_item', { p_item_key: itemKey });
 }
 
-export function getAuthSession() {
-  return supabase.auth.getSession();
-}
+export function getAuthSession() { return supabase.auth.getSession(); }
 
 export function subscribeToAuthChanges(
   callback: (event: AuthChangeEvent, session: Session | null) => void
@@ -75,33 +71,19 @@ export async function createCharacter(input: {
   body_type: BodyType;
   appearance_skipped: true;
 }) {
-  const { data, error } = await supabase.from('characters')
-    .insert(input)
-    .select()
-    .single();
+  void input.account_id;
+  void input.appearance_skipped;
+  const { data, error } = await supabase.rpc('create_player_character', {
+    p_name: input.name,
+    p_body_type: input.body_type
+  });
   return { data: data as Character | null, error };
 }
 
-export function fetchCharacterProgress(characterId: string) {
-  return supabase.from('characters')
-    .select('progress')
-    .eq('id', characterId)
-    .maybeSingle();
+export function fetchGameSnapshot() {
+  return supabase.rpc('game_snapshot');
 }
 
-export function updateCharacterProgress(
-  characterId: string,
-  progress: StoredCharacterProgress
-) {
-  return supabase.from('characters')
-    .update({ progress })
-    .eq('id', characterId)
-    .select('id')
-    .maybeSingle();
-}
-
-export function updateCharacterHealth(characterId: string, health: number) {
-  return supabase.from('characters')
-    .update({ health })
-    .eq('id', characterId);
+export function performGameAction(action: GameAction, payload: Record<string, unknown> = {}) {
+  return supabase.rpc('game_action', { p_action: action, p_payload: payload });
 }

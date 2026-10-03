@@ -1,95 +1,26 @@
 import { EQUIPMENT_SLOTS, MAX_SKILL_LEVEL } from '../core/constants';
-import {
-  gameState,
-  recalculateInventoryTotals,
-  resetCharacterProgress
-} from '../core/state';
-import type {
-  CharacterSkill,
-  GameState,
-  ItemKey,
-  StoredCharacterProgress
-} from '../core/types';
+import { gameState, recalculateInventoryTotals, resetCharacterProgress } from '../core/state';
+import type { CharacterSkill, GameState, ItemKey, StoredCharacterProgress } from '../core/types';
 import { ITEM_DEFINITIONS, itemName } from '../data/items';
 import { isSkillKey, xpForNextSkillLevel } from '../data/skills';
-import {
-  fetchCharacterProgress,
-  updateCharacterHealth,
-  updateCharacterProgress
-} from './supabase';
+import { fetchGameSnapshot } from './supabase';
 
-let progressSaveQueue: Promise<void> = Promise.resolve();
-
-function legacyCharacterProgressStorageKey(state: GameState): string | null {
-  return state.character ? `stray-frequency:character:${state.character.id}:progress` : null;
-}
-
-function serializeCharacterProgress(state: GameState): StoredCharacterProgress {
-  return {
-    version: 1,
-    inventory: state.inventorySlots.map((entry) => entry ? { ...entry } : null),
-    equipment: { ...state.equipment },
-    skills: state.skills.map((skill) => ({ ...skill })),
-    credits: state.character?.credits,
-    cooking: {
-      active: state.cooking.active,
-      ticksRemaining: state.cooking.ticksRemaining,
-      inventoryIndex: state.cooking.inventoryIndex
-    }
-  };
-}
-
-export function saveCharacterProgress(state: GameState = gameState): Promise<boolean> {
-  const characterId = state.character?.id;
-  if (!characterId) return Promise.resolve(false);
-
-  const progress = serializeCharacterProgress(state);
-  const save = progressSaveQueue.then(async () => {
-    const { data, error } = await updateCharacterProgress(characterId, progress);
-
-    if (error || !data) {
-      console.error('Could not save character progress to Supabase.', error ?? 'Character row not found.');
-      return false;
-    }
-
-    if (state.character?.id === characterId) state.character.progress = progress;
-    return true;
-  });
-
-  progressSaveQueue = save.then(() => undefined, () => undefined);
-  return save;
-}
-
-function firstEmptyInventorySlot(state: GameState): number {
-  return state.inventorySlots.findIndex((entry, index) =>
-    entry === null && !(state.cooking.active && index === state.cooking.inventoryIndex)
-  );
-}
-
-function applyCharacterProgress(value: unknown, state: GameState): boolean {
+function applyProgress(value: unknown, state: GameState): boolean {
   if (!value || typeof value !== 'object') return false;
   const progress = value as Partial<StoredCharacterProgress>;
   if (progress.version !== 1) return false;
-
   resetCharacterProgress(state);
-  if (typeof progress.credits === 'number' && Number.isSafeInteger(progress.credits) && progress.credits >= 0) {
-    state.character!.credits = progress.credits;
-  }
 
   if (Array.isArray(progress.inventory)) {
     state.inventorySlots.fill(null);
     progress.inventory.slice(0, state.inventorySlots.length).forEach((entry, index) => {
       if (!entry || typeof entry !== 'object') return;
       const candidate = entry as { item?: unknown; quantity?: unknown };
-      if (
-        typeof candidate.item !== 'string'
+      if (typeof candidate.item !== 'string'
         || !Object.prototype.hasOwnProperty.call(ITEM_DEFINITIONS, candidate.item)
-      ) return;
-      if (!Number.isSafeInteger(candidate.quantity) || Number(candidate.quantity) < 1) return;
-      state.inventorySlots[index] = {
-        item: candidate.item as ItemKey,
-        quantity: Number(candidate.quantity)
-      };
+        || !Number.isSafeInteger(candidate.quantity)
+        || Number(candidate.quantity) < 1) return;
+      state.inventorySlots[index] = { item: candidate.item as ItemKey, quantity: Number(candidate.quantity) };
     });
   }
 
@@ -99,26 +30,8 @@ function applyCharacterProgress(value: unknown, state: GameState): boolean {
       state.equipment[slot] = typeof item === 'string'
         && Object.prototype.hasOwnProperty.call(ITEM_DEFINITIONS, item)
         && ITEM_DEFINITIONS[item as ItemKey].equipmentSlot === slot
-        ? item as ItemKey
-        : null;
+        ? item as ItemKey : null;
     }
-  }
-
-  const cookingIndex = progress.cooking?.inventoryIndex;
-  if (
-    progress.cooking?.active === true
-    && Number.isInteger(progress.cooking.ticksRemaining)
-    && progress.cooking.ticksRemaining >= 1
-    && progress.cooking.ticksRemaining <= 3
-    && typeof cookingIndex === 'number'
-    && Number.isInteger(cookingIndex)
-    && cookingIndex >= 0
-    && cookingIndex < state.inventorySlots.length
-    && state.inventorySlots[cookingIndex] === null
-  ) {
-    state.cooking.active = true;
-    state.cooking.ticksRemaining = progress.cooking.ticksRemaining;
-    state.cooking.inventoryIndex = cookingIndex;
   }
 
   if (Array.isArray(progress.skills)) {
@@ -126,133 +39,60 @@ function applyCharacterProgress(value: unknown, state: GameState): boolean {
     const skills = progress.skills.flatMap((entry): CharacterSkill[] => {
       if (!entry || typeof entry !== 'object') return [];
       const candidate = entry as { skill_key?: unknown; level?: unknown; xp?: unknown };
-      if (!isSkillKey(candidate.skill_key)) return [];
-      if (
-        seen.has(candidate.skill_key)
-        || typeof candidate.level !== 'number'
-        || !Number.isSafeInteger(candidate.level)
-        || candidate.level < 1
-        || candidate.level > MAX_SKILL_LEVEL
-      ) return [];
-      if (
-        typeof candidate.xp !== 'number'
-        || !Number.isSafeInteger(candidate.xp)
-        || candidate.xp < 0
-        || (candidate.level === MAX_SKILL_LEVEL && candidate.xp > 0)
-        || (candidate.level < MAX_SKILL_LEVEL && candidate.xp >= xpForNextSkillLevel(candidate.level))
-      ) return [];
-
+      if (!isSkillKey(candidate.skill_key) || seen.has(candidate.skill_key)) return [];
+      if (!Number.isSafeInteger(candidate.level) || Number(candidate.level) < 1 || Number(candidate.level) > MAX_SKILL_LEVEL) return [];
+      if (!Number.isSafeInteger(candidate.xp) || Number(candidate.xp) < 0) return [];
+      const level = Number(candidate.level), xp = Number(candidate.xp);
+      if ((level === MAX_SKILL_LEVEL && xp > 0) || (level < MAX_SKILL_LEVEL && xp >= xpForNextSkillLevel(level))) return [];
       seen.add(candidate.skill_key);
-      return [{
-        skill_key: candidate.skill_key,
-        level: candidate.level,
-        xp: candidate.xp
-      }];
+      return [{ skill_key: candidate.skill_key, level, xp }];
     });
     state.skills.splice(0, state.skills.length, ...skills);
   }
 
   recalculateInventoryTotals(state, itemName);
-
-  if (
-    !state.inventorySlots.some((entry) => entry?.item === 'fishing_net')
-    && state.equipment.main_hand !== 'fishing_net'
-  ) {
-    const netIndex = firstEmptyInventorySlot(state);
-    if (netIndex >= 0) {
-      state.inventorySlots[netIndex] = { item: 'fishing_net', quantity: 1 };
-      void saveCharacterProgress(state);
-    }
-  }
-
-  if (
-    !state.cooking.active
-    && !state.inventorySlots.some((entry) => entry?.item === 'portable_induction_pad')
-  ) {
-    const emptyIndex = firstEmptyInventorySlot(state);
-    if (emptyIndex >= 0) {
-      state.inventorySlots[emptyIndex] = { item: 'portable_induction_pad', quantity: 1 };
-      void saveCharacterProgress(state);
-    } else {
-      const cookedIndex = state.inventorySlots.findIndex((entry) => entry?.item === 'cooked_shrimp');
-      if (cookedIndex >= 0) {
-        const cooked = state.inventorySlots[cookedIndex]!;
-        const otherCookedIndex = state.inventorySlots.findIndex((entry, index) =>
-          index !== cookedIndex && entry?.item === 'cooked_shrimp'
-        );
-        if (otherCookedIndex >= 0) {
-          state.inventorySlots[otherCookedIndex]!.quantity += cooked.quantity;
-        } else {
-          state.inventoryTotals['Cooked Shrimp'] = Math.max(
-            0,
-            state.inventoryTotals['Cooked Shrimp'] - cooked.quantity
-          );
-        }
-        state.inventorySlots[cookedIndex] = otherCookedIndex >= 0
-          ? null
-          : { item: 'portable_induction_pad', quantity: 1 };
-        void saveCharacterProgress(state);
-        state.logs.push('[21:48]  Recovered the Portable Induction Pad from its previous cooking save.');
-      }
-    }
-  }
-
   return true;
 }
 
-export async function loadCharacterProgress(state: GameState = gameState): Promise<void> {
-  const characterId = state.character?.id;
-  const legacyKey = legacyCharacterProgressStorageKey(state);
-  if (!characterId || !legacyKey) return;
-
-  resetCharacterProgress(state);
-
-  const { data, error } = await fetchCharacterProgress(characterId);
-  if (error) console.warn('Could not load character progress from Supabase.', error);
-
-  let restored = !error && applyCharacterProgress(data?.progress, state);
-  let importedLegacy = false;
-  if (!restored) {
-    try {
-      const raw = localStorage.getItem(legacyKey);
-      if (raw) {
-        importedLegacy = applyCharacterProgress(JSON.parse(raw), state);
-        restored = importedLegacy;
-      }
-    } catch (legacyError) {
-      console.warn('Could not import legacy local progress.', legacyError);
+export function applyGameSnapshot(value: unknown, state: GameState = gameState): boolean {
+  if (!value || typeof value !== 'object' || !state.character) return false;
+  const snapshot = value as Record<string, unknown>;
+  if (typeof snapshot.location_id === 'string') {
+    state.character.location_id = snapshot.location_id;
+    if (snapshot.location_id === 'glassmarket' || snapshot.location_id === 'breaker-yard' || snapshot.location_id === 'south-dock-pier') {
+      state.roomId = snapshot.location_id;
     }
   }
-
-  if (!restored) resetCharacterProgress(state);
-  if (!error && data?.progress && restored) {
-    state.character!.progress = data.progress as StoredCharacterProgress;
-    try {
-      localStorage.removeItem(legacyKey);
-    } catch {
-      // Legacy cleanup is best effort.
-    }
-    return;
+  if (typeof snapshot.credits === 'number') state.character.credits = snapshot.credits;
+  if (typeof snapshot.health === 'number') state.character.health = snapshot.health;
+  if (typeof snapshot.max_health === 'number') state.character.max_health = snapshot.max_health;
+  const progress = snapshot.progress;
+  if (applyProgress(progress, state)) {
+    state.character.progress = progress as StoredCharacterProgress;
+    return true;
   }
-
-  const saved = await saveCharacterProgress(state);
-  if (saved && importedLegacy) {
-    try {
-      localStorage.removeItem(legacyKey);
-    } catch {
-      // Legacy cleanup is best effort.
-    }
-  }
+  return false;
 }
 
-/** Persist health after the caller has applied the local gameplay update. */
-export async function persistCharacterHealth(
-  health: number,
-  state: GameState = gameState
-): Promise<boolean> {
-  const characterId = state.character?.id;
-  if (!characterId) return false;
+export async function loadCharacterProgress(state: GameState = gameState): Promise<void> {
+  if (!state.character) return;
+  const { data, error } = await fetchGameSnapshot();
+  if (error) {
+    console.error('Could not load authoritative game state.', error);
+    return;
+  }
+  applyGameSnapshot(data, state);
+}
 
-  const { error } = await updateCharacterHealth(characterId, health);
-  return !error;
+/**
+ * Legacy compatibility hook. Persistent gameplay is server-authoritative now;
+ * callers must use performGameAction rather than writing progress directly.
+ */
+export function saveCharacterProgress(): Promise<boolean> {
+  return Promise.resolve(true);
+}
+
+/** Health is mutated only by authoritative game actions. */
+export function persistCharacterHealth(): Promise<boolean> {
+  return Promise.resolve(false);
 }
