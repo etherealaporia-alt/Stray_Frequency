@@ -17,6 +17,27 @@ const supabase = createClient(
 
 export type AuthenticatedUser = User;
 
+let developerAccess = false;
+
+export function hasDeveloperAccess(): boolean {
+  return developerAccess;
+}
+
+export async function refreshDeveloperAccess(): Promise<boolean> {
+  developerAccess = false;
+  const { data, error } = await supabase.rpc('is_developer');
+  if (error) {
+    console.warn('Could not verify developer access.', error);
+    return false;
+  }
+  developerAccess = data === true;
+  return developerAccess;
+}
+
+export function developerSpawnItem(itemKey: string) {
+  return supabase.rpc('developer_spawn_item', { p_item_key: itemKey });
+}
+
 export function getAuthSession() {
   return supabase.auth.getSession();
 }
@@ -36,6 +57,7 @@ export function loginAccount(email: string, password: string) {
 }
 
 export function logoutAccount() {
+  developerAccess = false;
   return supabase.auth.signOut();
 }
 
@@ -83,4 +105,3 @@ export function updateCharacterHealth(characterId: string, health: number) {
     .update({ health })
     .eq('id', characterId);
 }
-
