@@ -1,7 +1,6 @@
 import { EQUIPMENT_SLOTS, MAX_SKILL_LEVEL } from '../core/constants';
 import {
   gameState,
-  isDeveloperAccount,
   recalculateInventoryTotals,
   resetCharacterProgress
 } from '../core/state';
@@ -36,8 +35,7 @@ function serializeCharacterProgress(state: GameState): StoredCharacterProgress {
       active: state.cooking.active,
       ticksRemaining: state.cooking.ticksRemaining,
       inventoryIndex: state.cooking.inventoryIndex
-    },
-    developer: Boolean(state.character?.progress?.developer || isDeveloperAccount(state))
+    }
   };
 }
 
@@ -74,20 +72,6 @@ function applyCharacterProgress(value: unknown, state: GameState): boolean {
   if (progress.version !== 1) return false;
 
   resetCharacterProgress(state);
-  if (progress.developer === true) {
-    state.character!.progress = {
-      version: 1,
-      inventory: state.inventorySlots.map((entry) => entry ? { ...entry } : null),
-      equipment: { ...state.equipment },
-      skills: state.skills.map((skill) => ({ ...skill })),
-      cooking: {
-        active: state.cooking.active,
-        ticksRemaining: state.cooking.ticksRemaining,
-        inventoryIndex: state.cooking.inventoryIndex
-      },
-      developer: true
-    };
-  }
   if (typeof progress.credits === 'number' && Number.isSafeInteger(progress.credits) && progress.credits >= 0) {
     state.character!.credits = progress.credits;
   }
@@ -272,4 +256,3 @@ export async function persistCharacterHealth(
   const { error } = await updateCharacterHealth(characterId, health);
   return !error;
 }
-
