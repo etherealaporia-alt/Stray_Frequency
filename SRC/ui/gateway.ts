@@ -4,7 +4,7 @@ import { CHARACTER_APPEARANCES } from '../data/character-appearances';
 import { loadCharacterProgress } from '../services/persistence';
 import {
   type AuthenticatedUser, createCharacter, findCharacterByAccount, getAuthSession,
-  loginAccount, logoutAccount, registerAccount, subscribeToAuthChanges
+  loginAccount, logoutAccount, refreshDeveloperAccess, registerAccount, subscribeToAuthChanges
 } from '../services/supabase';
 import { roomFromCharacterLocation } from '../systems/navigation';
 import { characterRendererMarkup } from './character-renderer';
@@ -145,6 +145,7 @@ function renderCharacterCreation(app: HTMLDivElement): void {
     if (error) { messageNode.textContent = error.message; return; }
     gameState.character = data!;
     await loadCharacterProgress();
+    await refreshDeveloperAccess();
     gameState.roomId = roomFromCharacterLocation(gameState.character.location_id);
     startGame(app);
   });
@@ -171,6 +172,7 @@ async function routeAuthenticatedUser(app: HTMLDivElement): Promise<void> {
   if (!data) { renderCharacterCreation(app); return; }
   gameState.character = data;
   await loadCharacterProgress();
+  await refreshDeveloperAccess();
   gameState.roomId = roomFromCharacterLocation(gameState.character.location_id);
   if (location.hash === '#appearance-workshop') { renderAppearanceWorkshop(app); return; }
   startGame(app);

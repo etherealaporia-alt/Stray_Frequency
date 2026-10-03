@@ -1,7 +1,8 @@
 import { ASSET_CSS_VARIABLES } from '../core/assets';
-import { gameState, isDeveloperAccount } from '../core/state';
+import { gameState } from '../core/state';
 import type { Panel } from '../core/types';
 import { getRoom } from '../data/rooms';
+import { hasDeveloperAccess } from '../services/supabase';
 import { characterCardMarkup } from './character-card';
 import { applyUILayout, loadUILayout, resetUILayout, saveUILayout, type UILayout } from './layout';
 
@@ -57,10 +58,10 @@ export function renderShell(app:HTMLDivElement):void {
       </main>
     </div>
     <div class="global-bar" role="toolbar" aria-label="Global controls">
-      <div class="developer-menu-wrap">
-        <button type="button" class="global-bar__developer-button" id="developer-item-button" aria-expanded="false">${isDeveloperAccount() ? 'ITEM' : 'DEV'}</button>
+      ${hasDeveloperAccess() ? `<div class="developer-menu-wrap">
+        <button type="button" class="global-bar__developer-button" id="developer-item-button" aria-expanded="false">ITEM</button>
         <div class="developer-item-menu hidden" id="developer-item-menu" aria-live="polite"></div>
-      </div>
+      </div>` : ''}
       <div class="layout-edit-controls" id="layout-edit-controls" hidden>
         <button type="button" data-layout-action="bar">MOVE BAR</button>
         <button type="button" data-layout-action="sidebar">SWAP SIDES</button>
