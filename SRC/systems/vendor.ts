@@ -6,6 +6,7 @@ import { addInventoryItem } from './inventory';
 export interface VendorTradeHooks {
   save?: () => void | Promise<unknown>;
   log?: (message: string) => void;
+  persistCredits?: (credits: number) => void | Promise<unknown>;
 }
 
 export function countInventoryItem(state: GameState, item: ItemKey): number {
@@ -42,6 +43,7 @@ export function buyPoweredSalvageBar(
 
   character.credits -= 100;
   recalculateInventoryTotals(state, itemName);
+  void hooks.persistCredits?.(character.credits);
   void hooks.save?.();
   return { success: true, message: 'You bought a Powered Salvage Bar for 100 credits.' };
 }
@@ -66,6 +68,7 @@ export function sellMetalScrap(
 
   character.credits += amount * 5;
   recalculateInventoryTotals(state, itemName);
+  void hooks.persistCredits?.(character.credits);
   void hooks.save?.();
   return { success: true, message: `Sold ${amount} Tier 1 Metal Scrap for ${amount * 5} credits.` };
 }

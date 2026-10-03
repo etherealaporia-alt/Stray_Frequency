@@ -83,3 +83,11 @@ export function updateCharacterHealth(characterId: string, health: number) {
     .update({ health })
     .eq('id', characterId);
 }
+
+export function updateCharacterCredits(characterId: string, credits: number) {
+  return supabase.from('characters')
+    .update({ credits })
+    .eq('id', characterId)
+    .select('id')
+    .maybeSingle();
+}

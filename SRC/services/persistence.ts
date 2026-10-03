@@ -15,6 +15,7 @@ import { ITEM_DEFINITIONS, itemName } from '../data/items';
 import { isSkillKey, xpForNextSkillLevel } from '../data/skills';
 import {
   fetchCharacterProgress,
+  updateCharacterCredits,
   updateCharacterHealth,
   updateCharacterProgress
 } from './supabase';
@@ -266,5 +267,22 @@ export async function persistCharacterHealth(
   if (!characterId) return false;
 
   const { error } = await updateCharacterHealth(characterId, health);
+  return !error;
+}
+
+export async function persistCharacterCredits(
+  credits: number,
+  state: GameState = gameState
+): Promise<boolean> {
+  const characterId = state.character?.id;
+  if (!characterId) return false;
+
+  const safeCredits = Number.isFinite(credits) && credits >= 0 ? Math.floor(credits) : 0;
+  const { error } = await updateCharacterCredits(characterId, safeCredits);
+
+  if (!error && state.character?.id === characterId) {
+    state.character.credits = safeCredits;
+  }
+
   return !error;
 }

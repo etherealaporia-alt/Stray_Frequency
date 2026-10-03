@@ -2,7 +2,7 @@ import { MOBILE_INVENTORY_PAGE_COUNT } from '../core/constants';
 import { appendLog, characterName, gameState, isDeveloperAccount, setDeveloperAccount } from '../core/state';
 import type { ActionType, EquipmentSlot, FishingMethod, Panel, SkillKey } from '../core/types';
 import { ITEM_DEFINITIONS } from '../data/items';
-import { persistCharacterHealth, saveCharacterProgress } from '../services/persistence';
+import { persistCharacterCredits, persistCharacterHealth, saveCharacterProgress } from '../services/persistence';
 import { logoutAccount } from '../services/supabase';
 import { type CookingEvent, cancelCooking, pauseCooking, startCooking, startCookingTimer, useCookedShrimp } from '../systems/cooking';
 import { equipFromInventory, unequipToInventory } from '../systems/equipment';
@@ -179,7 +179,10 @@ function openVendorDialog(): void {
 
 function executeVendorAction(action: ActionType): void {
   if (action === 'buy-powered-salvage-bar') {
-    const result = buyPoweredSalvageBar(gameState, { save: saveProgress });
+    const result = buyPoweredSalvageBar(gameState, {
+      save: saveProgress,
+      persistCredits: (credits: number) => persistCharacterCredits(credits, gameState)
+    });
     addLog(result.message);
     openVendorDialog();
     renderPanelAndBind();
@@ -188,7 +191,10 @@ function executeVendorAction(action: ActionType): void {
   }
 
   if (action === 'sell-metal-scrap') {
-    const result = sellMetalScrap(gameState, 1, { save: saveProgress });
+    const result = sellMetalScrap(gameState, 1, {
+      save: saveProgress,
+      persistCredits: (credits: number) => persistCharacterCredits(credits, gameState)
+    });
     addLog(result.message);
     openVendorDialog();
     renderPanelAndBind();
