@@ -2,13 +2,11 @@
 
 ## Purpose
 
-The application is split by responsibility while preserving the behavior and presentation of the pre-refactor prototype. The modules are deliberately small and direct: this is a browser RPG architecture, not a framework inside the application.
+Stray Frequency is a browser RPG built with TypeScript, Vite, Supabase and a deliberately small module architecture. The goal is separation of responsibility, not a framework inside the game.
 
-`SRC/main.ts` is the application bootstrap. It imports the root stylesheet, finds the application mount point, and starts the gateway. It must not accumulate gameplay rules, data definitions, persistence logic, or shell markup.
+`SRC/main.ts` is the bootstrap. Gameplay rules, persistence, data definitions and shell markup belong in their respective modules.
 
 ## Dependency direction
-
-The intended dependency flow is:
 
 ```text
 main
@@ -20,90 +18,90 @@ main
 
 systems -> data -> core
 systems --------> core
-services -> data/core and other services
+services -> data/core and external services
 data ------------> core
 core ------------> no application layer
 ```
 
-There are no circular imports. Lower layers do not import UI modules. Systems do not access the DOM, and data modules do not mutate game state.
+Lower layers should not import UI modules. Systems should not depend on the DOM. Data modules describe things rather than mutating runtime state.
 
 ## Source responsibilities
 
 ### `core/`
 
-- `types.ts` defines the shared domain vocabulary: characters, rooms, items, equipment slots, progress payloads, and runtime state.
-- `constants.ts` holds stable gameplay and UI constants such as inventory capacity, activity timing, XP amounts, salvage probabilities, and equipment slot order.
-- `state.ts` owns the current in-memory `gameState`, initial-state factories, log insertion, and compatibility projections such as inventory totals.
-- `assets.ts` is the only TypeScript module that constructs public asset URLs. Every URL is based on `import.meta.env.BASE_URL`.
-
-Core is not a place for feature workflows or DOM rendering.
+Shared domain types, constants, runtime state and asset URL construction. `assets.ts` is the central TypeScript source for public asset references.
 
 ### `data/`
 
-- `items.ts` describes item identities, copy, stack/equipment metadata, and named asset references.
-- `rooms.ts` describes locations and the actions each location offers.
-- `skills.ts` describes skills, their presentation metadata, unlock levels, and the existing XP curve.
-
-Data describes what exists. It does not decide when an action is allowed or perform state changes.
+Static definitions for items, rooms, skills and other authored game data. Data says what exists; systems decide what happens.
 
 ### `systems/`
 
-- `inventory.ts` handles inventory ownership, stacking, movement, consumption, and ownership queries.
-- `equipment.ts` implements exact-slot equip/unequip behavior and derived equipment capability.
-- `navigation.ts` implements room transitions and the existing location restoration rule.
-- `salvage.ts`, `fishing.ts`, and `cooking.ts` own their activity rules, timers, rewards, and mutual-exclusion checks.
-- `skills.ts` applies XP and level changes using the curve defined by skill data.
-
-Systems mutate the supplied `GameState` and report effects through narrow hooks for logging, persistence, rendering, or deterministic randomness. They do not render HTML and do not know shell geometry.
-
-Ownership and equipment are intentionally distinct. Inventory plus equipped slots determines what the character possesses; the exact equipment slot determines what the character can currently use. Equipping a main-hand item therefore does not mean every owned tool is usable.
+Gameplay rules and state mutation: inventory, equipment, navigation, gathering, fishing, cooking, skills and related mechanics.
 
 ### `services/`
 
-- `supabase.ts` owns the Supabase client and all authentication/character database operations.
-- `persistence.ts` serializes, validates, loads, repairs, and saves the version 1 character progress payload, including the existing one-time local-storage import path.
-
-Services are the external-infrastructure boundary. UI and systems do not operate the Supabase client directly.
+External-infrastructure boundary. Supabase authentication/database/realtime access and character persistence live here. UI and gameplay systems should not operate the Supabase client directly.
 
 ### `ui/`
 
-- `gateway.ts` renders and coordinates login, registration, email-confirmation messaging, character creation, character lookup, and entry into the game.
-- `shell.ts` owns the locked shell markup and shell-level text updates.
-- `scene.ts`, `panels.ts`, `character-card.ts`, `minimap.ts`, and `log.ts` render their existing regions from state.
-- `interactions.ts` translates buttons, keyboard events, chat input, and system callbacks into actions and targeted rerenders.
-- `mobile-input.ts` preserves the tap, hold, drag, and double-tap gesture vocabulary separately from desktop click/double-click behavior.
-- `html.ts` contains the shared HTML escaping helper.
+Rendering and input orchestration. `gateway.ts` owns account/character entry flows. `shell.ts` owns the main shell, layout editor, compact-landscape HUD arrangement and fullscreen integration. Focused modules render scenes, panels, character state, minimap/log content and interactions.
 
-UI may decide what to render and which system action to call. Gameplay eligibility, rewards, timers, inventory mutation, and persistence formats do not belong in UI modules.
+### `styles/`
+
+`styles/index.css` is the single stylesheet entry point. Styles are split by responsibility and include dedicated responsive/mobile-landscape layers. Import order matters.
 
 ## Application flow
 
-1. `main.ts` imports `styles/index.css` and calls `bootstrap`.
+1. `main.ts` loads the stylesheet and calls the gateway bootstrap.
 2. The gateway restores the Supabase session and routes to authentication, character creation, or the game.
-3. Persistence loads the character's versioned progress into `gameState`.
-4. `startGame` renders the locked shell, binds stable shell interactions, renders each region, and resumes an active cooking timer when required.
-5. UI handlers call a system. The system updates state and invokes hooks; the UI hook refreshes only the regions the monolith refreshed for that event.
+3. Persistence loads the signed-in character's progress into `gameState`.
+4. `startGame` renders the shell, binds interactions, renders current regions and resumes relevant activities.
+5. UI handlers request gameplay actions; systems/services update authoritative state and the UI refreshes affected regions.
 
-## Styles
+## Persistent-state boundary
 
-`styles/index.css` is the single stylesheet entry point. Its import order is behaviorally significant.
+The browser may request an action. It must not dictate a persistent result.
 
-The monolithic stylesheet contained multiple historical phases and overlapping media queries. The refactor moved those rules without rewriting them. Files ending in `-legacy`, `-canonical`, or `-fit` retain those source phases so selectors, specificity, and cascade order stay identical. This means some shell-related declarations remain distributed across phase files rather than being consolidated aggressively. Consolidation should wait for visual regression coverage.
+Authoritative persistent changes belong behind Supabase Row Level Security and server-side RPC/database rules. Client-side checks are useful for UX but are not a security boundary.
 
-Feature files such as `inventory.css`, `gathering.css`, `fishing.css`, and `cooking.css` may style content inside existing regions. They must not change shell tracks, region dimensions, positioning, scroll ownership, or responsive rearrangement. See [UI-CONTRACT.md](./UI-CONTRACT.md).
+## Authentication and multiplayer
+
+Supabase Auth owns account sessions. Email confirmation is sent through the configured custom SMTP provider.
+
+Room chat is cloud-backed and uses Supabase realtime/database operations. `ROOM` is multiplayer chat for the current room; `GAME` and `SYSTEM` remain local presentation channels. Current Nearby data is persisted room membership, not full online-presence truth.
+
+## UI architecture
+
+The world is presented as location -> scene -> interaction nodes -> actions rather than free WASD movement.
+
+Desktop/portrait use the shared shell. Compact mobile landscape reparents status, tabs/panel and chat into movable HUD containers over a full-screen scene. Layout configuration persists; editing state does not.
+
+See [UI-CONTRACT.md](./UI-CONTRACT.md) for the current shell/HUD contract.
+
+## Assets
+
+Public assets live under `public/`. Runtime references are centralized through `SRC/core/assets.ts` and derived from `import.meta.env.BASE_URL`.
+
+The production site currently uses the root deployment base `/`, but feature code should not hard-code the production domain or historical GitHub Pages prefix.
+
+See [ASSET-GUIDE.md](./ASSET-GUIDE.md).
 
 ## Adding a gameplay system
 
-1. Add static definitions to `data/` and shared types/constants to `core/` only when genuinely shared.
-2. Implement eligibility checks and state mutation in a focused `systems/<feature>.ts` module.
-3. Accept the state and narrow hooks; do not query the DOM or import UI.
-4. Add persistence fields only through a versioned, validated change in `services/persistence.ts`.
-5. Render the feature inside an existing shell region from `ui/`, and translate user input into system calls.
-6. Put scoped feature rules in `styles/<feature>.css` and append its import at the correct intentional cascade position.
-7. Verify desktop hover/double-click semantics and mobile tap/hold/drag semantics separately.
-8. Run TypeScript checking and the production Vite build, then verify all named asset references under the configured deployment base.
+1. Put static definitions in `data/` and genuinely shared vocabulary in `core/`.
+2. Implement rules/state mutation in a focused `systems/<feature>.ts` module.
+3. Keep systems independent of the DOM.
+4. Route persistent changes through the authoritative service/server boundary.
+5. Render the feature through existing UI scene/panel/dialog boundaries.
+6. Scope styles to the feature and verify desktop, portrait and compact-landscape behavior.
+7. Run TypeScript checking and the production build.
+8. Explicitly verify runtime asset references where assets changed.
 
-## Related contracts
+## Repository documentation
 
-- [UI-CONTRACT.md](./UI-CONTRACT.md) defines the structurally locked shell.
-- [ASSET-GUIDE.md](./ASSET-GUIDE.md) records the current public asset hierarchy and URL policy.
+- root `README.md` — project/repository entry point;
+- root `BACKLOG.md` — official working backlog;
+- `docs/UI-CONTRACT.md` — current interface structure and layout rules;
+- `docs/ASSET-GUIDE.md` — asset hierarchy and reference policy;
+- this file — module/dependency architecture.

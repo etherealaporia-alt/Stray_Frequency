@@ -1,58 +1,87 @@
 # Stray Frequency UI Contract
 
-## Status
+## Purpose
 
-The game shell is structurally locked. This document records the existing layout contract; it does not propose a redesign.
+The interface exists for the player. Structural complexity should support the game rather than make the player operate the software.
 
-Ordinary feature work may render content inside an existing region. It must not change the region's geometry, placement, stacking, responsive role, or scroll ownership. A shell change requires an explicit decision to unlock the shell and must be reviewed separately from feature work.
+The current shell uses a shared desktop/portrait structure and a dedicated compact-landscape HUD. Feature work should respect those boundaries. Layout changes are allowed when they are deliberate UI work; gameplay features should not accidentally reshape the shell simply to make their content fit.
 
-## Locked shell regions
+## Core structure
 
-The following regions and the relationships between them are locked:
+The game is built around:
 
-- the game shell and its viewport boundary;
-- the masthead;
-- the character card/profile;
-- the main world/location viewport, including its heading and scene stage;
-- the chat/game log;
-- the right sidebar;
-- the minimap;
-- the RuneScape-style menu/tab area; and
-- the active/context panel.
+- a graphical world scene;
+- a persistent chat/game log;
+- character status;
+- a RuneScape-style tab system and active panel; and
+- a global control bar.
 
-The lock includes DOM hierarchy and ordering, grid/flex tracks, widths and heights, gaps, padding that determines geometry, aspect ratios, positioning, stacking, and desktop/mobile rearrangement. Feature modules may populate these surfaces, update their state, and attach interactions. They may not resize or relocate them to make a feature fit.
+On desktop and ordinary portrait layouts these regions live in the main shell. In compact mobile landscape, the scene becomes the full-screen canvas and the character status, tabs/panel, and chat are presented as HUD modules over it.
 
-Shell geometry belongs to the shell and responsive styles. Feature styles must not target shell ancestors with layout-changing declarations or use broad selectors that can override them through specificity or import order. In particular, a feature stylesheet must not redefine the geometry of `.game-shell`, `.masthead`, `.character-card`, `.play-grid`, `.world-column`, `.location-card`, `.scene-wrap`, `.chat`, `.sidebar`, `.minimap`, `.rune-menu`, or `.active-panel`.
+The application chooses the structural grammar. The player may rearrange the supported pieces through Edit Layout, but cannot arbitrarily resize them.
 
-## Scroll ownership
+## Desktop and portrait layout
 
-On normal desktop gameplay layouts, the application occupies the viewport and the page itself is not a gameplay scroll surface. History and content that are intentionally scrollable remain inside their existing owners, principally the game log and the active/context panel. A feature must not make the document scroll to compensate for oversized feature content.
+Desktop uses the scene/chat world column alongside the character/sidebar column. The supported layout preferences are:
 
-On narrow/mobile layouts, the existing responsive shell may stack regions and allow the document to scroll vertically so those regions remain reachable. The game log continues to own its history scrolling, and feature-specific controls such as mobile inventory paging retain their existing behavior. Horizontal page scrolling is not part of the contract.
+- global bar at the top or bottom;
+- sidebar on the left or right;
+- scene/chat ordering; and
+- character/tab ordering.
 
-Do not transfer scroll ownership between the document, shell regions, and feature content as an incidental fix. Do not apply arbitrary `overflow: hidden` to the page, shell, panels, or feature containers to conceal layout errors. Existing clipping that is intrinsic to a scene viewport, sprite frame, or locked desktop viewport is part of the shell implementation and is not permission for feature CSS to add more clipping.
+These preferences persist. Layout-edit mode itself does not.
+
+Portrait/mobile layouts may adapt or stack regions as defined by the responsive shell. Feature CSS must not create document-wide horizontal scrolling or silently move ownership of scrolling between regions.
+
+## Compact mobile landscape
+
+Compact landscape is currently detected for coarse-pointer landscape devices with a maximum height of 700px.
+
+In this mode:
+
+- the scene fills the available screen;
+- the tab stack, character status, and chat become separate HUD modules;
+- the tab/panel module can be collapsed by tapping the active tab;
+- chat can be collapsed;
+- HUD modules can be moved only while Edit Layout is active;
+- positions persist in local storage;
+- modules are clamped to the usable screen and may overlap one another;
+- the global bar may dock to the top or bottom; and
+- the Fullscreen control uses the browser Fullscreen API when available.
+
+HUD modules are movable, not freely resizable.
+
+The compact-landscape implementation is still active work. The target inventory presentation is 28 simultaneously accessible slots in a 4 x 7 grid, with no inventory scrolling or pagination.
+
+## Layout editing
+
+Normal play keeps layout controls locked.
+
+`EDIT LAYOUT` enters an explicit editing state. On desktop it exposes the supported structural swaps. In compact landscape it allows HUD dragging and global-bar docking. `RESET` restores the relevant defaults.
+
+Persistent placement is configuration. The fact that the player is currently editing the layout is transient state.
 
 ## Interaction vocabulary
 
-Desktop and mobile interactions intentionally have different semantics and must remain compatible with the current handlers:
+Desktop and touch input intentionally differ where appropriate:
 
-- Desktop hover preserves the existing preview, inspection, and tooltip behavior.
-- Desktop double-click preserves the existing perform, equip, deploy, or use behavior for the applicable target.
-- Mobile tap means perform or use.
-- Mobile hold means inspect or “tell me about it.”
-- Mobile drag means move where the target supports movement.
+- desktop hover may preview or inspect;
+- desktop double-click may perform/use/equip where supported;
+- mobile tap performs or uses;
+- mobile hold inspects;
+- mobile drag moves where movement is supported.
 
-Do not collapse these into a single click model. A refactor must preserve gesture thresholds, cancellation behavior, and protection against a hold or drag also firing an unintended tap action.
+A refactor must avoid causing a hold or drag to fire an unintended tap action.
 
 ## Feature integration rules
 
-New gameplay features must:
+Gameplay features should:
 
-1. render into an existing scene, log, or panel boundary;
+1. render inside an established scene, log, dialog, or panel boundary;
 2. keep gameplay rules outside shell-rendering code;
-3. scope feature CSS to a feature-owned root class;
-4. fit the existing desktop and mobile geometry;
-5. preserve the current interaction vocabulary; and
-6. be checked in the major desktop, portrait-mobile, and short landscape-mobile states.
+3. scope feature CSS to feature-owned selectors;
+4. work across desktop, portrait mobile, and compact landscape;
+5. preserve the intended input vocabulary; and
+6. avoid changing shell geometry as an incidental feature fix.
 
-Fishing, gathering, cooking, inventory, and future systems are all subject to this contract. No feature is a reason to change the shell implicitly.
+A deliberate shell/HUD redesign is a UI task and should be reviewed as such rather than hidden inside unrelated gameplay work.
