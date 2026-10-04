@@ -53,11 +53,65 @@ Rendering and input orchestration. `gateway.ts` owns account/character entry flo
 
 ## Application flow
 
-1. `main.ts` loads the stylesheet and calls the gateway bootstrap.
-2. The gateway restores the Supabase session and routes to authentication, character creation, or the game.
-3. Persistence loads the signed-in character's progress into `gameState`.
-4. `startGame` renders the shell, binds interactions, renders current regions and resumes relevant activities.
-5. UI handlers request gameplay actions; systems/services update authoritative state and the UI refreshes affected regions.
+The runtime should be treated as four layers:
+
+1. **Universal application** — authentication connection, login/account UI, shared application structure, styles and infrastructure required before entering the game.
+2. **Authenticated character session** — persistent character-owned facts such as identity, inventory, equipment, skills, health, currency and current location.
+3. **Current location context** — the active scene surface, scene interaction nodes, local multiplayer context and other location-owned information.
+4. **Interaction context** — vendor, NPC, bank, gathering, crafting or other detailed interfaces loaded when the player actually opens or uses them.
+
+Authentication should not wait for game-world artwork that is not needed by the gateway. After authentication, load the authoritative character state, determine the current location, then load that location's scene context.
+
+Character-owned state persists across scene changes. Moving between locations must not cause unchanged inventory, equipment, skills or other character-owned facts to be rediscovered merely because the scene changed.
+
+## Runtime state and presentation rules
+
+### Persistent state stores facts, not presentation
+
+Persistent character and world state should store stable identifiers and authoritative values rather than presentation payloads.
+
+For item ownership this means facts such as:
+
+```text
+item_id
+quantity
+slot or equipment position where applicable
+```
+
+Names, descriptions, images, flavour text and other presentation data are resolved separately. A stable item identifier must remain usable even if its display name, description or artwork later changes.
+
+This separation applies beyond inventory: storage, equipment, quests and future systems should keep authoritative facts independent from the interfaces and assets used to present them.
+
+### Synchronise changes, not screens
+
+Once authoritative character state has been established, the client should preserve unchanged state across navigation and interactions.
+
+Server responses should ultimately allow the client to determine what changed and update the affected state/UI rather than treating every action as a reason to rediscover or redraw the entire character and screen.
+
+Structural changes such as entering another location may replace a scene context. A quantity, XP or health change should update the relevant character state without unnecessarily rebuilding unrelated regions.
+
+### Knowledge does not grant action authority
+
+Knowing persistent state does not imply permission to act upon it.
+
+For example, a future bank preview or read-only API may reveal that a character owns an item in storage. Withdrawing or moving that item still requires the appropriate authorised gameplay interaction.
+
+This preserves the persistent-state security boundary while allowing useful read-only views and future third-party tools.
+
+## Scene loading and hot-cache contract
+
+Scene resources should be loaded according to player context rather than globally at application startup.
+
+- The **current scene context** is hot.
+- The **immediately previous scene context** is also hot so ordinary backtracking does not require unchanged scene data or scene resources to be fetched/decoded unnecessarily.
+- Moving to a third distinct scene makes the older non-current context eligible for eviction.
+- Scene surfaces for directly connected destinations may be preloaded opportunistically when doing so does not block current gameplay.
+- A connected scene may have its surface asset prepared without loading its complete interaction state.
+- Detailed interaction contexts should load when the player actually opens or uses them.
+
+The contract is outcome-based: implementations do not have to preserve an entire previous DOM tree if retaining prepared data/assets provides the same fast-backtracking result.
+
+Browser/HTTP asset caching remains separate from the application's hot scene-context cache. Evicting a scene context does not require forcing the browser to discard an underlying cached asset.
 
 ## Persistent-state boundary
 
@@ -93,10 +147,11 @@ See [ASSET-GUIDE.md](./ASSET-GUIDE.md).
 2. Implement rules/state mutation in a focused `systems/<feature>.ts` module.
 3. Keep systems independent of the DOM.
 4. Route persistent changes through the authoritative service/server boundary.
-5. Render the feature through existing UI scene/panel/dialog boundaries.
-6. Scope styles to the feature and verify desktop, portrait and compact-landscape behavior.
-7. Run TypeScript checking and the production build.
-8. Explicitly verify runtime asset references where assets changed.
+5. Keep authoritative facts separate from presentation data and assets.
+6. Render the feature through existing UI scene/panel/dialog boundaries.
+7. Scope styles to the feature and verify desktop, portrait and compact-landscape behavior.
+8. Run TypeScript checking and the production build.
+9. Explicitly verify runtime asset references where assets changed.
 
 ## Repository documentation
 
