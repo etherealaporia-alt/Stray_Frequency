@@ -1,0 +1,13 @@
+/* STRAY FREQUENCY — PIER SCENE CLEANUP
+   The finished Pier artwork owns the scene background.
+   Fishing interaction remains an invisible interaction layer.
+*/
+.pier-stage {
+  background: #111;
+}
+
+.pier-stage::before,
+.pier-stage::after {
+  content: none;
+  display: none;
+}
