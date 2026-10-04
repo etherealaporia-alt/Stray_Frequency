@@ -2,7 +2,8 @@
    Source of truth: uploaded last stable build, canonical UI shell override.
    Generic chat, minimap-content and active-panel content presentation only.
 */
-.chat{min-height:205px;border-radius:7px;padding:8px 10px 10px;display:grid;grid-template-rows:34px minmax(100px,1fr) 44px}
+.chat{min-height:205px;border-radius:7px;padding:8px 10px 10px;display:grid;grid-template-rows:34px minmax(100px,1fr) 44px;position:relative}
+.chat-collapse{position:absolute;right:10px;top:8px;z-index:3;width:24px;height:20px;padding:0;border:1px solid var(--line);border-radius:0;background:#111518;color:#aaa;font-size:12px;line-height:18px}
 .chat-tabs{border-bottom:1px solid var(--line);display:flex;gap:6px;margin:0}
 .chat-tabs button{background:transparent;border:0;border-radius:0;color:#969793;padding:6px 26px 8px;cursor:pointer}
 .chat-tabs button.active{color:var(--pink);border:1px solid var(--pink);border-bottom-color:var(--panel);margin-bottom:-1px;border-radius:4px 4px 0 0;background:transparent}
