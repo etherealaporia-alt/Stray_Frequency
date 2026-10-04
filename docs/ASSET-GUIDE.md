@@ -41,7 +41,6 @@ public/
 │   ├── nodes/
 │   │   ├── salvage-node.png
 │   │   ├── sardine-node.png
-│   │   ├── scrap-node.png
 │   │   └── shrimp-node.png
 │   └── south-dock/
 │       ├── breakers-yard-12.png
@@ -96,8 +95,6 @@ The historical missing `glassmarket.png` / `mara-vale.png` references documented
 ## Validation caveat
 
 Vite copies `public/` files but does not prove that runtime string URLs resolve. The image preloader also treats load failures as non-fatal. A successful TypeScript/build pass therefore does not guarantee that every referenced image exists or is a valid image.
-
-`public/environments/nodes/scrap-node.png` remains a known suspicious legacy file and should be validated/replaced before it becomes an authoritative gameplay asset.
 
 ## Adding assets
 
