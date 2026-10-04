@@ -4,7 +4,8 @@ import { CHARACTER_APPEARANCES } from '../data/character-appearances';
 import { loadCharacterProgress } from '../services/persistence';
 import {
   type AuthenticatedUser, createCharacter, findCharacterByAccount, getAuthSession,
-  loginAccount, logoutAccount, refreshDeveloperAccess, registerAccount, subscribeToAuthChanges
+  loginAccount, logoutAccount, refreshDeveloperAccess, registerAccount,
+  resendSignupConfirmation, subscribeToAuthChanges
 } from '../services/supabase';
 import { roomFromCharacterLocation } from '../systems/navigation';
 import { characterRendererMarkup } from './character-renderer';
@@ -26,6 +27,7 @@ function renderAuth(app: HTMLDivElement, message = ''): void {
         <p id="password-requirement" class="gateway-message" hidden>Minimum 12 characters.</p>
         <label class="password-toggle"><input id="show-password" type="checkbox" /><span>SHOW PASSWORD</span></label>
         <button id="auth-submit" class="gateway-primary" type="submit">LOG IN</button>
+        <button id="resend-confirmation" class="gateway-secondary" type="button" hidden>RESEND CONFIRMATION EMAIL</button>
       </form><p id="auth-message" class="gateway-message">${escapeHtml(message)}</p>
     </section></main>`;
 
@@ -33,6 +35,8 @@ function renderAuth(app: HTMLDivElement, message = ''): void {
   const loginTab = document.querySelector<HTMLButtonElement>('#login-tab')!;
   const registerTab = document.querySelector<HTMLButtonElement>('#register-tab')!;
   const submit = document.querySelector<HTMLButtonElement>('#auth-submit')!;
+  const resend = document.querySelector<HTMLButtonElement>('#resend-confirmation')!;
+  const emailInput = document.querySelector<HTMLInputElement>('#auth-email')!;
   const password = document.querySelector<HTMLInputElement>('#auth-password')!;
   const confirmRow = document.querySelector<HTMLElement>('#confirm-password-row')!;
   const confirmPassword = document.querySelector<HTMLInputElement>('#auth-confirm-password')!;
@@ -53,6 +57,7 @@ function renderAuth(app: HTMLDivElement, message = ''): void {
     password.minLength = registering ? 12 : 0;
     confirmPassword.minLength = registering ? 12 : 0;
     confirmPassword.value = '';
+    resend.hidden = true;
     messageNode.textContent = '';
   };
 
@@ -64,10 +69,30 @@ function renderAuth(app: HTMLDivElement, message = ''): void {
     confirmPassword.type = type;
   });
 
+  resend.addEventListener('click', async () => {
+    const email = emailInput.value.trim();
+    if (!email || !emailInput.validity.valid) {
+      messageNode.textContent = 'Enter the email address for the account first.';
+      emailInput.focus();
+      return;
+    }
+    resend.disabled = true;
+    messageNode.textContent = 'Sending confirmation email…';
+    const { error } = await resendSignupConfirmation(email);
+    if (error) {
+      messageNode.textContent = error.message;
+      resend.disabled = false;
+      return;
+    }
+    messageNode.textContent = 'Confirmation email sent. Check your inbox and spam folder.';
+    resend.disabled = false;
+  });
+
   document.querySelector<HTMLFormElement>('#auth-form')!.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const email = document.querySelector<HTMLInputElement>('#auth-email')!.value.trim();
+    const email = emailInput.value.trim();
     const passwordValue = password.value;
+    resend.hidden = true;
 
     if (mode === 'register' && passwordValue.length < 12) {
       messageNode.textContent = 'Password must be at least 12 characters.';
@@ -89,6 +114,7 @@ function renderAuth(app: HTMLDivElement, message = ''): void {
       if (error) { messageNode.textContent = error.message; submit.disabled = false; return; }
       if (!data.session) {
         setMode('login');
+        emailInput.value = email;
         messageNode.textContent = 'Account created. Check your email to verify it, then log in.';
         submit.disabled = false;
         return;
@@ -99,7 +125,15 @@ function renderAuth(app: HTMLDivElement, message = ''): void {
     }
 
     const { data, error } = await loginAccount(email, passwordValue);
-    if (error) { messageNode.textContent = error.message; submit.disabled = false; return; }
+    if (error) {
+      const unconfirmed = error.message.toLowerCase().includes('email not confirmed');
+      messageNode.textContent = unconfirmed
+        ? 'Email not confirmed. Check your inbox for the confirmation email.'
+        : error.message;
+      resend.hidden = !unconfirmed;
+      submit.disabled = false;
+      return;
+    }
     currentUser = data.user;
     await routeAuthenticatedUser(app);
   });
