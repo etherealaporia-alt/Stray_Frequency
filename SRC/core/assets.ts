@@ -88,7 +88,7 @@ export const ASSET_CSS_VARIABLES = {
 
 const preloadCache = new Map<string, Promise<void>>();
 
-function preloadImage(url: string): Promise<void> {
+export function preloadImage(url: string): Promise<void> {
   const cached = preloadCache.get(url);
   if (cached) return cached;
   const request = new Promise<void>((resolve) => {
