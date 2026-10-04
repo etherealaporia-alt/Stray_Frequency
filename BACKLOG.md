@@ -68,9 +68,9 @@ Create and preserve the exact canonical old transit authority mark as a reusable
 
 ## Assets and technical debt
 
-### Asset audit follow-up
+### Asset validation
 
-Resolve asset problems documented in `docs/ASSET-GUIDE.md`, including stale/missing references and invalid placeholder files. Update the guide when each issue is resolved rather than silently guessing replacements.
+Keep asset references aligned with the authoritative `public/` hierarchy and `SRC/core/assets.ts`. Add targeted validation where it usefully catches missing, mistyped or invalid runtime assets.
 
 ### Documentation maintenance
 
