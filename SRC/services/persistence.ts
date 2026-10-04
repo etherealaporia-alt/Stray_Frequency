@@ -1,4 +1,5 @@
 import { EQUIPMENT_SLOTS, MAX_SKILL_LEVEL } from '../core/constants';
+import { prepareCurrentScene } from '../core/scene-loader';
 import { gameState, recalculateInventoryTotals, resetCharacterProgress } from '../core/state';
 import type { CharacterSkill, GameState, ItemKey, StoredCharacterProgress } from '../core/types';
 import { ITEM_DEFINITIONS, itemName } from '../data/items';
@@ -82,6 +83,7 @@ export async function loadCharacterProgress(state: GameState = gameState): Promi
     return;
   }
   applyGameSnapshot(data, state);
+  await prepareCurrentScene(state.roomId);
 }
 
 /**
