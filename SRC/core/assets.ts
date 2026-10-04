@@ -24,17 +24,20 @@ export const ASSETS = {
   },
   items: {
     food: {
+      cookedShrimp: assetUrl('assets/items/food/cooked-shrimp.png'),
       sardine: assetUrl('assets/items/food/sardine.png'),
       shrimp: assetUrl('assets/items/food/shrimp.png')
     },
     resources: {
+      copperCoils: assetUrl('assets/items/resources/copper-coils.png'),
       scrap: assetUrl('assets/items/resources/scrap.png'),
       synthetics: assetUrl('assets/items/resources/synthetics.png')
     },
     tools: {
       breaker: assetUrl('assets/items/tools/breaker.png'),
       fishingNet: assetUrl('assets/items/tools/fishing-net.png'),
-      fishingRod: assetUrl('assets/items/tools/fishing-rod.png')
+      fishingRod: assetUrl('assets/items/tools/fishing-rod.png'),
+      inductionHeatingPad: assetUrl('assets/items/tools/induction-heating-pad.png')
     }
   },
   environments: {
@@ -70,8 +73,11 @@ export const CORE_ASSET_URLS = [
   ASSETS.items.tools.breaker,
   ASSETS.items.tools.fishingNet,
   ASSETS.items.tools.fishingRod,
+  ASSETS.items.tools.inductionHeatingPad,
+  ASSETS.items.resources.copperCoils,
   ASSETS.items.resources.scrap,
   ASSETS.items.resources.synthetics,
+  ASSETS.items.food.cookedShrimp,
   ASSETS.items.food.shrimp,
   ASSETS.items.food.sardine
 ] as const;
