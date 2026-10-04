@@ -1,3 +1,4 @@
+import { prepareCharacterPresentation } from '../core/character-presentation';
 import { EQUIPMENT_SLOTS, MAX_SKILL_LEVEL } from '../core/constants';
 import { prepareCurrentScene } from '../core/scene-loader';
 import { gameState, recalculateInventoryTotals, resetCharacterProgress } from '../core/state';
@@ -83,7 +84,10 @@ export async function loadCharacterProgress(state: GameState = gameState): Promi
     return;
   }
   applyGameSnapshot(data, state);
-  await prepareCurrentScene(state.roomId);
+  await Promise.all([
+    prepareCurrentScene(state.roomId),
+    prepareCharacterPresentation(state)
+  ]);
 }
 
 /**
