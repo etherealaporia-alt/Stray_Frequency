@@ -69,6 +69,14 @@ export function loginAccount(email: string, password: string) {
   return supabase.auth.signInWithPassword({ email, password });
 }
 
+export function resendSignupConfirmation(email: string) {
+  return supabase.auth.resend({
+    type: 'signup',
+    email,
+    options: { emailRedirectTo: 'https://strayfrequency.co.uk' }
+  });
+}
+
 export function logoutAccount() {
   developerAccess = false;
   void stopRoomChatSubscription();
