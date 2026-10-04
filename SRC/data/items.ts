@@ -46,14 +46,14 @@ export const ITEM_DEFINITIONS: Record<ItemKey, ItemDefinition> = {
     key: 'copper_coils',
     name: 'Copper Coils',
     description: 'Copper wiring coils recovered from a scrap node.',
-    asset: ASSETS.items.resources.synthetics,
+    asset: ASSETS.items.resources.copperCoils,
     stackable: true
   },
   cooked_shrimp: {
     key: 'cooked_shrimp',
     name: 'Cooked Shrimp',
     description: 'A cooked meal that restores 3 HP when used.',
-    asset: ASSETS.items.resources.synthetics,
+    asset: ASSETS.items.food.cookedShrimp,
     stackable: true,
     usable: true
   },
@@ -61,7 +61,7 @@ export const ITEM_DEFINITIONS: Record<ItemKey, ItemDefinition> = {
     key: 'portable_induction_pad',
     name: 'Portable Induction Pad',
     description: 'Double-click to deploy. Cooks each Uncooked Shrimp over 3 ticks.',
-    asset: ASSETS.items.tools.breaker,
+    asset: ASSETS.items.tools.inductionHeatingPad,
     stackable: false,
     usable: true
   },
