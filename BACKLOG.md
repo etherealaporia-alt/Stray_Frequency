@@ -38,6 +38,16 @@ Develop the compact local relationship/knowledge model: broad perceptions, landm
 
 Design additional districts as horizontal expansion rather than level-gated replacements for South Dock. Information and reputation should remain locally grounded instead of synchronising globally by default.
 
+### Bank and bank preview
+
+Implement character-owned bank storage as persistent factual state using stable item identifiers and quantities rather than embedding presentation assets or descriptions in the stored contents.
+
+Provide a lightweight, read-only **Bank Preview** that lets the player inspect stored item names and quantities without physically visiting a bank. The preview does not need item artwork and must not grant deposit, withdrawal or other bank actions remotely.
+
+Keep the underlying storage representation suitable for future read-only API consumers, including companion tools that need to determine whether a character owns item prerequisites across inventory and bank storage without loading game presentation assets.
+
+Physical bank interaction remains required for actions upon stored items.
+
 ## Accounts, communication and infrastructure
 
 ### Human-facing mailbox
@@ -93,5 +103,6 @@ Add targeted automated checks where they meaningfully reduce regressions. Candid
 - No speculative dates.
 - Do not treat an interesting idea as committed scope until it becomes actionable.
 - Player convenience is the default; implementation effort determines priority, not whether the player deserves the feature.
+- Preserve meaningful gameplay friction; remove administrative friction that does not create an interesting world, preparation, social or decision-making consequence.
 - Essential gameplay access must not depend on maintaining perfect NPC relationships or avoiding persistent social consequences.
 - New systems should strengthen the feeling of living in Stray Frequency's world rather than existing solely to add another progression bar.
